@@ -18,7 +18,8 @@ const positivemsgs = ["Mrrrr! [eager]",
     "Mrrrr! [celebratory]"
 ];
 
-const miscmsgs = ["Mrrrr! [mocking]",
+const miscmsgs = [
+    "Mrrrr! [mocking]",
     "Mrrrr! [startling]",
     "Mrrrr... [growling]",
     "Mrrrr…? [curious]",

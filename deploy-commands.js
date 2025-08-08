@@ -34,7 +34,7 @@ const rest = new REST().setToken(token);
 
 		// The put method is used to fully refresh all commands
 		const data = await rest.put(
-			Routes.applicationCommands(clientId),
+			Routes.applicationGuildCommands(clientId, guildId),
 			{ body: commands },
 		);
 
