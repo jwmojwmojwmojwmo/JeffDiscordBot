@@ -63,7 +63,7 @@ function getMsg(index) {
 
 function fullMsg() {
     let msg = "";
-    const index = Math.floor(Math.random() * 4);
+    let index = Math.floor(Math.random() * 4);
     if (index > 2) {
         index = 0;
     }
