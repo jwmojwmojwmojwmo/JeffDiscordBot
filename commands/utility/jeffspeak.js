@@ -10,10 +10,13 @@ const positivemsgs = ["Mrrrr! [eager]",
     "Mrrrr! [in agreement]",
     "Mrrrr! [friendly]",
     "Mrrrr! [satisfied]",
-    "YUMMY YUMMY",
-    "NOMNOMNOM",
     "Mrrrr! [triumphant]",
-    "Mrrrr! Mrrrr. MRRRR! [excited]"];
+    "Mrrrr! Mrrrr. MRRRR! [excited]",
+    "Yeah! [relieved]",
+    "Mrrrr. [proud]",
+    "Mrrrr! [comfortable]",
+    "Mrrrr! [celebratory]"
+];
 
 const miscmsgs = ["Mrrrr! [mocking]",
     "Mrrrr! [startling]",
@@ -23,10 +26,14 @@ const miscmsgs = ["Mrrrr! [mocking]",
     "Mrrrr! [beckoning]",
     "Mrrrr... [dismissive]",
     "Mrrrr... [impatient]",
-    "No!",
-    "Uh-Uh!",
     "MRRAAAARR!",
-    "Mrrrr? [inquiring]"]
+    "Mrrrr? [inquiring]",
+    "YUMMY YUMMY",
+    "NOMNOMNOM",
+    "Mrrrr! [appreciative]",
+    "Mrrrr! [encouraging]",
+    "Mrrrr! [warm]",
+    "MRRRR? [curious]"]
 
 const negativemsgs = [
     "MRRRR! [ravenous]",
@@ -42,7 +49,9 @@ const negativemsgs = [
     "Mrrrr… [frustrated]",
     "Mrrrr... [worried]",
     "No! [urgent]",
-    "MRRR! [panicked]"
+    "No!",
+    "MRRR! [panicked]",
+    "Uh-Uh!",
 ]
 
 const allmsgs = [positivemsgs, miscmsgs, negativemsgs];
