@@ -63,7 +63,10 @@ function getMsg(index) {
 
 function fullMsg() {
     let msg = "";
-    const index = Math.floor(Math.random() * 3);
+    const index = Math.floor(Math.random() * 4);
+    if (index > 2) {
+        index = 0;
+    }
     const msgNum = Math.floor(Math.random() * 4) + 1;
     for (let i = 0; i <= msgNum; i++) {
         msg = msg + "\n" + getMsg(index);
