@@ -13,7 +13,7 @@ function getMsg() {
 
 function fullMsg() {
     let msg = "";
-    const msgNum = Math.floor(Math.random() * 6) + 1;
+    const msgNum = Math.floor(Math.random() * 4) + 1;
     for (let i = 0; i <= msgNum; i++) {
         msg = msg + "\n" + getMsg();
     }
