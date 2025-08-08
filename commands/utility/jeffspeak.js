@@ -1,21 +1,63 @@
 const { SlashCommandBuilder, bold } = require('discord.js');
 
-const msgs = ["MRRRR! [ravenous]", "MRRRR! [vicious]", "Mrrr...[sad]", "Mrrrr! [eager]", "Mrrrr! [urgent]",
-    "Mrrrr! [mocking]", "Mrrrr! [startling]", "Mrrrr! [playful]", "Mrrrr! [supportive]", "Mrrrr... [growling]", "Mrrrr…? [curious]",
-    "Mrrrr?! [terrified]", "Mrrrr! Mrrrr. MRRRR! [excited]", "Mrrrr! [triumphant]", "Mrrrr… [snarling]", "Mrrrr! [apologetic]", "MRRAAAARR!",
-    "Mrrrr! [shocked]", "Mrrrr! [sad]", "Uh-Oh! [sad]", "Ah-Ha! [supportive]", "Woop woop! [impressed]", "Mrrrr! [relieved]", "Mrrrr! [happy]",
-    "Mrrrr -- ? [confused]", "Mrrrr… [frustrated]", "Mrrrr! [in agreement]", "No!", "Uh-Uh!", "Mrrrr! [beckoning]", "Mrrrr! [friendly]", "Mrrrr... [worried]",
-    "Mrrrr... [dismissive]", "Mrrrr... [impatient]", "Mrrrr! [satisfied]", "No! [urgent]", "MRRR! [panicked]"];
+const positivemsgs = ["Mrrrr! [eager]",
+    "Mrrrr! [playful]",
+    "Mrrrr! [supportive]",
+    "Ah-Ha! [supportive]",
+    "Woop woop! [impressed]",
+    "Mrrrr! [relieved]",
+    "Mrrrr! [happy]",
+    "Mrrrr! [in agreement]",
+    "Mrrrr! [friendly]",
+    "Mrrrr! [satisfied]",
+    "YUMMY YUMMY",
+    "NOMNOMNOM",
+    "Mrrrr! [triumphant]",
+    "Mrrrr! Mrrrr. MRRRR! [excited]"];
 
-function getMsg() {
-    return bold(msgs[Math.floor(Math.random() * msgs.length)]);
+const miscmsgs = ["Mrrrr! [mocking]",
+    "Mrrrr! [startling]",
+    "Mrrrr... [growling]",
+    "Mrrrr…? [curious]",
+    "Mrrrr -- ? [confused]",
+    "Mrrrr! [beckoning]",
+    "Mrrrr... [dismissive]",
+    "Mrrrr... [impatient]",
+    "No!",
+    "Uh-Uh!",
+    "MRRAAAARR!",
+    "Mrrrr? [inquiring]"]
+
+const negativemsgs = [
+    "MRRRR! [ravenous]",
+    "MRRRR! [vicious]",
+    "Mrrr...[sad]",
+    "Mrrrr! [urgent]",
+    "Mrrrr?! [terrified]",
+    "Mrrrr… [snarling]",
+    "Mrrrr! [apologetic]",
+    "Mrrrr! [shocked]",
+    "Mrrrr! [sad]",
+    "Uh-Oh! [sad]",
+    "Mrrrr… [frustrated]",
+    "Mrrrr... [worried]",
+    "No! [urgent]",
+    "MRRR! [panicked]"
+]
+
+const allmsgs = [positivemsgs, miscmsgs, negativemsgs];
+
+
+function getMsg(index) {
+    return bold(allmsgs[index][Math.floor(Math.random() * allmsgs[index].length)]);
 }
 
 function fullMsg() {
     let msg = "";
+    const index = Math.floor(Math.random() * 3);
     const msgNum = Math.floor(Math.random() * 4) + 1;
     for (let i = 0; i <= msgNum; i++) {
-        msg = msg + "\n" + getMsg();
+        msg = msg + "\n" + getMsg(index);
     }
     return msg;
 }

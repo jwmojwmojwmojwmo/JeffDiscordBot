@@ -6,10 +6,9 @@ const assetsDir = path.join(__dirname, "..", "..", 'assets');
 let file = new AttachmentBuilder('assets/jeff.webp');
 
 let gallery = new MediaGalleryBuilder()
-    .addItems(
-        mediaGalleryItem => mediaGalleryItem
-            .setURL('attachment://jeff.webp')
-    );
+    .addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://jeff.webp'));
+
+getFile();
 
 function getFile() {
     let fileName = "";
