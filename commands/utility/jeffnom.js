@@ -5,7 +5,7 @@ const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 
 const killMsg = [
     " got gobbled by Jeff. Chomp chomp! NOM NOM!",
-    " just swallowed jwmo whole. Slurp slurp!",
+    " was just swallowed by Jeff whole. Slurp slurp!",
     " is now Jeff’s snack. *nomnomnom*",
     " was caught by Jeff in his jaws. Crunch crunch!",
     " vanished... and Jeff’s tummy says thanks! NOMNOM!",
