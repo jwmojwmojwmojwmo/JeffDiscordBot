@@ -33,7 +33,7 @@ module.exports = {
                 .setRequired(true)),
 	async execute(interaction) {
         let name = interaction.options.getUser('user').globalName;
-        if (interaction.options.getUser('user').globalName == null) {
+        if (interaction.options.getUser('user').globalName === null) {
             name = interaction.options.getUser('user').username;
         }
         kill(name);
