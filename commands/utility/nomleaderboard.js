@@ -5,7 +5,8 @@ const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 
 function getTopFive() {
     let killData = JSON.parse(fs.readFileSync(killPath)); // read JSON file
-    Object.entries(killData).sort((a, b) => b[1][1] - a[1][1]); // sorts entries by value high to low
+    const entries = Object.entries(killData); //makes entries out of kill data
+    entries.sort((a, b) => b[1][1] - a[1][1]); // sorts entries by value high to low
     const topFive = Array.from(new Map(entries)).slice(0, 5); // grabs first five entries
     let leaderboard = "Top Users Nommed:\n";
     let rank = 1;
