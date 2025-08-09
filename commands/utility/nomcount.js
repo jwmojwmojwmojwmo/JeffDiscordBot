@@ -6,7 +6,7 @@ const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 function getKills(user) {
     let killData = JSON.parse(fs.readFileSync(killPath));
     if (user in killData) {
-        return killData[user];
+        return killData[user][1];
     } else {
         return 0;
     }
@@ -27,10 +27,10 @@ module.exports = {
             name = interaction.options.getUser('nommed_user').username;
         }
         let msg = name;
-        if (getKills(name) === 1) { // 1 time vs multiple times in message
+        if (getKills(interaction.options.getUser('nommed_user')) === 1) { // 1 time vs multiple times in message
             msg = msg + " has been nommed 1 time!";
         } else {
-            msg = msg + " has been nommed " + getKills(name) + " times!";
+            msg = msg + " has been nommed " + getKills(interaction.options.getUser('nommed_user')) + " times!";
         }
         await interaction.reply(msg);
     },

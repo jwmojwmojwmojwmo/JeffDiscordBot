@@ -12,14 +12,16 @@ const killMsg = [
     " got Jeff’ed. Nomfest initiated!"
   ];
 
-function kill(user) {
+function kill(user_id, username) {
     let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
-    if (user in killData) {
-        killData[user]++;
+    // JSON data is stored as user_id: [username, killcount]
+    if (user_id in killData) {
+        killData[user_id][0] = username;
+        killData[user_id][1]++;
     } else {
-        killData[user] = 1;
+        killData[user_id] = [username, 1];
     }
-    fs.writeFileSync(killPath, JSON.stringify(killData, null, 2)); // writes JSON data
+    fs.writeFileSync(killPath, JSON.stringify(killData, null, 1)); // writes JSON data
 }
 
 module.exports = {
@@ -36,7 +38,7 @@ module.exports = {
         if (name === null) { // error handling for some discord names
             name = interaction.options.getUser('user').username;
         }
-        kill(name);
+        kill(interaction.options.getUser('user'), name);
 		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
 };
