@@ -2,6 +2,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
 const { token } = require('./config.json');
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize('database', 'username', 'password', {
+    host: 'localhost',
+    dialect: 'sqlite',
+    logging: false,
+    storage: 'database.sqlite',
+});
+
+const users = require('../../models/users.js')(sequelize, Sequelize.DataTypes);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -24,6 +33,7 @@ for (const folder of commandFolders) {
 }
 
 client.once(Events.ClientReady, readyClient => {
+    //users.sync(); //syncs database, uncomment to use database !!!
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
