@@ -13,13 +13,13 @@ const killMsg = [
   ];
 
 function kill(user) {
-    let killData = JSON.parse(fs.readFileSync(killPath));
+    let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
     if (user in killData) {
         killData[user]++;
     } else {
         killData[user] = 1;
     }
-    fs.writeFileSync(killPath, JSON.stringify(killData, null, 2));
+    fs.writeFileSync(killPath, JSON.stringify(killData, null, 2)); // writes JSON data
 }
 
 module.exports = {
@@ -33,10 +33,10 @@ module.exports = {
                 .setRequired(true)),
 	async execute(interaction) {
         let name = interaction.options.getUser('user').globalName;
-        if (interaction.options.getUser('user').globalName === null) {
+        if (name === null) { // error handling for some discord names
             name = interaction.options.getUser('user').username;
         }
         kill(name);
-		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]);
+		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
 };

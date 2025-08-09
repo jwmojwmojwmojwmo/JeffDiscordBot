@@ -55,20 +55,20 @@ const negativemsgs = [
     "Uh-Uh!",
 ]
 
-const allmsgs = [positivemsgs, miscmsgs, negativemsgs];
+const allmsgs = [positivemsgs, miscmsgs, negativemsgs]; // sorts into three emotions
 
 
 function getMsg(index) {
-    return bold(allmsgs[index][Math.floor(Math.random() * allmsgs[index].length)]);
+    return bold(allmsgs[index][Math.floor(Math.random() * allmsgs[index].length)]); // chooses a given emotion 'index' and grabs random msg from emotion
 }
 
 function fullMsg() {
     let msg = "";
-    let index = Math.floor(Math.random() * 4);
-    if (index > 2) {
+    let index = Math.floor(Math.random() * 4); // randomise emotion
+    if (index > 2) { //higher chance for positive
         index = 0;
     }
-    const msgNum = Math.floor(Math.random() * 4) + 1;
+    const msgNum = Math.floor(Math.random() * 4) + 1; // randomise # of msgs
     for (let i = 0; i <= msgNum; i++) {
         msg = msg + "\n" + getMsg(index);
     }

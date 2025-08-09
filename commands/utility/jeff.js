@@ -3,12 +3,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assetsDir = path.join(__dirname, "..", "..", 'assets');
 
-let file = new AttachmentBuilder('assets/jeff.webp');
+let file = new AttachmentBuilder('assets/jeff.webp'); // placeholder
 
 let gallery = new MediaGalleryBuilder()
-    .addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://jeff.webp'));
+    .addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://jeff.webp')); // placeholder
 
-getFile();
+getFile(); // randomise before first call
 
 function getFile() {
     let fileName = "";
@@ -17,16 +17,13 @@ function getFile() {
             console.error('Failed to read assets folder:', err);
             return;
         }
-
-        if (files.length === 0) {
+        if (files.length === 0) { //shouldn't happen
             console.log('No files in assets folder.');
             return;
         }
-
-        const randomIndex = Math.floor(Math.random() * files.length);
-        fileName = files[randomIndex];
-        file = new AttachmentBuilder("assets/" + fileName);
-        gallery = new MediaGalleryBuilder().addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://' + fileName));
+        fileName = files[Math.floor(Math.random() * files.length)]; // grabs random filename from assets
+        file = new AttachmentBuilder("assets/" + fileName); // creates file from filename
+        gallery = new MediaGalleryBuilder().addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://' + fileName)); // creates discord media gallery from filename
     });
 }
 
@@ -37,6 +34,7 @@ module.exports = {
     async execute(interaction) {
         getFile();
         await interaction.reply({
+            // sends discord media gallery with created file
             components: [gallery],
             files: [file],
             flags: MessageFlags.IsComponentsV2,
