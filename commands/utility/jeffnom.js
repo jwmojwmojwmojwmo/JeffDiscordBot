@@ -12,16 +12,46 @@ const killMsg = [
     " got Jeff’ed. Nomfest initiated!"
   ];
 
-function kill(user_id, username) {
-    let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
-    // JSON data is stored as user_id: [username, killcount]
-    if (user_id in killData) {
-        killData[user_id][0] = username;
-        killData[user_id][1]++;
-    } else {
-        killData[user_id] = [username, 1];
+// function kill(user_id, username) {
+//     let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
+//     // JSON data is stored as user_id: [username, killcount]
+//     if (user_id in killData) {
+//         killData[user_id][0] = username;
+//         killData[user_id][1]++;
+//     } else {
+//         killData[user_id] = [username, 1];
+//     }
+//     fs.writeFileSync(killPath, JSON.stringify(killData, null, 1)); // writes JSON data
+// }
+
+async function kill_tbl(tbl, to_perish, the_culprit) {
+    //console.log(to_perish, the_culprit);
+    let victim = await tbl.findByPk(to_perish);
+    if (victim) {
+        victim.num_nommed += 1;
+        await victim.save();
     }
-    fs.writeFileSync(killPath, JSON.stringify(killData, null, 1)); // writes JSON data
+    else {
+        victim = await tbl.create({
+            username: to_perish,
+            num_nommed : 1
+        });
+        console.log(`New user created:`, victim.toJSON());
+    }
+    let bully = await tbl.findByPk(the_culprit);
+    if (bully) {
+        bully.num_queries += 1;
+        bully.num_namnamnam += 1;
+        await bully.save();
+    }
+    else {
+        bully = await tbl.create({
+            username: the_culprit,
+            num_namnamnam : 1,
+            num_queries : 1
+        });
+        console.log(`New user created:`, bully.toJSON());
+    }
 }
 
 module.exports = {
@@ -34,11 +64,15 @@ module.exports = {
                 .setDescription('Who you want to nom?')
                 .setRequired(true)),
 	async execute(interaction) {
+        const tbl = interaction.client.db.jeff;
+
         let name = interaction.options.getUser('user').globalName;
         if (name === null) { // error handling for some discord names
             name = interaction.options.getUser('user').username;
         }
-        kill(interaction.options.getUser('user'), name);
+
+        //kill(interaction.options.getUser('user'), name);\
+        await kill_tbl(tbl, name, interaction.user.username);
 		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
 };
