@@ -4,6 +4,7 @@ import { Sequelize, DataTypes } from 'sequelize';
 
 username VARCHAR(255) UNIQUE PRIMARY KEY,
 num_nommed INT DEFAULT 0
+num_namnamnam INT DEFAULT 0
 num_queries INT DEFAULT 0
 createdAt TIMESTAMP //auto-set values
 updatedAT TIMESTAMP //auto-set values
@@ -18,6 +19,10 @@ function jeff_defines(con, db_name) {
             unique: true
         },
         num_nommed: {
+            type: Sequelize.INTEGER,
+            defaultValue: 0
+        },
+        num_namnamnam: {
             type: Sequelize.INTEGER,
             defaultValue: 0
         },

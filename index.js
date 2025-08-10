@@ -28,6 +28,8 @@ for (const folder of commandFolders) {
 	}
 }
 
+client.db = { jeff }
+
 
 
 client.once(Events.ClientReady, readyClient => {

@@ -3,13 +3,22 @@ const fs = require('fs');
 const path = require("path");
 const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 
-function getKills(user) {
-    let killData = JSON.parse(fs.readFileSync(killPath));
-    if (user in killData) {
-        return killData[user][1];
-    } else {
-        return 0;
+// function getKills(user) {
+//     let killData = JSON.parse(fs.readFileSync(killPath));
+//     if (user in killData) {
+//         return killData[user][1];
+//     } else {
+//         return 0;
+//     }
+// }
+
+async function getKills(tbl, user) {
+    let user_obj = await tbl.findByPk(user);
+    if (user_obj) {
+        user_obj.num_queries += 1;
+        return user_obj.num_nommed;
     }
+    return 0;
 }
 
 module.exports = {
@@ -22,15 +31,17 @@ module.exports = {
                 .setDescription("User that you want to see number of noms of")
                 .setRequired(true)),
     async execute(interaction) {
+        const tbl = interaction.client.db.jeff;
         let name = interaction.options.getUser('nommed_user').globalName;
         if (name == null) { // error handling for some discord names
             name = interaction.options.getUser('nommed_user').username;
         }
         let msg = name;
-        if (getKills(interaction.options.getUser('nommed_user')) === 1) { // 1 time vs multiple times in message
+        
+        if (await getKills(tbl, name) === 1) { // 1 time vs multiple times in message
             msg = msg + " has been nommed 1 time!";
         } else {
-            msg = msg + " has been nommed " + getKills(interaction.options.getUser('nommed_user')) + " times!";
+            msg = msg + " has been nommed " + await (getKills(tbl, name)) + " times!";
         }
         await interaction.reply(msg);
     },
