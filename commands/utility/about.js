@@ -5,6 +5,6 @@ module.exports = {
 		.setName('about')
 		.setDescription('About the bot'),
 	async execute(interaction) {
-		await interaction.reply("Best Jeff bot ever! Jeff's the cutest and he deserves all the bots yes yes nom nom.\n\nMade by jwmo.\nAssets provided by Woofie and gavdingo.\nGithub link: https://github.com/jwmojwmojwmojwmo/JeffDiscordBot");
+		await interaction.reply("Best Jeff bot ever! Jeff's the cutest and he deserves all the bots yes yes nom nom.\n\nMade by jwmo.\nAssets provided by Woofie and gavdingo.\nSpecial thanks to CrabKevin for his contributions! \nGithub link: https://github.com/jwmojwmojwmojwmo/JeffDiscordBot");
     },
 };  
