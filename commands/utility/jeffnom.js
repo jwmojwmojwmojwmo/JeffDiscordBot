@@ -38,20 +38,20 @@ async function kill_tbl(tbl, to_perish, the_culprit) {
         });
         console.log(`New user created:`, victim.toJSON());
     }
-    let bully = await tbl.findByPk(the_culprit);
-    if (bully) {
-        bully.num_queries += 1;
-        bully.num_namnamnam += 1;
-        await bully.save();
-    }
-    else {
-        bully = await tbl.create({
-            username: the_culprit,
-            num_namnamnam : 1,
-            num_queries : 1
-        });
-        console.log(`New user created:`, bully.toJSON());
-    }
+    // let bully = await tbl.findByPk(the_culprit);
+    // if (bully) {
+    //     bully.num_queries += 1;
+    //     bully.num_namnamnam += 1;
+    //     await bully.save();
+    // }
+    // else {
+    //     bully = await tbl.create({
+    //         username: the_culprit,
+    //         num_namnamnam : 1,
+    //         num_queries : 1
+    //     });
+    //     console.log(`New user created:`, bully.toJSON());
+    // }
 }
 
 module.exports = {
