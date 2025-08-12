@@ -37,7 +37,8 @@ function jeff_defines(con, db_name) {
             defaultValue: 0 
         }
     }, {
-        tableName: db_name
+        tableName: db_name,
+        timestamps: false,
     })
     return tbl;
 }
