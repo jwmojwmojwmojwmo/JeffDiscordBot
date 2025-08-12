@@ -24,16 +24,17 @@ const killMsg = [
 //     fs.writeFileSync(killPath, JSON.stringify(killData, null, 1)); // writes JSON data
 // }
 
-async function kill_tbl(tbl, to_perish, the_culprit) {
+async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) {
     //console.log(to_perish, the_culprit);
-    let victim = await tbl.findByPk(to_perish);
+    let victim = await tbl.findByPk(to_perish_userid);
     if (victim) {
         victim.num_nommed += 1;
         await victim.save();
     }
     else {
         victim = await tbl.create({
-            username: to_perish,
+            userid: to_perish_userid,
+            username: to_perish_username,
             num_nommed : 1
         });
         console.log(`New user created:`, victim.toJSON());
@@ -72,7 +73,7 @@ module.exports = {
         }
 
         //kill(interaction.options.getUser('user'), name);\
-        await kill_tbl(tbl, name, interaction.user.username);
+        await kill_tbl(tbl, interaction.options.getUser('user').toString(), name, interaction.user.username); 
 		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
 };

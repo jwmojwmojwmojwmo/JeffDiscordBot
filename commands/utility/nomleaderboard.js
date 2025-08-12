@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, bold} = require('discord.js');
+const { SlashCommandBuilder, bold } = require('discord.js');
 const fs = require('fs');
 const path = require("path");
 const killPath = path.join(__dirname, "..", "..", 'killdata.json')
@@ -24,22 +24,26 @@ async function getTopFive(tbl) {
     const entries = results.map(p => p.toJSON()); //converts obj response w/ metadata to raw arr resp    
     entries.sort((a, b) => b.num_nommed - a.num_nommed); // sorts entries by value high to low
     const topFive = entries.slice(0, 5); // grabs first five entries
-    
+
     let leaderboard = "Top Users Nommed:\n";
     let rank = 1;
     for (const user of topFive) {
-        leaderboard = leaderboard + "\n#" + bold(rank) + " " + user.username + ": " + user.num_nommed + " times nommed!"
+        if (user.num_nommed === 1) {
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": 1 time nommed!"
+        } else {
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": " + user.num_nommed + " times nommed!"
+        }
         rank++;
     }
     return leaderboard;
 }
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('nomleaderboard')
-		.setDescription('Leaderboard of noms'),
-	async execute(interaction) {
+    data: new SlashCommandBuilder()
+        .setName('nomleaderboard')
+        .setDescription('Leaderboard of noms'),
+    async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-		await interaction.reply(await getTopFive(tbl));
+        await interaction.reply(await getTopFive(tbl));
     },
 };

@@ -12,11 +12,17 @@ updatedAT TIMESTAMP //auto-set values
 
 function jeff_defines(con, db_name) {
     const tbl = con.define(db_name, {
-        username: {
+        userid: {
             type: Sequelize.STRING,
-            primaryKey : true,
+            primaryKey: true,
             allowNull: false,
             unique: true
+        },
+        username: {
+            type: Sequelize.STRING,
+            // primaryKey : true,
+            // allowNull: false,
+            // unique: true
         },
         num_nommed: {
             type: Sequelize.INTEGER,

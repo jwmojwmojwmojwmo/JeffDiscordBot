@@ -12,8 +12,8 @@ const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 //     }
 // }
 
-async function getKills(tbl, user) {
-    let user_obj = await tbl.findByPk(user);
+async function getKills(tbl, user_id) {
+    let user_obj = await tbl.findByPk(user_id);
     if (user_obj) {
         user_obj.num_queries += 1;
         return user_obj.num_nommed;
@@ -37,11 +37,11 @@ module.exports = {
             name = interaction.options.getUser('nommed_user').username;
         }
         let msg = name;
-        
-        if (await getKills(tbl, name) === 1) { // 1 time vs multiple times in message
-            msg = msg + " has been nommed 1 time!";
+        let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').toString());
+        if (numkills === 1) { // 1 time vs multiple times in message
+            msg += " has been nommed 1 time!";
         } else {
-            msg = msg + " has been nommed " + await (getKills(tbl, name)) + " times!";
+            msg += " has been nommed " + numkills + " times!";
         }
         await interaction.reply(msg);
     },
