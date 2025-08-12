@@ -3,6 +3,7 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
 const { token } = require('./config.json');
 const { create_jeff_sqlite, initDB } = require('./sqlite_defs.js');
+    
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 

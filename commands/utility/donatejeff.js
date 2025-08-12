@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const fs = require('fs');
 const path = require("path");
 const donationPath = path.join(__dirname, "..", "..", 'donations.txt')
@@ -24,6 +24,6 @@ module.exports = {
                 .setRequired(true)),
     async execute(interaction) {
         addDonation(interaction.options.getAttachment('picture'), interaction.user.username.toString());
-        await interaction.reply({ content: "Thank you for your donation! Your picture will be reviewed and approved if deemed appropriate!", ephemeral: true });
+        await interaction.reply({ content: "Thank you for your donation! Your picture will be reviewed and approved if deemed appropriate!", flags: MessageFlags.Ephemeral });
     },
 };  
