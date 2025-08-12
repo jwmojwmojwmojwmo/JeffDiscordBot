@@ -1,7 +1,8 @@
 const { SlashCommandBuilder} = require('discord.js');
-const fs = require('fs');
-const path = require("path");
-const killPath = path.join(__dirname, "..", "..", 'killdata.json')
+// imports for old JSON file storage
+// const fs = require('fs');
+// const path = require("path");
+// const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 
 const killMsg = [
     " got gobbled by Jeff. Chomp chomp! NOM NOM!",
@@ -12,6 +13,7 @@ const killMsg = [
     " got Jeff’ed. Nomfest initiated!"
   ];
 
+  // old function for json file
 // function kill(user_id, username) {
 //     let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
 //     // JSON data is stored as user_id: [username, killcount]
@@ -24,7 +26,7 @@ const killMsg = [
 //     fs.writeFileSync(killPath, JSON.stringify(killData, null, 1)); // writes JSON data
 // }
 
-async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) {
+async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) { // may utilise the_culprit at a later time
     //console.log(to_perish, the_culprit);
     let victim = await tbl.findByPk(to_perish_userid);
     if (victim) {
@@ -39,6 +41,7 @@ async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) 
         });
         console.log(`New user created:`, victim.toJSON());
     }
+    // logging culprit, unneeded for now
     // let bully = await tbl.findByPk(the_culprit);
     // if (bully) {
     //     bully.num_queries += 1;
@@ -71,8 +74,7 @@ module.exports = {
         if (name === null) { // error handling for some discord names
             name = interaction.options.getUser('user').username;
         }
-
-        //kill(interaction.options.getUser('user'), name);\
+        //kill(interaction.options.getUser('user'), name); // old JSON kill function
         await kill_tbl(tbl, interaction.options.getUser('user').toString(), name, interaction.user.username); 
 		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },

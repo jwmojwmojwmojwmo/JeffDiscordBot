@@ -1,8 +1,10 @@
 const { SlashCommandBuilder, bold } = require('discord.js');
-const fs = require('fs');
-const path = require("path");
-const killPath = path.join(__dirname, "..", "..", 'killdata.json')
+// imports for old JSON file storage
+// const fs = require('fs');
+// const path = require("path");
+// const killPath = path.join(__dirname, "..", "..", 'killdata.json')
 
+// old function for JSON file 
 // function getTopFive() {
 //     let killData = JSON.parse(fs.readFileSync(killPath)); // read JSON file
 //     const entries = Object.entries(killData); //makes entries out of kill data

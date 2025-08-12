@@ -12,27 +12,27 @@ updatedAT TIMESTAMP //auto-set values
 
 function jeff_defines(con, db_name) {
     const tbl = con.define(db_name, {
-        userid: {
+        userid: { // discord user ID
             type: Sequelize.STRING,
             primaryKey: true,
             allowNull: false,
             unique: true
         },
-        username: {
+        username: { // discord username (prioritises display name but fallback to username)
             type: Sequelize.STRING,
             // primaryKey : true,
             // allowNull: false,
             // unique: true
         },
-        num_nommed: {
+        num_nommed: { // num of times user has been nommed
             type: Sequelize.INTEGER,
             defaultValue: 0
         },
-        num_namnamnam: {
+        num_namnamnam: { // num of times user has nommed someone
             type: Sequelize.INTEGER,
             defaultValue: 0
         },
-        num_queries: {
+        num_queries: { // num of times user has been fetched from database
             type: Sequelize.INTEGER,
             defaultValue: 0 
         }

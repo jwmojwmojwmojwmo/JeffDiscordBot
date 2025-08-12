@@ -57,11 +57,6 @@ const negativemsgs = [
 
 const allmsgs = [positivemsgs, miscmsgs, negativemsgs]; // sorts into three emotions
 
-
-function getMsg(index) {
-    return bold(allmsgs[index][Math.floor(Math.random() * allmsgs[index].length)]); // chooses a given emotion 'index' and grabs random msg from emotion
-}
-
 function fullMsg() {
     let msg = "";
     let index = Math.floor(Math.random() * 4); // randomise emotion
@@ -70,9 +65,14 @@ function fullMsg() {
     }
     const msgNum = Math.floor(Math.random() * 4) + 1; // randomise # of msgs
     for (let i = 0; i <= msgNum; i++) {
-        msg = msg + "\n" + getMsg(index);
+        msg += "\n" + getMsg(index);
     }
     return msg;
+}
+
+
+function getMsg(index) {
+    return bold(allmsgs[index][Math.floor(Math.random() * allmsgs[index].length)]); // chooses a given emotion 'index' and grabs random msg from emotion
 }
 
 module.exports = {
@@ -85,7 +85,11 @@ module.exports = {
                 .setDescription('What you want to say to Jeff')
                 .setRequired(true)),
     async execute(interaction) {
-        await interaction.reply(interaction.user.globalName + " says: " + interaction.options.getString('phrase') + "\n\n"
+        let name = interaction.user.globalName;
+        if (name == null) { // error handling for some discord names
+            name = interaction.user.username;
+        }
+        await interaction.reply(name + " says: " + interaction.options.getString('phrase') + "\n\n"
             + "Jeff says:" + fullMsg());
     },
 };
