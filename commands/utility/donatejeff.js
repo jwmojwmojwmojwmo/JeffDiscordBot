@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require("path");
 const donationPath = path.join(__dirname, "..", "..", 'donations.txt')
 
-function addDonation(picture, user) {
-    fs.appendFile(donationPath, "\n\n" + JSON.stringify({ url: picture.url }, null, 1) + ", " + user, (err) => {
+function addDonation(picture, user, userid) {
+    fs.appendFile(donationPath, "\n\n" + JSON.stringify({ url: picture.url }, null, 1) + ", " + user + "," + userid, (err) => {
         if (err) {
             console.error('Error writing file:', err);
             return;
@@ -23,7 +23,7 @@ module.exports = {
                 .setDescription('Picture of Jeff to donate')
                 .setRequired(true)),
     async execute(interaction) {
-        addDonation(interaction.options.getAttachment('picture'), interaction.user.username.toString());
+        addDonation(interaction.options.getAttachment('picture'), interaction.user.username.toString(), interaction.user.toString());
         await interaction.reply({ content: "Thank you for your donation! Your picture will be reviewed and approved if deemed appropriate!", flags: MessageFlags.Ephemeral });
     },
 };  
