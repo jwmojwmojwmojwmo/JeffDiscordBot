@@ -1,11 +1,18 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
-const { token } = require('./config.json');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials } = require('discord.js');
+const { token, ownerId } = require('./config.json');
 const { create_jeff_sqlite, initDB } = require('./sqlite_defs.js');
-    
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.DirectMessages,   // allow DMs
+        GatewayIntentBits.MessageContent    // allow reading DM content
+    ],
+    partials: [Partials.Channel] // needed so DM channels work
+});
 
 /*I presume this will be the area that we add file location constants, so I will add the database stuff here too*/
 client.commands = new Collection();
@@ -16,17 +23,17 @@ jeff = create_jeff_sqlite('jeff', 'user', 'password');
 
 //Runs on initialization
 for (const folder of commandFolders) {
-	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-	for (const file of commandFiles) {
-		const filePath = path.join(commandsPath, file);
-		const command = require(filePath);
-		if ('data' in command && 'execute' in command) {
-			client.commands.set(command.data.name, command);
-		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-		}
-	}
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file);
+        const command = require(filePath);
+        if ('data' in command && 'execute' in command) {
+            client.commands.set(command.data.name, command);
+        } else {
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        }
+    }
 }
 
 client.db = { jeff }
@@ -34,30 +41,48 @@ client.db = { jeff }
 
 
 client.once(Events.ClientReady, readyClient => {
-	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
-	const command = interaction.client.commands.get(interaction.commandName);
+    if (!interaction.isChatInputCommand()) return;
+    const command = interaction.client.commands.get(interaction.commandName);
 
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
-		return;
-	}
+    if (!command) {
+        console.error(`No command matching ${interaction.commandName} was found.`);
+        return;
+    }
 
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-		}
-	}
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+        } else {
+            await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+        }
+    }
 });
-(async() => {
-	await jeff.sync();
-	await client.login(token);
+
+// DM control
+client.on(Events.MessageCreate, async message => {
+
+    // Example secret command: !dm <userId> <message>
+    if (message.content.startsWith("!dm") && message.author.id === ownerId && message.channel.type === 1) {
+        const [cmd, userId, ...msgParts] = message.content.split(" ");
+        const msg = msgParts.join(" ");
+        try {
+            const user = await client.users.fetch(userId);
+            await user.send(msg);
+            await message.reply("DM sent!");
+        } catch (err) {
+            console.error(err);
+            await message.reply("Failed to DM.");
+        }
+    }
+});
+(async () => {
+    await jeff.sync();
+    await client.login(token);
 })();
