@@ -67,14 +67,12 @@ client.on(Events.InteractionCreate, async interaction => {
 
 // DM control
 client.on(Events.MessageCreate, async message => {
-
-    // Example secret command: !dm <userId> <message>
     if (message.content.startsWith("!dm") && message.author.id === ownerId && message.channel.type === 1) {
         const [cmd, userId, ...msgParts] = message.content.split(" ");
         const msg = msgParts.join(" ");
         try {
             const user = await client.users.fetch(userId);
-            await user.send(msg);
+            await user.send(msg + "\n\n Please note this bot is currently unable to receive replies.");
             await message.reply("DM sent!");
         } catch (err) {
             console.error(err);
