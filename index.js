@@ -74,8 +74,10 @@ client.on(Events.MessageCreate, async message => {
             const user = await client.users.fetch(userId);
             if (yesorno === "y") {
                 await user.send("Thanks for your submission to Jeff Bot! Your submission has been approved!\n\nPlease note this bot is currently unable to receive replies.");
-            } else {
+            } else if (yesorno === "n") {
                 await user.send("Thanks for your submission to Jeff Bot! Unfortunately, your submission was not approved for the following reason: \"" + msg + "\"\n\nPlease note this bot is currently unable to receive replies.");
+            } else {
+                await user.send(msg + "\n\nPlease note this bot is currently unable to receive replies.");
             }
             await message.reply("DM sent!");
         } catch (err) {
