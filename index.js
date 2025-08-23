@@ -67,12 +67,16 @@ client.on(Events.InteractionCreate, async interaction => {
 
 // DM control
 client.on(Events.MessageCreate, async message => {
-    if (message.content.startsWith("!dm") && message.author.id === ownerId && message.channel.type === 1) {
-        const [cmd, userId, ...msgParts] = message.content.split(" ");
+    if (message.content.startsWith("!dm") && message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
+        const [cmd, userId, yesorno, ...msgParts] = message.content.split(" ");
         const msg = msgParts.join(" ");
         try {
             const user = await client.users.fetch(userId);
-            await user.send(msg + "\n\n Please note this bot is currently unable to receive replies.");
+            if (yesorno === "y") {
+                await user.send("Thanks for your submission to Jeff Bot! Your submission has been approved!\n\nPlease note this bot is currently unable to receive replies.");
+            } else {
+                await user.send("Thanks for your submission to Jeff Bot! Unfortunately, your submission was not approved for the following reason: \"" + msg + "\"\n\nPlease note this bot is currently unable to receive replies.");
+            }
             await message.reply("DM sent!");
         } catch (err) {
             console.error(err);
