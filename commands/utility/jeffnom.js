@@ -60,6 +60,7 @@ async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) 
 }
 
 module.exports = {
+    cooldown: 5,
 	data: new SlashCommandBuilder()
 		.setName('jeffnom')
 		.setDescription('Nom somebody with Jeff')

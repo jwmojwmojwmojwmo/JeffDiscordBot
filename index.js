@@ -16,6 +16,7 @@ const client = new Client({
 
 /*I presume this will be the area that we add file location constants, so I will add the database stuff here too*/
 client.commands = new Collection();
+client.cooldowns = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 //Jeff is the name of the db. For sqlite applications the user and password are not integral to its function.
@@ -52,7 +53,27 @@ client.on(Events.InteractionCreate, async interaction => {
         console.error(`No command matching ${interaction.commandName} was found.`);
         return;
     }
+    const { cooldowns } = interaction.client;
 
+    if (!cooldowns.has(command.data.name)) {
+        cooldowns.set(command.data.name, new Collection());
+    }
+
+    const now = Date.now();
+    const timestamps = cooldowns.get(command.data.name);
+    const defaultCooldownDuration = 3;
+    const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
+
+    if (timestamps.has(interaction.user.id)) {
+        const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+
+        if (now < expirationTime) {
+            const expiredTimestamp = Math.round(expirationTime / 1000);
+            return interaction.reply({ content: `\`${command.data.name}\` is on a cooldown. You can use it again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+        }
+    }
+	timestamps.set(interaction.user.id, now);
+	setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
     try {
         await command.execute(interaction);
     } catch (error) {
