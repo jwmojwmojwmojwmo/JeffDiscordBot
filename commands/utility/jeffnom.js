@@ -30,6 +30,7 @@ async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) 
     //console.log(to_perish, the_culprit);
     let victim = await tbl.findByPk(to_perish_userid);
     if (victim) {
+        victim.username = to_perish_username;
         victim.num_nommed += 1;
         await victim.save();
     }
@@ -69,11 +70,7 @@ module.exports = {
                 .setRequired(true)),
 	async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-
-        let name = interaction.options.getUser('user').globalName;
-        if (name === null) { // error handling for some discord names
-            name = interaction.options.getUser('user').username;
-        }
+        let name = interaction.options.getMember('user').displayName;
         //kill(interaction.options.getUser('user'), name); // old JSON kill function
         await kill_tbl(tbl, interaction.options.getUser('user').toString(), name, interaction.user.username); 
 		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg

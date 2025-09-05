@@ -34,11 +34,7 @@ module.exports = {
                 .setRequired(true)),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-        let name = interaction.options.getUser('nommed_user').globalName;
-        if (name == null) { // error handling for some discord names
-            name = interaction.options.getUser('nommed_user').username;
-        }
-        let msg = name;
+        let msg = interaction.options.getMember('nommed_user').displayName;
         let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').toString());
         if (numkills === 1) { // 1 time vs multiple times in message
             msg += " has been nommed 1 time!";
