@@ -22,7 +22,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 //Jeff is the name of the db. For sqlite applications the user and password are not integral to its function.
 jeff = create_jeff_sqlite('jeff', 'user', 'password');
 
-//Runs on initialization
+//Runs on initialization, grabs all commands in commands folder
 for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -39,13 +39,12 @@ for (const folder of commandFolders) {
 
 client.db = { jeff }
 
-
-
 client.once(Events.ClientReady, readyClient => {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
+    // checks if slash command is slash command and exists
     if (!interaction.isChatInputCommand()) return;
     const command = interaction.client.commands.get(interaction.commandName);
 
@@ -53,6 +52,7 @@ client.on(Events.InteractionCreate, async interaction => {
         console.error(`No command matching ${interaction.commandName} was found.`);
         return;
     }
+    // cooldown handling
     const { cooldowns } = interaction.client;
 
     if (!cooldowns.has(command.data.name)) {
@@ -74,12 +74,14 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 	timestamps.set(interaction.user.id, now);
 	setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+
+    // runs command according to command file with error handling
     try {
         await command.execute(interaction);
     } catch (error) {
         console.error(error);
         if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+            await interaction.followUp({ content: 'Something unexpected happened while interacting with this command.', flags: MessageFlags.Ephemeral });
         } else {
             await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
         }
