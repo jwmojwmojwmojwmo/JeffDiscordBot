@@ -85,8 +85,10 @@ module.exports = {
                 .setDescription('What you want to say to Jeff')
                 .setRequired(true)),
     async execute(interaction) {
-        let name = interaction.user.globalName;
-        if (name == null) { // error handling for some discord names
+        let name = "test";
+        try {
+            name = interaction.member.displayName;
+        } catch (err) {
             name = interaction.user.username;
         }
         await interaction.reply(name + " says: " + interaction.options.getString('phrase') + "\n\n"

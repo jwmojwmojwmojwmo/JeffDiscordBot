@@ -1,4 +1,4 @@
-const { SlashCommandBuilder} = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 // imports for old JSON file storage
 // const fs = require('fs');
 // const path = require("path");
@@ -11,9 +11,9 @@ const killMsg = [
     " was caught by Jeff in his jaws. Crunch crunch!",
     " vanished... and Jeff’s tummy says thanks! NOMNOM!",
     " got Jeff’ed. Nomfest initiated!"
-  ];
+];
 
-  // old function for json file
+// old function for json file
 // function kill(user_id, username) {
 //     let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
 //     // JSON data is stored as user_id: [username, killcount]
@@ -38,7 +38,7 @@ async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) 
         victim = await tbl.create({
             userid: to_perish_userid,
             username: to_perish_username,
-            num_nommed : 1
+            num_nommed: 1
         });
         console.log(`New user created:`, victim.toJSON());
     }
@@ -61,19 +61,22 @@ async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) 
 
 module.exports = {
     cooldown: 5,
-	data: new SlashCommandBuilder()
-		.setName('jeffnom')
-		.setDescription('Nom somebody with Jeff')
+    data: new SlashCommandBuilder()
+        .setName('jeffnom')
+        .setDescription('Nom somebody with Jeff')
         .addUserOption(option =>
             option
                 .setName('user')
                 .setDescription('Who you want to nom?')
                 .setRequired(true)),
-	async execute(interaction) {
+    async execute(interaction) {
+        if (!interaction.guild) {
+            return interaction.reply({ content: "This command can't be used in DMs.", flags: MessageFlags.Ephemeral })
+        }
         const tbl = interaction.client.db.jeff;
         let name = interaction.options.getMember('user').displayName;
         //kill(interaction.options.getUser('user'), name); // old JSON kill function
-        await kill_tbl(tbl, interaction.options.getUser('user').toString(), name, interaction.user.username); 
-		await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
+        await kill_tbl(tbl, interaction.options.getUser('user').toString(), name, interaction.user.username);
+        await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
 };
