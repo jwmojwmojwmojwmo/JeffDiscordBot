@@ -40,7 +40,7 @@ module.exports = {
         } catch (err) {
             msg = interaction.options.getUser('nommed_user').username;
         }
-        let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').toString());
+        let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').id);
         if (numkills === 1) { // 1 time vs multiple times in message
             msg += " has been nommed 1 time!";
         } else {

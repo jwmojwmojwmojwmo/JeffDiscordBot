@@ -27,13 +27,46 @@ async function getTopFive(tbl) {
     entries.sort((a, b) => b.num_nommed - a.num_nommed); // sorts entries by value high to low
     const topFive = entries.slice(0, 5); // grabs first five entries
 
-    let leaderboard = "Top Users Nommed:\n";
+    let leaderboard = "Top Global Users Nommed:\n";
     let rank = 1;
     for (const user of topFive) {
         if (user.num_nommed === 1) {
-            leaderboard += "\n#" + bold(rank) + " " + user.username + ": 1 time nommed!"
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": 1 time nommed!";
         } else {
-            leaderboard += "\n#" + bold(rank) + " " + user.username + ": " + user.num_nommed + " times nommed!"
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": " + user.num_nommed + " times nommed!";
+        }
+        rank++;
+    }
+    return leaderboard;
+}
+
+async function getTopFiveServer(tbl, guild) {
+    const results = await tbl.findAll({
+        attributes: ['userid', 'username', 'num_nommed'],
+    })
+    const entries = results.map(p => p.toJSON());
+    entries.sort((a, b) => b.num_nommed - a.num_nommed);
+    let topFive = [];
+    for (const entry of entries) {
+        try {
+            const member = await guild.members.fetch(entry.userid);
+            if (member) {
+                topFive.push(entry);
+            }
+        } catch (err) {
+            //pass
+        }
+        if (topFive.length === 5) {
+            break;
+        }
+    }
+    let leaderboard = "Top Server Users Nommed:\n";
+    let rank = 1;
+    for (const user of topFive) {
+        if (user.num_nommed === 1) {
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": 1 time nommed!";
+        } else {
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": " + user.num_nommed + " times nommed!";
         }
         rank++;
     }
@@ -43,9 +76,21 @@ async function getTopFive(tbl) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('nomleaderboard')
-        .setDescription('Leaderboard of noms'),
+        .setDescription('Leaderboard of noms')
+        .addStringOption(option =>
+            option.setName('scope')
+                .setDescription('Choose global or server leaderboard')
+                .setRequired(true)
+                .addChoices(
+                    { name: 'Global', value: 'global' },
+                    { name: 'Server', value: 'server' }
+                )),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-        await interaction.reply(await getTopFive(tbl));
+        await interaction.reply("Fetching...");
+        if (interaction.options.getString('scope') === 'global') {
+            return await interaction.editReply(await getTopFive(tbl));
+        }
+        await interaction.editReply(await getTopFiveServer(tbl, interaction.guild));
     },
 };
