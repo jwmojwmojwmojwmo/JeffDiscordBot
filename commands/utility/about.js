@@ -18,6 +18,7 @@ const aboutEmbed = new EmbedBuilder()
     //.setImage("https://i.imgur.com/ntg31Zx.jpeg")
     .setTimestamp()
     .setFooter({ text: 'Jeff Bot by jwmo, all right reserved', iconURL: 'https://i.imgur.com/e0xvSJ9.png' });
+    
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('about')
