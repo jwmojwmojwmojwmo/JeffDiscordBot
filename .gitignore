@@ -2,3 +2,4 @@ config.json
 killdata.json
 jeff.sqlite
 donations.txt
+sqlite_defs.js
