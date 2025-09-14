@@ -49,6 +49,7 @@ function jeff_defines(con, db_name) {
 }
 
 /* Generic sequalize connection protocol */
+// arguments not passed as not necessary (kevin's fault for adding them)
 function create_sqlite_con (db_name, user_name, host) {
     try {
         sequelize.authenticate();
