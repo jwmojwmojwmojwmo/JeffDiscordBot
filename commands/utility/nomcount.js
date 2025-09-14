@@ -14,12 +14,19 @@ const { SlashCommandBuilder } = require('discord.js');
 //     }
 // }
 
-async function getKills(tbl, user_id) {
+async function getKills(tbl, user_id, username) {
     let user_obj = await tbl.findByPk(user_id);
     if (user_obj) {
-        user_obj.num_queries += 1;
+        user_obj.username = username;
+        await user_obj.save();
         return user_obj.num_nommed;
     }
+    const newUser = await tbl.create({
+        userid: user_id,
+        username: username,
+        num_nommed: 0
+    });
+    console.log(`New user created:`, newUser.toJSON());
     return 0;
 }
 
@@ -34,13 +41,13 @@ module.exports = {
                 .setRequired(true)),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-        let msg = "test";
+        let msg;
         try {
             msg = interaction.options.getMember('nommed_user').displayName;
         } catch (err) {
             msg = interaction.options.getUser('nommed_user').username;
         }
-        let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').id);
+        let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').id, msg);
         if (numkills === 1) { // 1 time vs multiple times in message
             msg += " has been nommed 1 time!";
         } else {

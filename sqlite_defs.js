@@ -1,15 +1,12 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import Sequelize from 'sequelize';
 
-/* Jeff DB definitions 
+const sequelize = new Sequelize( {
+    dialect: 'sqlite',
+    logging: false,
+    storage: 'jeff.sqlite'
+});
 
-username VARCHAR(255) UNIQUE PRIMARY KEY,
-num_nommed INT DEFAULT 0
-num_namnamnam INT DEFAULT 0
-num_queries INT DEFAULT 0
-createdAt TIMESTAMP //auto-set values
-updatedAT TIMESTAMP //auto-set values
-*/
-
+// Jeff DB definitions 
 function jeff_defines(con, db_name) {
     const tbl = con.define(db_name, {
         userid: { // discord user ID
@@ -35,6 +32,14 @@ function jeff_defines(con, db_name) {
         num_queries: { // num of times user has been fetched from database
             type: Sequelize.INTEGER,
             defaultValue: 0 
+        },
+        karma: { // total num of karma (lose by getting spit on, gain by getting bubbled)
+            type: Sequelize.INTEGER,
+            defaultValue: 10 
+        },
+        energy: { // total energy, used up by getting spit on/bubbled on
+            type: Sequelize.INTEGER,
+            defaultValue: 100
         }
     }, {
         tableName: db_name,
@@ -46,12 +51,6 @@ function jeff_defines(con, db_name) {
 /* Generic sequalize connection protocol */
 function create_sqlite_con (db_name, user_name, host) {
     try {
-        const sequelize = new Sequelize(db_name, user_name, 'password', {
-            host: host,
-            dialect: 'sqlite',
-            logging: false,
-            storage:db_name + '.sqlite'
-        });
         sequelize.authenticate();
         return sequelize;
     }

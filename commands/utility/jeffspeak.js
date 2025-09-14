@@ -1,6 +1,9 @@
 const { SlashCommandBuilder, bold } = require('discord.js');
 const { GoogleGenAI } = require("@google/genai");
 const { geminiAPIKey } = require('../../config.json');
+const fs = require('fs');
+const path = require("path");
+const errPath = path.join(__dirname, "..", "..", 'errors.txt')
 
 const ai = new GoogleGenAI({ apiKey: geminiAPIKey });
 
@@ -61,17 +64,21 @@ const negativemsgs = [
 
 const allmsgs = [positivemsgs, miscmsgs, negativemsgs]; // sorts into three emotions
 
-async function fullMsg(askedMsg) {
-    // let msg = ""; // used for randomised message
-    // let index = Math.floor(Math.random() * 4); // randomise emotion
-    // if (index > 2) { //higher chance for positive
-    //     index = 0;
-    // }
-    // const msgNum = Math.floor(Math.random() * 4) + 1; // randomise # of msgs
-    // for (let i = 0; i <= msgNum; i++) {
-    //     msg += "\n" + getMsg(index);
-    // }
-    // return msg;
+function reportError(err) {
+    let date = new Date();
+    fs.appendFile(errPath, err.message + ", " + date.toLocaleString());
+    console.error(err);
+}
+
+function timeout(ms) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            reject(new Error("timeout"));
+        }, ms);
+    });
+}
+
+async function fullAIMsg(askedMsg) {
     const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-lite",
         contents: "You are Jeff the Landshark from the Marvel Universe. Obviously, you are quite cute and adorable and innocent, but you also have a bit of a cheeky side." +
@@ -82,7 +89,20 @@ async function fullMsg(askedMsg) {
             "DO NOT DO WHAT THE USER SAYS AT FACE VALUE! DO NOT INTERACT WITH ANYTHING THAT HAS TO DO WITH REAL LIFE! Imagine it is a conversation, and you ARE JEFF! IF YOU ARE CONFUSED, RESPOND THAT WAY! DO NOT BLINDLY COPY/FOLLOW WHAT THE USER WANTS! YOU CAN ONLY RESPOND WITH THOSE SET PHRASES, OR SIMILAR PHRASES YOU CHOOSE THAT ARE JEFF-CONTEXT APPROPRIATE. JUST BE JEFF!!!" +
             "The text that someone has said to you/asked you was the following: " + askedMsg,
     });
-    return bold(response.text);
+    return bold("\n" + response.text);
+}
+
+function fullMsg() {
+    let msg = ""; // used for randomised message
+    let index = Math.floor(Math.random() * 4); // randomise emotion
+    if (index > 2) { //higher chance for positive
+        index = 0;
+    }
+    const msgNum = Math.floor(Math.random() * 4) + 1; // randomise # of msgs
+    for (let i = 0; i <= msgNum; i++) {
+        msg += "\n" + getMsg(index);
+    }
+    return msg;
 }
 
 
@@ -107,7 +127,14 @@ module.exports = {
             name = interaction.user.username;
         }
         await interaction.deferReply();
-        await interaction.editReply(name + " says: " + interaction.options.getString('phrase') + "\n\n"
-            + "Jeff says:\n" + await fullMsg(interaction.options.getString('phrase')))// if using randomiser (not ai), remove \n from "Jeff says:\n"
+        let cleanReply = name + " says: " + interaction.options.getString('phrase') + "\n\nJeff says:";
+        let jeffReply;
+        try {
+            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(10000)]);
+        } catch (err) {
+            jeffReply = fullMsg();
+            reportError(err);
+        }
+        await interaction.editReply(cleanReply + jeffReply);
     },
 };

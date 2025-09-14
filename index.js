@@ -3,6 +3,7 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials } = require('discord.js');
 const { token, ownerId } = require('./config.json');
 const { create_jeff_sqlite, initDB } = require('./sqlite_defs.js');
+const errPath = 'errors.txt';
 
 
 const client = new Client({
@@ -35,6 +36,12 @@ for (const folder of commandFolders) {
             console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
     }
+}
+
+function reportError(err) {
+    let date = new Date();
+    fs.appendFile(errPath, err.message + ", " + date.toLocaleString());
+    console.error(err);
 }
 
 client.db = { jeff }
@@ -79,7 +86,7 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
         await command.execute(interaction);
     } catch (error) {
-        console.error(error);
+        reportError(error);
         if (error.code === 50035) {
             await interaction.reply({ content: "Your message is too long! Discord messages must be under 2000 characters.", flags: MessageFlags.Ephemeral });
         }
@@ -107,12 +114,12 @@ client.on(Events.MessageCreate, async message => {
             }
             await message.reply("DM sent!");
         } catch (err) {
-            console.error(err);
+            reportError(err);
             await message.reply("Failed to DM.");
         }
     }
 });
 (async () => {
-    await jeff.sync();
+    await jeff.sync({alter: true});
     await client.login(token);
 })();

@@ -1,5 +1,7 @@
 config.json
 killdata.json
 jeff.sqlite
+jeffbackup.sqlite
 donations.txt
 sqlite_defs.js
+errors.txt
