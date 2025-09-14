@@ -11,7 +11,7 @@ const statusEmbed = new EmbedBuilder()
     .setThumbnail("https://i.imgur.com/ntg31Zx.jpeg")
     .addFields(
         { name: 'Status: Online - occasional short outages anticipated due to updating the bot', value: `Planned to go offline <t:${timea}:R>, planned to come back online <t:${timeb}:R> (times are approximate)` },
-        { name: 'Latest update: v0.72b', value: 'Changes: \nQueries Google Gemini API when doing /jeffspeak to get a much more accurate response. No randomisation needed! This may be buggy, please report any issues in the GitHub! (I can\'t tell if this API is free I sure hope it is)\n Also, /daily added! What does it give? Well...I suppose we shall find out...' },
+        { name: 'Latest update: v0.73b', value: 'Changes: \nQueries Google Gemini API when doing /jeffspeak to get a much more accurate response. No randomisation needed! This may be buggy, please report any issues in the GitHub! (I can\'t tell if this API is free I sure hope it is)\n Also, /daily added! What does it give? Well...I suppose we shall find out...' },
         { name: 'Next update sneak peek: v0.8b', value: "Planning to add /spit and /bubble...details will be revealed at a later date." },
         { name: '\u200B', value: '\u200B', inline: true }, //empty field
         { name: '\u200B', value: `Updated at <t:${now}:T>` },

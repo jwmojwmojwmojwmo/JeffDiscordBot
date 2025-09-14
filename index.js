@@ -40,7 +40,7 @@ for (const folder of commandFolders) {
 
 function reportError(err) {
     let date = new Date();
-    fs.appendFile(errPath, err.message + ", " + date.toLocaleString());
+    fs.appendFileSync(errPath, err.stack + ", " + date.toLocaleString() + "\n\n");
     console.error(err);
 }
 

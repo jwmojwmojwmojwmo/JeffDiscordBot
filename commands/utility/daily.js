@@ -1,18 +1,18 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 
+//returns -1 if success, otherwise returns unix time until next daily
 async function getDaily(tbl, userid, username) {
     let user = await tbl.findByPk(userid);
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     if (user) {
-        const lastDaily = user.last_daily;
         user.username = username;
-        await victim.save();
-        if (now - lastDaily < 24 * 60 * 60 * 1000) {  // Less than 24 hours since last claim
-            return false;
+        await user.save();
+        if (user.last_daily >= today) {
+            const nextClaim = new Date(today);
+            nextClaim.setDate(nextClaim.getDate() + 1); // tomorrow midnight
+            return Math.floor(nextClaim.getTime() / 1000);
         }
-        user.energy += 10;  // placeholder
-        user.last_daily = now;
-        await victim.save();
     }
     else {
         user = await tbl.create({
@@ -21,11 +21,11 @@ async function getDaily(tbl, userid, username) {
             num_nommed: 0
         });
         console.log(`New user created:`, user.toJSON());
-        user.energy += 10;  // placeholder
-        user.last_daily = now;
-        await victim.save();
     }
-    return true;
+    user.karma += 1;  // placeholder
+    user.last_daily = today;
+    await user.save();
+    return -1; // success
 }
 
 module.exports = {
@@ -40,10 +40,11 @@ module.exports = {
         } catch (err) {
             name = interaction.user.username;
         }
-        if (await getDaily(tbl, interaction.options.getUser('user').id, name)) {
-            await interaction.reply("Thanks for checking in! You have recieved your daily dose of energy!");
+        let success = await getDaily(tbl, interaction.user.id, name);
+        if (success === -1) {
+            await interaction.reply({ content: "Thanks for checking in! You have recieved your daily!", flags: MessageFlags.Ephemeral });
         } else {
-            await interaction.reply("You’ve already claimed your daily today!");
+            await interaction.reply({ content: `You’ve already claimed your daily today! Next claim <t:${success}:R>`, flags: MessageFlags.Ephemeral });
         }
     },
 };
