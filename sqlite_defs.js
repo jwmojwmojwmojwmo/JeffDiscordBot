@@ -37,9 +37,12 @@ function jeff_defines(con, db_name) {
             type: Sequelize.INTEGER,
             defaultValue: 10 
         },
-        energy: { // total energy, used up by getting spit on/bubbled on
+        energy: { // total energy, used up by spitting/bubbling
             type: Sequelize.INTEGER,
             defaultValue: 100
+        },
+        last_daily: { // date of last time user claimed daily
+            type: Sequelize.DATE
         }
     }, {
         tableName: db_name,

@@ -120,7 +120,7 @@ module.exports = {
                 .setDescription('What you want to say to Jeff')
                 .setRequired(true)),
     async execute(interaction) {
-        let name = "test";
+        let name;
         try {
             name = interaction.member.displayName;
         } catch (err) {
