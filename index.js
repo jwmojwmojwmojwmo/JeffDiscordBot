@@ -72,14 +72,17 @@ client.on(Events.InteractionCreate, async interaction => {
             return interaction.reply({ content: `\`${command.data.name}\` is on a cooldown. You can use it again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
         }
     }
-	timestamps.set(interaction.user.id, now);
-	setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+    timestamps.set(interaction.user.id, now);
+    setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 
     // runs command according to command file with error handling
     try {
         await command.execute(interaction);
     } catch (error) {
         console.error(error);
+        if (error.code === 50035) {
+            await interaction.reply({ content: "Your message is too long! Discord messages must be under 2000 characters.", flags: MessageFlags.Ephemeral });
+        }
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({ content: 'Something unexpected happened while interacting with this command.', flags: MessageFlags.Ephemeral });
         } else {
