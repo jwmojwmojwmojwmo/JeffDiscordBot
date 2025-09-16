@@ -2,12 +2,19 @@ const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const fs = require('fs');
 const path = require("path");
 const donationPath = path.join(__dirname, "..", "..", 'donations.txt')
+const errPath = path.join(__dirname, "..", "..", 'errors.txt')
+
+function reportError(err) {
+    let date = new Date();
+    fs.appendFileSync(errPath, err.stack + ", " + date.toLocaleString() + "\n\n");
+    console.error(err);
+}
 
 function addDonation(picture, user, userid) {
     let date = new Date();
     fs.appendFile(donationPath, "\n\n" + JSON.stringify({ url: picture.url }, null, 1) + ", " + user + ", " + userid + ", " + date.toLocaleString(), (err) => {
         if (err) {
-            console.error('Error writing file:', err);
+            reportError(err);
             return;
         }
         console.log('File written successfully! ' + date.toLocaleString());

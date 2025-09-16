@@ -99,6 +99,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 // DM control
+// !dm [userID] [y/n/e] [msg]
 client.on(Events.MessageCreate, async message => {
     if (message.content.startsWith("!dm") && message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
         const [cmd, userId, yesorno, ...msgParts] = message.content.split(" ");

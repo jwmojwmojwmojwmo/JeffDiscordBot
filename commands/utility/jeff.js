@@ -2,6 +2,7 @@ const { AttachmentBuilder, MediaGalleryBuilder, MessageFlags, SlashCommandBuilde
 const fs = require('node:fs');
 const path = require('node:path');
 const assetsDir = path.join(__dirname, "..", "..", 'assets');
+const errPath = path.join(__dirname, "..", "..", 'errors.txt')
 
 let file = new AttachmentBuilder('assets/jeff.webp'); // placeholder
 
@@ -10,11 +11,17 @@ let gallery = new MediaGalleryBuilder()
 
 getFile(); // randomise before first call
 
+function reportError(err) {
+    let date = new Date();
+    fs.appendFileSync(errPath, err.stack + ", " + date.toLocaleString() + "\n\n");
+    console.error(err);
+}
+
 function getFile() {
     let fileName = "";
     fs.readdir(assetsDir, (err, files) => {
         if (err) {
-            console.error('Failed to read assets folder:', err);
+            reportError(err);
             return;
         }
         if (files.length === 0) { //shouldn't happen

@@ -3,7 +3,7 @@ const path = require("path");
 const assetsDir = path.join(__dirname, "..", "..", 'assets');
 
 const aboutEmbed = new EmbedBuilder()
-    .setTitle('Jeff Discord Bot v0.71b')
+    .setTitle('Jeff Discord Bot v0.73b')
     .setURL('https://luwu.pythonanywhere.com/')
     .setAuthor({ name: 'jwmo', iconURL: 'https://i.imgur.com/e0xvSJ9.png', url: 'https://luwu.pythonanywhere.com/' })
     .setDescription("Best Jeff bot ever! Jeff's the cutest and he deserves all the bots yes yes nom nom. Use the Wiki on the linked GitHub page to see what the commands do, or just play around with Jeff hehe. " +

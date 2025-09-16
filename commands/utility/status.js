@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
 
-const offlineinhours = 1; // change this value for time until bot goes offline (in hours from time when commands deployed)
+const offlineinhours = 3; // change this value for time until bot goes offline (in hours from time when commands deployed)
 const onlineinhours = 12; // change this value for time until bot comes back online (in hours after bot goes offline)
 
 const now = Math.floor(Date.now() / 1000);
