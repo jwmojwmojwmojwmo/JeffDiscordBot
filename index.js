@@ -5,7 +5,6 @@ const { token, ownerId } = require('./config.json');
 const { create_jeff_sqlite, initDB } = require('./sqlite_defs.js');
 const errPath = 'errors.txt';
 
-
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -121,6 +120,6 @@ client.on(Events.MessageCreate, async message => {
     }
 });
 (async () => {
-    await jeff.sync({alter: true});
+    await jeff.sync();
     await client.login(token);
 })();

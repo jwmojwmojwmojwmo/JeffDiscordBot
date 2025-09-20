@@ -32,26 +32,35 @@ async function getKills(tbl, user_id, username) {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('nomcount')
-        .setDescription('Provides information about the number of noms.')
+        .setName('stats')
+        .setDescription('Provides information of a user\'s stats.')
         .addUserOption(option =>
             option
-                .setName('nommed_user')
-                .setDescription("User that you want to see number of noms of")
-                .setRequired(true)),
+                .setName('user')
+                .setDescription("User that you want to see stats of")
+                .setRequired(true))
+        .addStringOption(option =>
+            option.setName('stat_type')
+                .setDescription('Type of stat you want to see')
+                .setRequired(true)
+                .addChoices(
+                    { name: 'nom_count', value: 'nomcount' }
+                )),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
         let msg;
         try {
-            msg = interaction.options.getMember('nommed_user').displayName;
+            msg = interaction.options.getMember('user').displayName;
         } catch (err) {
-            msg = interaction.options.getUser('nommed_user').username;
+            msg = interaction.options.getUser('user').username;
         }
-        let numkills = await getKills(tbl, interaction.options.getUser('nommed_user').id, msg);
-        if (numkills === 1) { // 1 time vs multiple times in message
-            msg += " has been nommed 1 time!";
-        } else {
-            msg += " has been nommed " + numkills + " times!";
+        if (interaction.options.getString('stat_type') === 'nomcount') {
+            let numkills = await getKills(tbl, interaction.options.getUser('user').id, msg);
+            if (numkills === 1) { // 1 time vs multiple times in message
+                msg += " has been nommed 1 time!";
+            } else {
+                msg += " has been nommed " + numkills + " times!";
+            }
         }
         await interaction.reply(msg);
     },

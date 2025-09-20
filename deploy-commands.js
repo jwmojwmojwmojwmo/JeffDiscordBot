@@ -2,6 +2,13 @@ const { REST, Routes } = require('discord.js');
 const { clientId, guildId, token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
+const errPath = 'errors.txt';
+
+function reportError(err) {
+    let date = new Date();
+    fs.appendFileSync(errPath, err.stack + ", " + date.toLocaleString() + "\n\n");
+    console.error(err);
+}
 
 const commands = [];
 // Grab all the command folders from the commands directory you created earlier
@@ -40,7 +47,6 @@ const rest = new REST().setToken(token);
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
-		// And of course, make sure you catch and log any errors!
-		console.error(error);
+		reportError(error);
 	}
 })();
