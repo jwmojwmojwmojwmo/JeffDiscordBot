@@ -70,6 +70,7 @@ function reportError(err) {
     console.error(err);
 }
 
+// returns an error after time in ms
 function timeout(ms) {
     return new Promise(function(resolve, reject) {
         setTimeout(function() {
@@ -78,6 +79,7 @@ function timeout(ms) {
     });
 }
 
+// jeff msg according to google gemini
 async function fullAIMsg(askedMsg) {
     const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-lite",
@@ -92,6 +94,7 @@ async function fullAIMsg(askedMsg) {
     return bold("\n" + response.text);
 }
 
+// jeff msg according to randomisation (fallback)
 function fullMsg() {
     let msg = ""; // used for randomised message
     let index = Math.floor(Math.random() * 4); // randomise emotion
@@ -130,9 +133,9 @@ module.exports = {
         let cleanReply = name + " says: " + interaction.options.getString('phrase') + "\n\nJeff says:";
         let jeffReply;
         try {
-            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(10000)]);
+            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(10000)]); // awaits AI message, times out and throws err after 10s
         } catch (err) {
-            jeffReply = fullMsg();
+            jeffReply = fullMsg(); // fallback to non-ai method of getting reply
             reportError(err);
         }
         await interaction.editReply(cleanReply + jeffReply);

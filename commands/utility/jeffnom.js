@@ -1,9 +1,4 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
-// imports for old JSON file storage
-// const fs = require('fs');
-// const path = require("path");
-// const killPath = path.join(__dirname, "..", "..", 'killdata.json')
-
 const killMsg = [
     " got gobbled by Jeff. Chomp chomp! NOM NOM!",
     " was just swallowed by Jeff whole. Slurp slurp!",
@@ -12,19 +7,6 @@ const killMsg = [
     " vanished... and Jeff’s tummy says thanks! NOMNOM!",
     " got Jeff’ed. Nomfest initiated!"
 ];
-
-// old function for json file
-// function kill(user_id, username) {
-//     let killData = JSON.parse(fs.readFileSync(killPath)); // reads JSON data
-//     // JSON data is stored as user_id: [username, killcount]
-//     if (user_id in killData) {
-//         killData[user_id][0] = username;
-//         killData[user_id][1]++;
-//     } else {
-//         killData[user_id] = [username, 1];
-//     }
-//     fs.writeFileSync(killPath, JSON.stringify(killData, null, 1)); // writes JSON data
-// }
 
 async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) { // may utilise the_culprit at a later time
     //console.log(to_perish, the_culprit);

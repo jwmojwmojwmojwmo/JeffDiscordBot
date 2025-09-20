@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, bold } = require('discord.js');
+const { SlashCommandBuilder, bold, MessageFlags } = require('discord.js');
 const statLabels = {
     num_nommed: "Nom Count",
     energy: "Energy",
@@ -63,6 +63,9 @@ module.exports = {
                     { name: 'Server', value: 'server' }
                 )),
     async execute(interaction) {
+        if (!interaction.guild) {
+            return interaction.reply({ content: "This command can't be used in DMs.", flags: MessageFlags.Ephemeral })
+        }
         const tbl = interaction.client.db.jeff;
         await interaction.reply("Fetching...");
         let reply;

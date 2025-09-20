@@ -1,10 +1,17 @@
 import Sequelize from 'sequelize';
+const errPath = 'errors.txt';
 
 const sequelize = new Sequelize( {
     dialect: 'sqlite',
     logging: false,
     storage: 'jeff.sqlite'
 });
+
+function reportError(err) {
+    let date = new Date();
+    fs.appendFileSync(errPath, err.stack + ", " + date.toLocaleString() + "\n\n");
+    console.error(err);
+}
 
 // Jeff DB definitions 
 function jeff_defines(con, db_name) {
@@ -66,10 +73,11 @@ function create_sqlite_con (db_name, user_name, host) {
 /* THIS IS A JEFF SPECIFIC INITIALIZATION PROCESS. General initialization processes found above */
 export function create_jeff_sqlite(db_name, user_name, host) {
     try {
-        const con = create_sqlite_con(db_name, user_name, host);
-        const db = jeff_defines(con, db_name);
+        sequelize.authenticate();
+        const db = jeff_defines(sequelize, db_name);
         return db;
     } catch(err) {
+        reportError(err);
         return err;
     }
 }
