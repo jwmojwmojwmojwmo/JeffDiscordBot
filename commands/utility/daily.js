@@ -22,7 +22,7 @@ async function getDaily(tbl, userid, username) {
         });
         console.log(`New user created:`, user.toJSON());
     }
-    user.karma += 1;  // placeholder
+    user.energy += 10;
     user.last_daily = today;
     await user.save();
     return -1; // success

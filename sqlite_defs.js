@@ -33,7 +33,7 @@ function jeff_defines(con, db_name) {
             type: Sequelize.INTEGER,
             defaultValue: 0 
         },
-        karma: { // total num of karma (lose by getting spit on, gain by getting bubbled)
+        reputation: { // total num of reputation (lose by getting spit on, gain by getting bubbled)
             type: Sequelize.INTEGER,
             defaultValue: 10 
         },

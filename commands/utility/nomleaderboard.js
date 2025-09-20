@@ -19,6 +19,25 @@ const { SlashCommandBuilder, bold } = require('discord.js');
 //     return leaderboard;
 // }
 
+// TODO
+async function getTopFiveNew(tbl, guild) {
+    const results = await tbl.findAll({
+        attributes: ['userid', 'username', 'num_nommed', 'reputation', 'energy'],
+    })
+    const entries = results.map(p => p.toJSON());
+    entries.sort((a, b) => b.num_nommed - a.num_nommed);
+    let topFive = [];
+    for (const user of topFive) {
+        if (user.num_nommed === 1) {
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": 1 time nommed!";
+        } else {
+            leaderboard += "\n#" + bold(rank) + " " + user.username + ": " + user.num_nommed + " times nommed!";
+        }
+        rank++;
+    }
+    return leaderboard;
+}
+
 async function getTopFive(tbl) {
     const results = await tbl.findAll({
         attributes: ['username', 'num_nommed'],
