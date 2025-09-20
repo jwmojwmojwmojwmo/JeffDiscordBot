@@ -22,7 +22,7 @@ async function getDaily(tbl, userid, username) {
         });
         console.log(`New user created:`, user.toJSON());
     }
-    user.energy += 10;
+    user.energy += 25;
     user.last_daily = today;
     await user.save();
     return -1; // success
@@ -42,7 +42,7 @@ module.exports = {
         }
         let success = await getDaily(tbl, interaction.user.id, name);
         if (success === -1) {
-            await interaction.reply({ content: "Thanks for checking in! You have recieved your daily!", flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: "Thanks for checking in! You have recieved your daily! +25 energy!", flags: MessageFlags.Ephemeral });
         } else {
             await interaction.reply({ content: `You’ve already claimed your daily today! Next claim <t:${success}:R>`, flags: MessageFlags.Ephemeral });
         }

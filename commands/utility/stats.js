@@ -30,6 +30,22 @@ async function getKills(tbl, user_id, username) {
     return 0;
 }
 
+async function getEnergy(tbl, user_id, username) {
+    let user_obj = await tbl.findByPk(user_id);
+    if (user_obj) {
+        user_obj.username = username;
+        await user_obj.save();
+        return user_obj.energy;
+    }
+    const newUser = await tbl.create({
+        userid: user_id,
+        username: username,
+        num_nommed: 0
+    });
+    console.log(`New user created:`, newUser.toJSON());
+    return user_obj.energy;
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('stats')
@@ -44,7 +60,8 @@ module.exports = {
                 .setDescription('Type of stat you want to see')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'nom_count', value: 'nomcount' }
+                    { name: 'nom_count', value: 'nomcount' },
+                    { name: 'energy', value: 'energy' },
                 )),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
@@ -61,6 +78,9 @@ module.exports = {
             } else {
                 msg += " has been nommed " + numkills + " times!";
             }
+        } else if (interaction.options.getString('stat_type') === 'energy') {
+            let energy = await getEnergy(tbl, interaction.options.getUser('user').id, msg);
+            msg += " has " + energy + " energy!"
         }
         await interaction.reply(msg);
     },
