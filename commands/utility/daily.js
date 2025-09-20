@@ -17,8 +17,7 @@ async function getDaily(tbl, userid, username) {
     else {
         user = await tbl.create({
             userid: userid,
-            username: username,
-            num_nommed: 0
+            username: username
         });
         console.log(`New user created:`, user.toJSON());
     }

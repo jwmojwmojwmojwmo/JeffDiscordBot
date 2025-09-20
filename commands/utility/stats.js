@@ -71,7 +71,7 @@ module.exports = {
         if (statType === 'num_nommed') {
             msg += ` has been nommed ${stat} time${stat === 1 ? '' : 's'}!` // 1 time vs multiple times in message
         } else if (statType === 'all_stats') {
-            msg += `'s stats:\n\nTimes nommed: ${stat.nom_count}\nEnergy: ${stat.energy}\nReputation: ${stat.reputation}`;
+            msg += `'s stats!\n\nTimes nommed: ${stat.nom_count}\nEnergy: ${stat.energy}\nReputation: ${stat.reputation}`;
         } else {
             msg += ` has ${stat} ${statType}!`;
         }
