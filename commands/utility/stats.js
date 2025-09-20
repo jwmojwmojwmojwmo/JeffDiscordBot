@@ -14,36 +14,29 @@ const { SlashCommandBuilder } = require('discord.js');
 //     }
 // }
 
-async function getKills(tbl, user_id, username) {
-    let user_obj = await tbl.findByPk(user_id);
-    if (user_obj) {
-        user_obj.username = username;
-        await user_obj.save();
-        return user_obj.num_nommed;
-    }
-    const newUser = await tbl.create({
-        userid: user_id,
-        username: username,
-        num_nommed: 0
-    });
-    console.log(`New user created:`, newUser.toJSON());
-    return 0;
-}
 
-async function getEnergy(tbl, user_id, username) {
+// TODO: ABSTRACTION
+
+async function getStat(tbl, user_id, username, stat_type) {
     let user_obj = await tbl.findByPk(user_id);
     if (user_obj) {
         user_obj.username = username;
         await user_obj.save();
-        return user_obj.energy;
+    } else {
+        user_obj = await tbl.create({
+            userid: user_id,
+            username: username
+        });
+        console.log(`New user created:`, user_obj.toJSON());
     }
-    const newUser = await tbl.create({
-        userid: user_id,
-        username: username,
-        num_nommed: 0
-    });
-    console.log(`New user created:`, newUser.toJSON());
-    return user_obj.energy;
+    if (stat_type !== 'all_stats') {
+    return user_obj[stat_type];
+    }
+    return {
+        nom_count: user_obj.num_nommed,
+        energy: user_obj.energy,
+        reputation: user_obj.reputation
+    };
 }
 
 module.exports = {
@@ -60,8 +53,10 @@ module.exports = {
                 .setDescription('Type of stat you want to see')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'nom_count', value: 'nomcount' },
+                    { name: 'all_stats', value: 'all_stats' },
+                    { name: 'nom_count', value: 'num_nommed' },
                     { name: 'energy', value: 'energy' },
+                    { name: 'reputation', value: 'reputation' }
                 )),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
@@ -71,16 +66,14 @@ module.exports = {
         } catch (err) {
             msg = interaction.options.getUser('user').username;
         }
-        if (interaction.options.getString('stat_type') === 'nomcount') {
-            let numkills = await getKills(tbl, interaction.options.getUser('user').id, msg);
-            if (numkills === 1) { // 1 time vs multiple times in message
-                msg += " has been nommed 1 time!";
-            } else {
-                msg += " has been nommed " + numkills + " times!";
-            }
-        } else if (interaction.options.getString('stat_type') === 'energy') {
-            let energy = await getEnergy(tbl, interaction.options.getUser('user').id, msg);
-            msg += " has " + energy + " energy!"
+        const statType = interaction.options.getString('stat_type');
+        const stat = await getStat(tbl, interaction.options.getUser('user').id, msg, statType);
+        if (statType === 'num_nommed') {
+            msg += ` has been nommed ${stat} time${stat === 1 ? '' : 's'}!` // 1 time vs multiple times in message
+        } else if (statType === 'all_stats') {
+            msg += `'s stats:\n\nTimes nommed: ${stat.nom_count}\nEnergy: ${stat.energy}\nReputation: ${stat.reputation}`;
+        } else {
+            msg += ` has ${stat} ${statType}!`;
         }
         await interaction.reply(msg);
     },
