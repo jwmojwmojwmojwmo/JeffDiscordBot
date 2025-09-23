@@ -24,9 +24,7 @@ function jeff_defines(con, db_name) {
         },
         username: { // discord username (prioritises display name but fallback to username)
             type: Sequelize.STRING,
-            // primaryKey : true,
-            // allowNull: false,
-            // unique: true
+            allowNull: false
         },
         num_nommed: { // num of times user has been nommed
             type: Sequelize.INTEGER,

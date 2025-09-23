@@ -57,7 +57,6 @@ module.exports = {
         }
         const tbl = interaction.client.db.jeff;
         let name = interaction.options.getMember('user').displayName;
-        //kill(interaction.options.getUser('user'), name); // old JSON kill function
         await kill_tbl(tbl, interaction.options.getUser('user').id, name, interaction.user.username);
         await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
