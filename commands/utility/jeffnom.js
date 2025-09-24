@@ -8,37 +8,30 @@ const killMsg = [
     " got Jeff’ed. Nomfest initiated!"
 ];
 
-async function kill_tbl(tbl, to_perish_userid, to_perish_username, the_culprit) { // may utilise the_culprit at a later time
-    //console.log(to_perish, the_culprit);
+async function kill_tbl(tbl, to_perish_userid, to_perish_username, culprit_id, culprit_username) { // may utilise the_culprit at a later time
     let victim = await tbl.findByPk(to_perish_userid);
+    let culprit = await tbl.findByPk(culprit_id);
+    if (culprit) {
+        culprit.username = culprit_username;
+    } else {
+        culprit = await tbl.create({
+            userid: culprit_id,
+            username: culprit_username
+        });
+        console.log(`New user created:`, culprit.toJSON());
+    }
     if (victim) {
         victim.username = to_perish_username;
-        victim.num_nommed += 1;
-        await victim.save();
-    }
-    else {
+    } else {
         victim = await tbl.create({
             userid: to_perish_userid,
-            username: to_perish_username,
-            num_nommed: 1
+            username: to_perish_username
         });
         console.log(`New user created:`, victim.toJSON());
     }
-    // logging culprit, unneeded for now
-    // let bully = await tbl.findByPk(the_culprit);
-    // if (bully) {
-    //     bully.num_queries += 1;
-    //     bully.num_namnamnam += 1;
-    //     await bully.save();
-    // }
-    // else {
-    //     bully = await tbl.create({
-    //         username: the_culprit,
-    //         num_namnamnam : 1,
-    //         num_queries : 1
-    //     });
-    //     console.log(`New user created:`, bully.toJSON());
-    // }
+    victim.num_nommed += 1;
+    await victim.save();
+    await culprit.save();
 }
 
 module.exports = {
@@ -57,7 +50,7 @@ module.exports = {
         }
         const tbl = interaction.client.db.jeff;
         let name = interaction.options.getMember('user').displayName;
-        await kill_tbl(tbl, interaction.options.getUser('user').id, name, interaction.user.username);
+        await kill_tbl(tbl, interaction.options.getUser('user').id, name, interaction.user.id, interaction.member.displayName);
         await interaction.reply(name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     },
 };
