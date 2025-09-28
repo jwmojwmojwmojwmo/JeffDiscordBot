@@ -43,7 +43,7 @@ function reportError(err) {
     console.error(err);
 }
 
-client.db = { jeff }
+client.db = { jeff };
 
 client.once(Events.ClientReady, readyClient => {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);

@@ -6,19 +6,6 @@ const energyToSpit = 25;
 async function spit(tbl, user_id, user_name, culprit_id, culprit_username) {
     let victim = await tbl.findByPk(user_id);
     let culprit = await tbl.findByPk(culprit_id);
-    if (culprit) {
-        culprit.username = culprit_username;
-        await culprit.save();
-    } else {
-        culprit = await tbl.create({
-            userid: culprit_id,
-            username: culprit_username
-        });
-        console.log(`New user created:`, culprit.toJSON());
-    }
-    if (culprit.energy < energyToSpit) {
-        return energyToSpit - culprit.energy;
-    }
     if (victim) {
         victim.username = user_name;
     } else {
@@ -28,7 +15,21 @@ async function spit(tbl, user_id, user_name, culprit_id, culprit_username) {
         });
         console.log(`New user created:`, victim.toJSON());
     }
-    culprit.energy -= 25;
+    if (culprit) {
+        culprit.username = culprit_username;
+    } else {
+        culprit = await tbl.create({
+            userid: culprit_id,
+            username: culprit_username
+        });
+        console.log(`New user created:`, culprit.toJSON());
+    }
+    if (culprit.energy < energyToSpit) {
+        await victim.save();
+        await culprit.save();
+        return energyToSpit - culprit.energy;
+    }
+    culprit.energy -= energyToSpit;
     victim.reputation -= 1;
     await victim.save();
     await culprit.save();
