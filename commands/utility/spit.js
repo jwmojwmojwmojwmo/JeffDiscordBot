@@ -37,6 +37,7 @@ async function spit(tbl, user_id, user_name, culprit_id, culprit_username) {
 }
 
 // module.exports = {
+// cooldown: 7,
 //     data: new SlashCommandBuilder()
 //         .setName('spit')
 //         .setDescription(`Spit on someone with Jeff and make them lose reputation! (${energyToSpit} energy cost)`)
@@ -49,6 +50,9 @@ async function spit(tbl, user_id, user_name, culprit_id, culprit_username) {
 //         if (!interaction.guild) {
 //             return interaction.reply({ content: "This command can't be used in DMs.", flags: MessageFlags.Ephemeral })
 //         }
+// if (interaction.options.getUser('user').id === interaction.user.id) {
+//     return interaction.reply({ content: "You can't spit on yourself!.", flags: MessageFlags.Ephemeral });
+// }
 //         const tbl = interaction.client.db.jeff;
 //         let victim = interaction.options.getMember('user').displayName;
 //         let culprit = interaction.member.displayName;

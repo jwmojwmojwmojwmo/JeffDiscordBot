@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
 const { token, ownerId } = require('./config.json');
 const { create_jeff_sqlite, initDB } = require('./sqlite_defs.js');
 const errPath = 'errors.txt';
@@ -46,10 +46,12 @@ function reportError(err) {
 client.db = { jeff };
 
 client.once(Events.ClientReady, readyClient => {
+    client.user.setActivity('/jeff', { type: ActivityType.Listening });
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
+    const jwmo = await client.users.fetch(ownerId);
     // checks if slash command is slash command and exists
     if (!interaction.isChatInputCommand()) return;
     const command = interaction.client.commands.get(interaction.commandName);
@@ -84,6 +86,9 @@ client.on(Events.InteractionCreate, async interaction => {
     // runs command according to command file with error handling
     try {
         await command.execute(interaction);
+        if (interaction.commandName === 'donatejeff') {
+            await jwmo.send('A Jeff was donated');
+        }
     } catch (error) {
         reportError(error);
         if (error.code === 50035) {
