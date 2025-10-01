@@ -14,6 +14,8 @@ const client = new Client({
     partials: [Partials.Channel] // needed so DM channels work
 });
 
+module.exports = client;
+
 /*I presume this will be the area that we add file location constants, so I will add the database stuff here too*/
 client.commands = new Collection();
 client.cooldowns = new Collection();
@@ -51,7 +53,6 @@ client.once(Events.ClientReady, readyClient => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-    const jwmo = await client.users.fetch(ownerId);
     // checks if slash command is slash command and exists
     if (!interaction.isChatInputCommand()) return;
     const command = interaction.client.commands.get(interaction.commandName);
@@ -86,16 +87,10 @@ client.on(Events.InteractionCreate, async interaction => {
     // runs command according to command file with error handling
     try {
         await command.execute(interaction);
-        if (interaction.commandName === 'donatejeff') {
-            await jwmo.send('A Jeff was donated');
-        }
     } catch (error) {
         reportError(error);
-        if (error.code === 50035) {
-            await interaction.reply({ content: "Your message is too long! Discord messages must be under 2000 characters.", flags: MessageFlags.Ephemeral });
-        }
         if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'Something unexpected happened while interacting with this command.', flags: MessageFlags.Ephemeral });
+            await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. Note that Discord messages must be 2000 characters or fewer.', flags: MessageFlags.Ephemeral });
         } else {
             await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
         }

@@ -133,10 +133,9 @@ module.exports = {
         let cleanReply = name + " says: " + interaction.options.getString('phrase') + "\n\nJeff says:";
         let jeffReply;
         try {
-            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(10000)]); // awaits AI message, times out and throws err after 10s
+            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(6000)]); // awaits AI message, times out and throws err after 6s
         } catch (err) {
             jeffReply = fullMsg(); // fallback to non-ai method of getting reply
-            reportError(err);
         }
         await interaction.editReply(cleanReply + jeffReply);
     },
