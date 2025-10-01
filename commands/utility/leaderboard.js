@@ -66,17 +66,19 @@ module.exports = {
 					{ name: 'Server', value: 'server' },
 				)),
 	async execute(interaction) {
-		if (!interaction.guild) {
+        const scope = interaction.options.getString('scope');
+        const stat = interaction.options.getString('stat_type');
+		if (!interaction.guild && scope === 'server') {
 			return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
 		}
 		const tbl = interaction.client.db.jeff;
 		await interaction.reply('Fetching...');
 		let reply;
-		if (interaction.options.getString('scope') === 'global') {
-			reply = await getTopFive(tbl, 0, interaction.options.getString('stat_type'));
+		if (scope === 'global') {
+			reply = await getTopFive(tbl, 0, stat);
 		}
 		else {
-			reply = await getTopFive(tbl, interaction.guild, interaction.options.getString('stat_type'));
+			reply = await getTopFive(tbl, interaction.guild, stat);
 		}
 		await interaction.editReply(reply);
 	},

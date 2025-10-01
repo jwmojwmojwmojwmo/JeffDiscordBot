@@ -8,7 +8,7 @@ const killMsg = [
 	' got Jeff’ed. Nomfest initiated!',
 ];
 
-async function kill_tbl(tbl, to_perish_userid, to_perish_username, culprit_id, culprit_username) { // may utilise the_culprit at a later time
+async function kill_tbl(tbl, to_perish_userid, to_perish_username, culprit_id, culprit_username) {
 	let victim = await tbl.findByPk(to_perish_userid);
 	let culprit = await tbl.findByPk(culprit_id);
 	if (culprit) {

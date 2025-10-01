@@ -138,6 +138,7 @@ module.exports = {
 		}
 		catch (err) {
 			jeffReply = fullMsg(); // fallback to non-ai method of getting reply
+            reportError(err);
 		}
 		await interaction.editReply(cleanReply + jeffReply);
 	},
