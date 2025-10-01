@@ -5,9 +5,9 @@ const path = require('node:path');
 const errPath = 'errors.txt';
 
 function reportError(err) {
-    let date = new Date();
-    fs.appendFileSync(errPath, err.stack + ", " + date.toLocaleString() + "\n\n");
-    console.error(err);
+	const date = new Date();
+	fs.appendFileSync(errPath, err.stack + ', ' + date.toLocaleString() + '\n\n');
+	console.error(err);
 }
 
 const commands = [];
@@ -25,7 +25,8 @@ for (const folder of commandFolders) {
 		const command = require(filePath);
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
-		} else {
+		}
+		else {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
 	}
@@ -46,7 +47,8 @@ const rest = new REST().setToken(token);
 		);
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
-	} catch (error) {
+	}
+	catch (error) {
 		reportError(error);
 	}
 })();
