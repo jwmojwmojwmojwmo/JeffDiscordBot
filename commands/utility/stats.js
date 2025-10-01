@@ -1,21 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-// imports for old JSON file storage
-// const fs = require('fs');
-// const path = require("path");
-// const killPath = path.join(__dirname, "..", "..", 'killdata.json')
-
-// getKills function for JSON file
-// function getKills(user) {
-//     let killData = JSON.parse(fs.readFileSync(killPath));
-//     if (user in killData) {
-//         return killData[user][1];
-//     } else {
-//         return 0;
-//     }
-// }
-
-
-// TODO: ABSTRACTION
 
 async function getStat(tbl, user_id, username, stat_type) {
     let user_obj = await tbl.findByPk(user_id);

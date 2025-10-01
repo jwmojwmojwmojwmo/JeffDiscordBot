@@ -49,7 +49,7 @@ module.exports = {
             return interaction.reply({ content: "This command can't be used in DMs.", flags: MessageFlags.Ephemeral });
         }
         if (interaction.options.getUser('user').id === interaction.user.id) {
-            return interaction.reply({ content: "You can't nom yourself!.", flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: "You can't nom yourself!", flags: MessageFlags.Ephemeral });
         }
         const tbl = interaction.client.db.jeff;
         let name = interaction.options.getMember('user').displayName;

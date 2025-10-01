@@ -36,30 +36,30 @@ async function spit(tbl, user_id, user_name, culprit_id, culprit_username) {
     return -1;
 }
 
-// module.exports = {
-// cooldown: 7,
-//     data: new SlashCommandBuilder()
-//         .setName('spit')
-//         .setDescription(`Spit on someone with Jeff and make them lose reputation! (${energyToSpit} energy cost)`)
-//         .addUserOption(option =>
-//             option
-//                 .setName('user')
-//                 .setDescription('Who you want to Jeff to spit on?')
-//                 .setRequired(true)),
-//     async execute(interaction) {
-//         if (!interaction.guild) {
-//             return interaction.reply({ content: "This command can't be used in DMs.", flags: MessageFlags.Ephemeral })
-//         }
-// if (interaction.options.getUser('user').id === interaction.user.id) {
-//     return interaction.reply({ content: "You can't spit on yourself!.", flags: MessageFlags.Ephemeral });
-// }
-//         const tbl = interaction.client.db.jeff;
-//         let victim = interaction.options.getMember('user').displayName;
-//         let culprit = interaction.member.displayName;
-//         let success = await spit(tbl, interaction.options.getUser('user').id, victim, interaction.user.id, culprit);
-//         if (success === -1) {
-//             return interaction.reply(`${culprit} spit on ${victim}! ${culprit} has used ${energyToSpit} energy, and ${victim} has lost 1 reputation!`)
-//         }
-//         await interaction.reply({ content: `You need ${success} more energy to run this command!`, flags: MessageFlags.Ephemeral });
-//     },
-// };
+module.exports = {
+    cooldown: 7,
+    data: new SlashCommandBuilder()
+        .setName('spit')
+        .setDescription(`Spit on someone with Jeff and make them lose reputation! (${energyToSpit} energy cost)`)
+        .addUserOption(option =>
+            option
+                .setName('user')
+                .setDescription('Who you want to Jeff to spit on?')
+                .setRequired(true)),
+    async execute(interaction) {
+        if (!interaction.guild) {
+            return interaction.reply({ content: "This command can't be used in DMs.", flags: MessageFlags.Ephemeral })
+        }
+        if (interaction.options.getUser('user').id === interaction.user.id) {
+            return interaction.reply({ content: "You can't spit on yourself!", flags: MessageFlags.Ephemeral });
+        }
+        const tbl = interaction.client.db.jeff;
+        let victim = interaction.options.getMember('user').displayName;
+        let culprit = interaction.member.displayName;
+        let success = await spit(tbl, interaction.options.getUser('user').id, victim, interaction.user.id, culprit);
+        if (success === -1) {
+            return interaction.reply(`${culprit} spit on ${victim}! ${culprit} has used ${energyToSpit} energy, and ${victim} has lost 1 reputation!`)
+        }
+        await interaction.reply({ content: `You need ${success} more energy to run this command!`, flags: MessageFlags.Ephemeral });
+    },
+};
