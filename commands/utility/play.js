@@ -14,11 +14,12 @@ const jackpotButton = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary);
 const highLowRow = new ActionRowBuilder().addComponents(lowerButton, jackpotButton, higherButton);
 
+// TODO: optimise
 async function playHighLow(interaction, tbl, user_name, user_id) {
     const thinkingNum = Math.floor(Math.random() * 101); // the num jeffy is thinking of, 0-100
     const givenNum = Math.floor(Math.random() * 101); // the num the user sees, 0-100
     const highLowResponse = await interaction.reply({
-        content: `Jeff says: MRR!!! MRRRR MRR!! YUMMY YUMMY! (translation: I'm thinking of a number from 1-100! Is it lower or higher than ${givenNum})?`,
+        content: `Jeff says: MRR!!! MRRRR MRR!! YUMMY YUMMY! (translation: I'm thinking of a number from 1-100! Is it lower or higher than ${givenNum}?)\nUse Jackpot if you think they're the same number!`,
         components: [highLowRow],
         withResponse: true,
     });
@@ -53,15 +54,15 @@ async function playHighLow(interaction, tbl, user_name, user_id) {
             }
         } else if (confirmation.customId === 'jackpot') {
             if (givenNum === thinkingNum) {
-                await confirmation.update({ contents: `Jeff says: MRR!!!!! MRRR...MRRR...MRR!!! (translation: You won! +5 energy! ${msg})`, components: [] });
-                user.energy += 5;
+                await confirmation.update({ contents: `Jeff says: MRR!!!!! MRRR...MRRR...MRR!!! (translation: You won! +100 energy! ${msg})`, components: [] });
+                user.energy += 100;
             } else {
                 await confirmation.update({ content: `Jeff says: Uh-Oh! mrrr....MRRMRR..mrr... (translation: you didn't get it... ${msg})`, components: [] });
             }
         }
         await user.save(); // saves update user info to db
     } catch {
-        await interaction.editReply({ content: 'You left Jeffy alone too long :(( cancelling', flags: MessageFlags.Ephemeral });
+        await interaction.editReply({ content: 'You left Jeffy alone too long :(( cancelling', flags: MessageFlags.Ephemeral, components: [] });
     }
 }
 
