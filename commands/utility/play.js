@@ -17,13 +17,11 @@ const highLowRow = new ActionRowBuilder().addComponents(lowerButton, jackpotButt
 
 // TODO: constants for blackjack UI
 
-
-// TODO: dynamic scoring system
 async function playHighLow(interaction, tbl, user_name, user_id) {
     const thinkingNum = Math.floor(Math.random() * 101); // the num jeffy is thinking of, 0-100
     const givenNum = Math.floor(Math.random() * 101); // the num the user sees, 0-100
     const highLowResponse = await interaction.reply({
-        content: `Jeff says: MRR!!! MRRRR MRR!! YUMMY YUMMY! (translation: I'm thinking of a number from 1-100! Is it lower or higher than ${givenNum}?)\nUse Jackpot if you think they're the same number!`,
+        content: `Jeff says: MRR!!! MRRRR MRR!! YUMMY YUMMY! (translation: I'm thinking of a number from 0-100! Is it lower or higher than ${givenNum}?)\nUse Jackpot if you think they're the same number!`,
         components: [highLowRow],
         withResponse: true,
     });
@@ -41,14 +39,15 @@ async function playHighLow(interaction, tbl, user_name, user_id) {
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     try {
         const confirmation = await highLowResponse.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 }); // give 20 sec for response before erroring
-        let msg = `Your number was ${givenNum}, Jeffy was thinking of ${thinkingNum}.`;
+        const msg = `Your number was ${givenNum}, Jeffy was thinking of ${thinkingNum}.`;
         if ((confirmation.customId === 'lower' && thinkingNum < givenNum) || (confirmation.customId === 'higher' && thinkingNum > givenNum) || (confirmation.customId === 'jackpot' && givenNum === thinkingNum)) {
-            let reward = getHighLowReward(Math.abs(givenNum - thinkingNum));
+            let reward = (thinkingNum === givenNum) ? 100 : getHighLowReward(Math.abs(givenNum - 50));
             await confirmation.update({ content: `Jeff says: MRR!!!!! MRRR...MRRR...MRR!!! (translation: You won! +${reward} energy! ${msg})`, components: [] });
             user.energy += reward;
         } else {
-            let penalty = getHighLowPenalty(Math.abs(givenNum - thinkingNum));
+            let penalty = (confirmation.customId === 'jackpot') ? 1 : getHighLowPenalty(Math.abs(givenNum - 50));
             await confirmation.update({ content: `Jeff says: Uh-Oh! mrrr....MRRMRR..mrr... (translation: you didn't get it... -${penalty} energy. ${msg})`, components: [] });
+            user.energy -= penalty;
         }
         await user.save(); // saves update user info to db
     } catch { // catch error throw if response exceeds 20 sec
@@ -57,24 +56,22 @@ async function playHighLow(interaction, tbl, user_name, user_id) {
 }
 
 function getHighLowReward(diff) {
-    if (diff === 0) {
-        return 100;
-    }
-    if (diff >= 50) {
-        return 5;
-    }
-    return Math.round(20 - (diff - 1) * (15 / 49)); // scales linearly from 20 to 5 as diff goes from 1 to 50
+    const maxReward = 10;
+    const minReward = 2;
+    const maxDiff = 50;
+    const exponent = 2; // control steepness
+    return Math.round(minReward + Math.pow(1 - diff / maxDiff, exponent) * (maxReward - minReward)); // exponentially goes from 2 - 10 as givenNum gets closer to 50
+}
+// NOTE: expected value for reward + penalty, assuming optimal play, is around + 2 energy (the house does NOT always win)
+function getHighLowPenalty(diff) {
+    const maxPenalty = 18;
+    const minPenalty = 3;
+    const maxDiff = 50;
+    const exponent = 2; 
+    return Math.round(minPenalty + Math.pow(diff / maxDiff, exponent) * (maxPenalty - minPenalty)); // exponentially goes from 18 - 3 as givenNum gets closer to 50
 }
 
-function getHighLowPenalty(diff) {
-    if (diff === 0) {
-        return 2;
-    }
-    if (diff >= 50) {
-        return 20;
-    }
-    return Math.round(2 + (18 / 49) * diff); // scales linearly from 2 to 20 as diff goes from 1 to 50
-}
+
 
 async function playBlackJack(interaction, tbl, user_name, user_id) {
 
