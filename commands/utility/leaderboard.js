@@ -5,12 +5,12 @@ const statLabels = {
 	reputation: 'Reputation',
 };
 
+// TODO: optimise using label, order
 async function getTopFive(tbl, guild, stat_type) {
 	const entries = await tbl.findAll({
 		attributes: ['userid', 'username', stat_type],
 		raw: true, // map database to JSON
 	});
-	// const entries = results.map(p => p.toJSON()); //map database to JSON
 	entries.sort((a, b) => b[stat_type] - a[stat_type]); // sort JSON by stat_type, high to low
 	let topFive = [];
 	let leaderboard = `Top ${guild === 0 ? 'Global' : 'Server'} Users — ${statLabels[stat_type] || 'unnamed_stat_type -- please report this error --'}:\n`;
@@ -18,6 +18,7 @@ async function getTopFive(tbl, guild, stat_type) {
 		topFive = entries.slice(0, 5);
 	}
 	else { // server scope
+        // TODO: optimise using cached members
 		for (const entry of entries) {
 			try {
 				const member = await guild.members.fetch(entry.userid); // check if each member in entries is in guild

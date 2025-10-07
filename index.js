@@ -2,12 +2,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
 const { token, ownerId } = require('./config.json');
-const { create_jeff_sqlite, initDB } = require('./sqlite_defs.js');
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = new Sequelize({
+    host: 'localhost',
+    dialect: 'sqlite',
+    logging: false,
+    storage: 'jeff.sqlite'
+});
+const jeff = require('./models/jeff.js')(sequelize, Sequelize.DataTypes);
 const errPath = 'errors.txt';
 
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
 		GatewayIntentBits.DirectMessages, // allow DMs
 		GatewayIntentBits.MessageContent, // allow reading DM content
 	],
@@ -22,7 +30,7 @@ client.cooldowns = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 // Jeff is the name of the db. For sqlite applications the user and password are not integral to its function.
-jeff = create_jeff_sqlite('jeff', 'user', 'password');
+// jeff = create_jeff_sqlite('jeff', 'user', 'password');
 
 // Runs on initialization, grabs all commands in commands folder
 for (const folder of commandFolders) {
@@ -129,6 +137,6 @@ client.on(Events.MessageCreate, async message => {
 	}
 });
 (async () => {
-	await jeff.sync();
+	await jeff.sync(); // jeff.sync({ alter: true }); when modifying db info
 	await client.login(token);
 })();
