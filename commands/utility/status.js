@@ -11,7 +11,7 @@ const statusEmbed = new EmbedBuilder()
 	.setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
 	.addFields(
 		{ name: 'Status: Online - occasional short outages anticipated due to updating the bot', value: `Planned to go offline <t:${timea}:R>, planned to come back online <t:${timeb}:R> (times are approximate)` },
-		{ name: 'Latest update: v0.81b', value: 'Changes: \n/daily added! Claim your daily to get energy! \n /spit and /bubble added! Use your energy to spit on someone to lower their reputation if they wronged you, or use it for good and bubble someone instead, and give them reputation! Top reputation scores are shown on the leaderboard!\nAdded some gambling...yes we can gamble now!'},
+		{ name: 'Latest update: v0.81b', value: 'Changes: \n/daily added! Claim your daily to get energy! \n /spit and /bubble added! Use your energy to spit on someone to lower their reputation if they wronged you, or use it for good and bubble someone instead, and give them reputation! Top reputation scores are shown on the leaderboard!\nAdded some gambling...yes we can gamble now!' },
 		{ name: 'Next major update sneak peek: v0.9b', value: 'Gambling...I love gambling... hehehe' },
 		{ name: '\u200B', value: `Updated at <t:${now}:T>` },
 	);

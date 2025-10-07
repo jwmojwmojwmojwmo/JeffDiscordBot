@@ -66,8 +66,8 @@ module.exports = {
 					{ name: 'Server', value: 'server' },
 				)),
 	async execute(interaction) {
-        const scope = interaction.options.getString('scope');
-        const stat = interaction.options.getString('stat_type');
+		const scope = interaction.options.getString('scope');
+		const stat = interaction.options.getString('stat_type');
 		if (!interaction.guild && scope === 'server') {
 			return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
 		}
