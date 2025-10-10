@@ -13,6 +13,7 @@ async function getStat(tbl, user_id, user_name, stat_type) {
     };
 }
 
+// TODO: add autofill/default values
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('stats')

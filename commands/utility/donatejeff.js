@@ -1,16 +1,10 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { ownerId } = require('../../config.json');
+const { reportError } = require('../../utils.js');
 const fs = require('fs');
 const path = require('path');
 const { getUserAndUpdate } = require('../../utils');
 const donationPath = path.join(__dirname, '..', '..', 'donations.txt');
-const errPath = path.join(__dirname, '..', '..', 'errors.txt');
-
-function reportError(err) {
-    const date = new Date();
-    fs.appendFileSync(errPath, err.stack + ', ' + date.toLocaleString() + '\n\n');
-    console.error(err);
-}
 
 async function addDonation(picture, tbl, user_name, user_id) {
     const date = new Date();

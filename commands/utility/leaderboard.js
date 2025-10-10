@@ -50,6 +50,7 @@ async function getTopFive(tbl, guild, stat_type) {
     return leaderboard;
 }
 
+// TODO: add autofill/default values
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('leaderboard')
