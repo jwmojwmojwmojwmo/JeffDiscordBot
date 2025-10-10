@@ -1,4 +1,7 @@
 const { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { getUserAndUpdate } = require('../../utils.js');
+
+// TODO: constants for highLow scoring
 
 // constants for highLow UI
 const lowerButton = new ButtonBuilder()
@@ -17,7 +20,7 @@ const highLowRow = new ActionRowBuilder().addComponents(lowerButton, jackpotButt
 
 // TODO: constants for blackjack UI
 
-async function playHighLow(interaction, tbl, user_name, user_id) {
+async function playHighLow(interaction, tbl, user_id, user_name) {
     const thinkingNum = Math.floor(Math.random() * 101); // the num jeffy is thinking of, 0-100
     const givenNum = Math.floor(Math.random() * 101); // the num the user sees, 0-100
     const highLowReply = await interaction.reply({
@@ -25,29 +28,19 @@ async function playHighLow(interaction, tbl, user_name, user_id) {
         components: [highLowRow],
         withResponse: true,
     });
-    let user = await tbl.findByPk(user_id); // find user from db
-    if (user) {
-        user.username = user_name; // update user's name if they exist in db
-    }
-    else {
-        user = await tbl.create({ // create user if they do not exist
-            userid: user_id,
-            username: user_name,
-        });
-        console.log('New user created:', user.toJSON());
-    }
+    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     try {
-        const confirmation = await highLowReply.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 }); // give 20 sec for response before erroring
+        const response = await highLowReply.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 }); // give 20 sec for response before erroring
         const msg = `Your number was ${givenNum}, Jeffy was thinking of ${thinkingNum}.`;
-        if ((confirmation.customId === 'lower' && thinkingNum < givenNum) || (confirmation.customId === 'higher' && thinkingNum > givenNum) || (confirmation.customId === 'jackpot' && givenNum === thinkingNum)) {
+        if ((response.customId === 'lower' && thinkingNum < givenNum) || (response.customId === 'higher' && thinkingNum > givenNum) || (response.customId === 'jackpot' && givenNum === thinkingNum)) {
             const reward = (thinkingNum === givenNum) ? 500 : getHighLowReward(Math.abs(givenNum - 50));
-            await confirmation.update({ content: `Jeff says: MRR!!!!! MRRR...MRRR...MRR!!! (translation: You won! +${reward} energy! ${msg})`, components: [] });
+            await response.update({ content: `Jeff says: MRR!!!!! MRRR...MRRR...MRR!!! (translation: You won! +${reward} energy! ${msg})`, components: [] });
             user.energy += reward;
         }
         else {
-            const penalty = (confirmation.customId === 'jackpot') ? 1 : getHighLowPenalty(Math.abs(givenNum - 50));
-            await confirmation.update({ content: `Jeff says: Uh-Oh! mrrr....MRRMRR..mrr... (translation: you didn't get it... -${penalty} energy. ${msg})`, components: [] });
+            const penalty = (response.customId === 'jackpot') ? 1 : getHighLowPenalty(Math.abs(givenNum - 50));
+            await response.update({ content: `Jeff says: Uh-Oh! mrrr....MRRMRR..mrr... (translation: you didn't get it... -${penalty} energy. ${msg})`, components: [] });
             user.energy -= penalty;
         }
         await user.save(); // saves update user info to db
@@ -74,24 +67,19 @@ function getHighLowPenalty(diff) {
 }
 
 
-async function playBlackJack(interaction, tbl, user_name, user_id, bet) {
+async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
+    return interaction.reply('Work in progress...'); // comment out when blackjack is done
 
-    // stub for db
-    let user = await tbl.findByPk(user_id);
-    if (user) {
-        user.username = user_name;
+    // stub
+    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
+    const collectorFilter = i => i.user.id === interaction.user.id; 
+    try {
+        const response = await highLowReply.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 });
+        // TODO: implement blackjack, see highlow function for help
     }
-    else {
-        user = await tbl.create({
-            userid: user_id,
-            username: user_name,
-        });
-        console.log('New user created:', user.toJSON());
+    catch {
+        await interaction.editReply({ content: 'You left Jeffy alone too long :(( cancelling', flags: MessageFlags.Ephemeral, components: [] });
     }
-
-    // TODO: implement blackjack, see highlow function for help
-
-    await interaction.reply('Work in progress...'); // comment out when blackjack is done
 }
 
 module.exports = {
@@ -113,19 +101,14 @@ module.exports = {
                         .setRequired(true))),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-        let name;
-        try {
-            name = interaction.member.displayName;
-        }
-        catch (err) {
-            name = interaction.user.username;
-        }
+        const name = interaction.member?.displayName || interaction.user.username;
         const id = interaction.user.id;
         if (interaction.options.getSubcommand() === 'highlow') {
-            await playHighLow(interaction, tbl, name, id);
+            await playHighLow(interaction, tbl, id, name);
         }
         else {
-            await playBlackJack(interaction, tbl, name, id, interaction.options.getInteger('bet'));
+            // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current reputation
+            await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet')); 
         }
     },
 };

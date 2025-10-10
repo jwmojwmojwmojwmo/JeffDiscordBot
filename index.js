@@ -2,12 +2,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
 const { token, ownerId } = require('./config.json');
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize({
-    host: 'localhost',
-    dialect: 'sqlite',
-    logging: false,
-    storage: 'jeff.sqlite'
+	host: 'localhost',
+	dialect: 'sqlite',
+	logging: false,
+	storage: 'jeff.sqlite',
 });
 const jeff = require('./models/jeff.js')(sequelize, Sequelize.DataTypes);
 const errPath = 'errors.txt';
@@ -15,7 +15,7 @@ const errPath = 'errors.txt';
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.GuildMembers,
 		GatewayIntentBits.DirectMessages, // allow DMs
 		GatewayIntentBits.MessageContent, // allow reading DM content
 	],
@@ -59,7 +59,7 @@ client.db = { jeff };
 client.once(Events.ClientReady, readyClient => {
 	client.user.setActivity('/jeff', { type: ActivityType.Listening });
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-    // TODO: message reminders for daily
+	// TODO: message reminders for daily
 });
 
 client.on(Events.InteractionCreate, async interaction => {

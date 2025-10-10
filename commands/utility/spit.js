@@ -1,34 +1,15 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { getUserAndUpdate } = require('../../utils.js');
 
 const energyToSpit = 25;
 
 // return -1 if success, or energy needed to spit
-async function spit(tbl, user_id, user_name, culprit_id, culprit_username) {
-	let victim = await tbl.findByPk(user_id);
-	let culprit = await tbl.findByPk(culprit_id);
-	if (victim) {
-		victim.username = user_name;
-	}
-	else {
-		victim = await tbl.create({
-			userid: user_id,
-			username: user_name,
-		});
-		console.log('New user created:', victim.toJSON());
-	}
-	if (culprit) {
-		culprit.username = culprit_username;
-	}
-	else {
-		culprit = await tbl.create({
-			userid: culprit_id,
-			username: culprit_username,
-		});
-		console.log('New user created:', culprit.toJSON());
-	}
+async function spit(tbl, victim_id, victim_name, culprit_id, culprit_name) {
+	let victim = await getUserAndUpdate(tbl, victim_id, victim_name, false);
+	let culprit = await getUserAndUpdate(tbl, culprit_id, culprit_name, false);
 	if (culprit.energy < energyToSpit) {
-		await victim.save();
-		await culprit.save();
+        await victim.save();
+        await culprit.save();
 		return energyToSpit - culprit.energy;
 	}
 	culprit.energy -= energyToSpit;

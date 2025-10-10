@@ -123,15 +123,9 @@ module.exports = {
 				.setDescription('What you want to say to Jeff')
 				.setRequired(true)),
 	async execute(interaction) {
-		let name;
-		try {
-			name = interaction.member.displayName;
-		}
-		catch (err) {
-			name = interaction.user.username;
-		}
+        let msg = interaction.member?.displayName || interaction.user.username;
 		await interaction.deferReply();
-		const cleanReply = name + ' says: ' + interaction.options.getString('phrase') + '\n\nJeff says:';
+		msg += ` says: ${interaction.options.getString('phrase')}\n\nJeff says:`;
 		let jeffReply;
 		try {
 			jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(6000)]); // awaits AI message, times out and throws err after 6s
@@ -140,6 +134,6 @@ module.exports = {
 			jeffReply = fullMsg(); // fallback to non-ai method of getting reply
 			reportError(err);
 		}
-		await interaction.editReply(cleanReply + jeffReply);
+		await interaction.editReply(msg + jeffReply);
 	},
 };
