@@ -1,9 +1,8 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { ownerId } = require('../../config.json');
-const { reportError } = require('../../utils.js');
 const fs = require('fs');
 const path = require('path');
-const { getUserAndUpdate } = require('../../utils');
+const { getUserAndUpdate, reportError } = require('../../utils.js');
 const donationPath = path.join(__dirname, '..', '..', 'donations.txt');
 
 async function addDonation(picture, tbl, user_name, user_id) {

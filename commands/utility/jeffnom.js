@@ -13,6 +13,7 @@ async function kill(tbl, victim_id, victim_name) {
 	let victim = await getUserAndUpdate(tbl, victim_id, victim_name, false);
 	victim.num_nommed += 1;
 	await victim.save();
+    console.log(`${victim.username} (${user.userid}) was nommed.`);
 }
 
 module.exports = {

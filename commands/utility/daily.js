@@ -10,11 +10,13 @@ async function getDaily(tbl, userid, username) {
         await user.save();
         const nextClaim = new Date(today);
         nextClaim.setDate(nextClaim.getDate() + 1); // tomorrow midnight
+        console.log(`${user.username} (${user.userid}) attempted to claim their daily`);
         return Math.floor(nextClaim.getTime() / 1000);
     }
     user.energy += 25;
     user.last_daily = today;
     await user.save();
+    console.log(`${user.username} (${user.userid}) claimed their daily`);
     return -1; // success
 }
 

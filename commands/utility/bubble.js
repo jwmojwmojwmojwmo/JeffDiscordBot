@@ -16,6 +16,7 @@ async function bubble(tbl, victim_id, victim_name, culprit_id, culprit_name) {
 	victim.reputation += 1;
 	await victim.save();
 	await culprit.save();
+    console.log(`${victim.username} (${victim.userid}) was bubbled by ${culprit.username} (${culprit.userid})`);
 	return -1;
 }
 

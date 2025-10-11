@@ -37,11 +37,13 @@ async function playHighLow(interaction, tbl, user_id, user_name) {
             const reward = (thinkingNum === givenNum) ? 500 : getHighLowReward(Math.abs(givenNum - 50));
             await response.update({ content: `Jeff says: MRR!!!!! MRRR...MRRR...MRR!!! (translation: You won! +${reward} energy! ${msg})`, components: [] });
             user.energy += reward;
+            console.log(`${user.username} (${user.userid}) won ${reward} through highlow.`);
         }
         else {
             const penalty = (response.customId === 'jackpot') ? 1 : getHighLowPenalty(Math.abs(givenNum - 50));
             await response.update({ content: `Jeff says: Uh-Oh! mrrr....MRRMRR..mrr... (translation: you didn't get it... -${penalty} energy. ${msg})`, components: [] });
             user.energy -= penalty;
+            console.log(`${user.username} (${user.userid}) lost ${penalty} through highlow.`);
         }
         await user.save(); // saves update user info to db
     }

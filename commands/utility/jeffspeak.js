@@ -128,6 +128,7 @@ module.exports = {
             jeffReply = fullMsg(); // fallback to non-ai method of getting reply
             reportError(err);
         }
+        console.log(msg + jeffReply);
         await interaction.editReply(msg + jeffReply);
     },
 };
