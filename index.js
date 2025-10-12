@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
 const { token, ownerId } = require('./config.json');
+const { scheduleDailyReminders } = require('./schedulers.js');
 const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize({
 	host: 'localhost',
@@ -59,7 +60,7 @@ client.db = { jeff };
 client.once(Events.ClientReady, readyClient => {
 	client.user.setActivity('/jeff', { type: ActivityType.Listening });
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-	// TODO: message reminders for daily
+    scheduleDailyReminders(client, client.db.jeff);
 });
 
 client.on(Events.InteractionCreate, async interaction => {

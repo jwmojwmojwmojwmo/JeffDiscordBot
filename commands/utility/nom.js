@@ -19,7 +19,7 @@ async function kill(tbl, victim_id, victim_name) {
 module.exports = {
 	cooldown: 7,
 	data: new SlashCommandBuilder()
-		.setName('jeffnom')
+		.setName('nom')
 		.setDescription('Nom somebody with Jeff')
 		.addUserOption(option =>
 			option

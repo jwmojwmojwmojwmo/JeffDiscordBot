@@ -109,7 +109,7 @@ function getMsg(index) {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('jeffspeak')
+        .setName('speak')
         .setDescription('Say something to Jeff')
         .addStringOption(option =>
             option
