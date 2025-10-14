@@ -70,18 +70,26 @@ function getHighLowPenalty(diff) {
 
 
 async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
+    console.log(`${user.username} (${user.userid}) tried to play blackjack.`);
     return interaction.reply('Work in progress...'); // comment out when blackjack is done
 
     // stub
-    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
-    const collectorFilter = i => i.user.id === interaction.user.id; 
-    try {
-        const response = await highLowReply.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 });
-        // TODO: implement blackjack, see highlow function for help
-    }
-    catch {
-        await interaction.editReply({ content: 'You left Jeffy alone too long :(( cancelling', flags: MessageFlags.Ephemeral, components: [] });
-    }
+    const reply = await interaction.reply('stub'); // initial reply
+    const user = await getUserAndUpdate(tbl, user_id, user_name, false); // returns user who started interaction
+    const collectorFilter = i => i.user.id === interaction.user.id; // returns true if the user pressing the button is the user who started the interaction
+    const collector = reply.createMessageComponentCollector({ // creates a collector, lasting for two minutes, using the filter, that 'collects' every time an action is performed
+        filter: collectorFilter,
+        time: 120_000, // 2 minutes
+    });
+    collector.on('collect', async i => { // runs whenever a button is pressed
+        // perform some action
+        await user.save(); // saves user information to db, try to reduce calls to this whenevere possible
+        await i.update('stub'); // updates the message panel from the initial reply
+    });
+    collector.on('end', async () => { // runs once when time is over
+        await interaction.editReply('You left Jeffy alone too long :(( cancelling'); // use interaction.editReply() for the final edit, use i.update() otherwise
+    })
+    // TODO: implement blackjack, see highlow function for help, see settings command for more help
 }
 
 module.exports = {
@@ -110,7 +118,7 @@ module.exports = {
         }
         else {
             // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current reputation
-            await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet')); 
+            await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet'));
         }
     },
 };

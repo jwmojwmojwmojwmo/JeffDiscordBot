@@ -7,7 +7,7 @@ async function sendDailyReminders(client, tbl) {
     // TODO: pagination
     const users = await tbl.findAll();
     for (const user of users) {
-        if (user.settings?.dailyReminders && user.last_daily < now) {
+        if (user.settings?.dailyReminders && user.last_daily && user.last_daily < now) {
             try {
                 const member = await client.users.fetch(user.userid);
                 await member.send("Jeffy wants to remind you to claim your daily! Woop Woop!\n\nYou can turn these reminders off by using /settings.");
@@ -23,7 +23,7 @@ async function sendDailyReminders(client, tbl) {
 function scheduleDailyReminders(client, tbl) {
     const now = new Date();
     const nextTimeToDM = new Date(now);
-    nextTimeToDM.setHours(15, 0, 0, 0);
+    nextTimeToDM.setHours(17, 0, 0, 0);
     if (nextTimeToDM <= now) {
         nextTimeToDM.setDate(nextTimeToDM.getDate() + 1);
     } 
