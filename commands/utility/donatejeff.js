@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
-const { ownerId } = require('../../config.json');
+const { ownerId } = require('../../betaconfig.json');
 const fs = require('fs');
 const path = require('path');
 const { getUserAndUpdate, reportError } = require('../../utils.js');

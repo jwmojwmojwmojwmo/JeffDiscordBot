@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('jeff', {
+    return sequelize.define('jeffbeta', {
         userid: { // discord user ID
             type: DataTypes.STRING,
             primaryKey: true,
@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         }
     }, {
-        tableName: 'jeff',
+        tableName: 'jeffbeta',
         timestamps: false,
     });
 }

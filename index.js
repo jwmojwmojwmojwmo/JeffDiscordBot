@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
-const { token, ownerId } = require('./config.json');
+const { token, ownerId } = require('./betaconfig.json');
 const { scheduleDailyReminders } = require('./schedulers.js');
 const { Sequelize } = require('sequelize');
 const { reportError } = require('./utils.js');
@@ -9,7 +9,7 @@ const sequelize = new Sequelize({
     host: 'localhost',
     dialect: 'sqlite',
     logging: false,
-    storage: 'jeff.sqlite',
+    storage: 'jeffbeta.sqlite',
 });
 
 const jeff = require('./models/jeff.js')(sequelize, Sequelize.DataTypes);

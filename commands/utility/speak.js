@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, bold } = require('discord.js');
 const { GoogleGenAI } = require('@google/genai');
-const { geminiAPIKey } = require('../../config.json');
+const { geminiAPIKey } = require('../../betaconfig.json');
 const { reportError } = require('../../utils.js');
 const fs = require('fs');
 const path = require('path');

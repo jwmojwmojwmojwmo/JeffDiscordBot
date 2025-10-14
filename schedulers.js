@@ -1,5 +1,5 @@
 const { reportError } = require('./utils.js');
-const { ownerId } = require('./config.json');
+const { ownerId } = require('./betaconfig.json');
 
 async function sendDailyReminders(client, tbl) {
     const now = new Date();
