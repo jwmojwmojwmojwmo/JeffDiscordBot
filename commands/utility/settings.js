@@ -55,7 +55,8 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     });
     collector.on('collect', async i => {
         if (i.customId === 'deleteInfo') {
-            await deleteInfo(user, i, collector, collectorFilter);
+            collector.stop('deleteInfo');
+            await deleteInfo(user, i, collectorFilter);
             return;
         }
         if (i.customId === 'requestInfo') {
@@ -71,16 +72,16 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
             flags: MessageFlags.Ephemeral,
         });
     });
-    collector.on('end', async () => {
+    collector.on('end', async (_collected, reason) => {
+        if (reason === 'deleteInfo') return;
         await interaction.editReply({
-            content: 'This interaction timed out, or was cancelled. If you were managing or attempted to manage your user data (ie deleting information), this is expected.',
+            content: 'This interaction timed out.',
             components: [],
             embeds: [],
             flags: MessageFlags.Ephemeral,
         });
     })
 }
-
 async function requestInfo(user, i, interaction, collector, collectorFilter) {
     await i.update({
         content: `Would you like to request all user information tied to your Discord account that Jeff Bot has stored?\nNote that confirmation of this request, as well as this information will be DMed to you. Please keep your DMs open for Jeff Bot :)`,
@@ -111,7 +112,7 @@ async function requestInfo(user, i, interaction, collector, collectorFilter) {
     }
 }
 
-async function deleteInfo(user, i, collector, collectorFilter) {
+async function deleteInfo(user, i, collectorFilter) {
     await i.update({
         content: `Are you sure you want to permanently delete all data Jeff Bot has associated with your account? This includes reputation, settings, and all other stored information.\nThis action CANNOT be undone.`,
         embeds: [],
@@ -129,10 +130,8 @@ async function deleteInfo(user, i, collector, collectorFilter) {
     try {
         const response = await i.message.awaitMessageComponent({ filter: collectorFilter, time: 30000 }); // give 30 sec for response
         if (response.customId === 'yes') {
-            console.log(`${user.toJSON()} deleted their account.`);
+            console.log(`${JSON.stringify(user.toJSON(), null, 2)} deleted their account.`);
             await user.destroy();
-            // fake loading delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
             await response.update({ content: `All user information associated with your account has been deleted.`, components: [], flags: MessageFlags.Ephemeral });
         }
         else {

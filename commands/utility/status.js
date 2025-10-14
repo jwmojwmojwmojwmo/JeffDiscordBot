@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
 
-const offlineinhours = 5; // change this value for time until bot goes offline (in hours from time when commands deployed)
+const offlineinhours = 12; // change this value for time until bot goes offline (in hours from time when commands deployed)
 const onlineinhours = 12; // change this value for time until bot comes back online (in hours after bot goes offline)
 
 const Status = Object.freeze({
@@ -20,7 +20,7 @@ const statusEmbed = new EmbedBuilder()
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
     .addFields(
         { name: `Status: ${Status.ONLINEISSUE}`, value: `\nPlanned to go offline <t:${timea}:R>, planned to come back online <t:${timeb}:R> (times are approximate)` },
-        { name: `Known issues:`, value: `Sometimes error messages will display even if no error occured.` },
+        { name: `Known issues:`, value: `Sometimes error messages will display even if no error occured.\n/settings menu is a little buggy, especially the delete information part - rest assured your information is securely deleted, it just doesn't show that way.` },
         { name: 'Latest update: v0.82b', value: 'Changes:\nAdded /settings, with user specific settings that can be changed, as well as the ability to delete or request all user information that Jeff Bot has of an account.' },
         { name: 'Next major update sneak peek: v0.9b', value: 'Gambling...I love gambling... hehehe' },
         { name: '\u200B', value: `Updated at <t:${now}:T>` },
@@ -31,6 +31,7 @@ module.exports = {
         .setName('status')
         .setDescription('Get status of bot and most recent update notes'),
     async execute(interaction) {
+        console.log(`Status was checked.`);
         await interaction.reply({ embeds: [statusEmbed] });
     },
 };

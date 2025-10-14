@@ -34,6 +34,7 @@ module.exports = {
         .setDescription('Gives Jeff!'),
     async execute(interaction) {
         getFile();
+        console.log("Jeff pictures were requested.");
         await interaction.reply({
             // sends discord media gallery with created file
             components: [gallery],
