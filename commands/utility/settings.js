@@ -34,7 +34,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
             .addFields(
                 {
                     name: `Daily Reminders - **${user.settings.dailyReminders}**`,
-                    value: `Get a reminder every day if you forget /daily! (This feature is coming soon)`,
+                    value: `Get a reminder every day if you forget /daily!`,
                 },
                 {
                     name: `Vote Reminders - **${user.settings.voteReminders}**`,
@@ -73,7 +73,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     });
     collector.on('end', async () => {
         await interaction.editReply({
-            content: 'This interaction timed out or was cancelled. If you were managing or attempted to manage your user data (like deleting or requesting it), this is expected.',
+            content: 'This interaction timed out, or was cancelled. If you were managing or attempted to manage your user data (ie deleting information), this is expected.',
             components: [],
             embeds: [],
             flags: MessageFlags.Ephemeral,
@@ -105,10 +105,6 @@ async function requestInfo(user, i, interaction, collector, collectorFilter) {
             const requestor = await interaction.client.users.fetch(user_id);
             requestor.send(`Your request for user information has been submitted. Please allow up to 3 days to receive your information, and remember to check your DMs. If you need any assistance, please contact the developer through GitHub (link at /about). Jeffy loves you and wishes you a great day!`);
         }
-        else {
-            response.update({ content: `Account information request cancelled by user.`, components: [], flags: MessageFlags.Ephemeral });
-        }
-        collector.stop('done');
     }
     catch {
         return i.editReply({ content: 'This interaction has timed out.', components: [], flags: MessageFlags.Ephemeral });
@@ -133,13 +129,15 @@ async function deleteInfo(user, i, collector, collectorFilter) {
     try {
         const response = await i.message.awaitMessageComponent({ filter: collectorFilter, time: 30000 }); // give 30 sec for response
         if (response.customId === 'yes') {
+            console.log(`${user.toJSON()} deleted their account.`);
             await user.destroy();
-            response.update({ content: `All user information associated with your account has been deleted.`, components: [], flags: MessageFlags.Ephemeral });
+            // fake loading delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await response.update({ content: `All user information associated with your account has been deleted.`, components: [], flags: MessageFlags.Ephemeral });
         }
         else {
-            response.update({ content: `Account deletion cancelled by user.`, components: [], flags: MessageFlags.Ephemeral });
+            await response.update({ content: `Account deletion cancelled by user.`, components: [], flags: MessageFlags.Ephemeral });
         }
-        collector.stop('done');
     }
     catch {
         return i.editReply({ content: 'This interaction has timed out.', components: [], flags: MessageFlags.Ephemeral });
