@@ -89,7 +89,11 @@ client.on(Events.InteractionCreate, async interaction => {
     // runs command according to command file with error handling
     try {
         await command.execute(interaction);
-        // console.log(`Commands were run in ${interaction.guild.name}.`);
+        if (interaction.guild) {
+            console.log(`Commands were run in ${interaction.guild.name}.`);
+        } else {
+            console.log(`Commands were run in DMs.`);
+        }
     }
     catch (error) {
         reportError(error);
