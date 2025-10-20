@@ -49,7 +49,7 @@ for (const folder of commandFolders) {
 }
 
 client.once(Events.ClientReady, readyClient => {
-    client.user.setActivity('/jeff', { type: ActivityType.Listening });
+    client.user.setActivity('/jeff', { type: ActivityType.Watching });
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     scheduleDailyReminders(client, client.db.jeff);
 });

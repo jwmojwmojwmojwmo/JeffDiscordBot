@@ -1,6 +1,5 @@
 const fs = require('fs');
-const path = require('path');
-const errPath = path.join(__dirname, '..', '..', 'errors.txt');
+const errPath = './errors.txt';
 
 // Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
 // Note that if update === false, the callee must manually do user.save(), or the updated username will not persist. There ane NO CHECKS for this
