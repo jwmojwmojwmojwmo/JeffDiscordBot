@@ -47,6 +47,7 @@ module.exports = {
         else {
             msg += ` has ${stat} ${statType}!`;
         }
+        console.log(`The following stat was checked: ${msg}.`);
         await interaction.reply(msg);
     },
 };

@@ -16,7 +16,7 @@ const BuyMeACoffeeButton = new ButtonBuilder()
 const linkRow = new ActionRowBuilder().addComponents(GitHubButton, TopGGButton, BuyMeACoffeeButton); // the row of buttons below the text
 
 const aboutEmbed = new EmbedBuilder()
-    .setTitle('Jeff Discord Bot v0.81b')
+    .setTitle('Jeff Discord Bot v0.82b')
     .setURL('https://luwu.pythonanywhere.com/')
     .setAuthor({ name: 'jwmo', iconURL: 'https://i.imgur.com/e0xvSJ9.png', url: 'https://luwu.pythonanywhere.com/' })
     .setDescription('Best Jeff bot ever! Jeff\'s the cutest and he deserves all the bots yes yes nom nom. Use the Wiki on the linked GitHub page for any questions, or just play around with Jeff hehe. ' +
@@ -24,7 +24,7 @@ const aboutEmbed = new EmbedBuilder()
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
     .addFields(
         // { name: '\u200B', value: '\u200B', inline: true }, //empty field
-        { name: 'Credits', value: 'Developed by jwmo. Assets provided by Woofie and gavdingo.\nSpecial thanks to CrabKevin for his contributions!' },
+        { name: 'Credits', value: 'Created with love by jwmo.\nDeveloped in partnership with Woofie.\nSpecial thanks to CrabKevin for his contributions!\nAnd a big thanks to everyone who donates Jeff pictures!' },
     )
     // .setImage("https://i.imgur.com/ntg31Zx.jpeg")
     .setTimestamp()
@@ -35,6 +35,7 @@ module.exports = {
         .setName('about')
         .setDescription('About the bot'),
     async execute(interaction) {
+        console.log(`About was checked.`);
         await interaction.reply({ embeds: [aboutEmbed], components: [linkRow] });
     },
 };

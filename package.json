@@ -10,10 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "@google/genai": "^1.19.0",
+    "@top-gg/sdk": "^3.1.6",
     "bufferutil": "^4.0.9",
     "discord.js": "^14.21.0",
     "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "topgg-autoposter": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

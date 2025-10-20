@@ -87,6 +87,7 @@ module.exports = {
         else {
             reply = await getTopFive(tbl, interaction.guild, stat);
         }
+        console.log(`${reply} leaderboard was checked.`);
         await interaction.editReply(reply);
     },
 };

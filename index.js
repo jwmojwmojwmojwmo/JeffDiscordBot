@@ -1,10 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
-const { token, ownerId } = require('./config.json');
+const { token, ownerId, topggAPIKey } = require('./config.json');
 const { scheduleDailyReminders } = require('./schedulers.js');
 const { Sequelize } = require('sequelize');
 const { reportError } = require('./utils.js');
+const { AutoPoster } = require("topgg-autoposter");
 const sequelize = new Sequelize({
     host: 'localhost',
     dialect: 'sqlite',
@@ -48,12 +49,14 @@ for (const folder of commandFolders) {
     }
 }
 
+// Sets ready state for Jeff Bot
 client.once(Events.ClientReady, readyClient => {
     client.user.setActivity('/jeff', { type: ActivityType.Listening });
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     scheduleDailyReminders(client, client.db.jeff);
 });
 
+// Main command handling function
 client.on(Events.InteractionCreate, async interaction => {
     // checks if slash command is slash command and exists
     if (!interaction.isChatInputCommand()) return;
@@ -88,6 +91,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
     // runs command according to command file with error handling
     try {
+        //TODO: pass interaction into helpers and return replies through helper whenever possible
         await command.execute(interaction);
         if (interaction.guild) {
             console.log(`Commands were run in ${interaction.guild.name}.`);
@@ -146,7 +150,13 @@ client.on(Events.MessageCreate, async message => {
         }
     }
 });
+
+AutoPoster(topggAPIKey, client).on("posted", () => {
+    console.log("[AutoPoster] Posted stats to Top.gg!");
+  });
+  
 (async () => {
-    await jeff.sync(); // jeff.sync({ alter: true }); when modifying db info
+    await jeff.sync();
+    // await jeff.sync({ alter: true }); // when modifying db info 
     await client.login(token);
 })();

@@ -33,7 +33,12 @@ module.exports = (sequelize, DataTypes) => {
         last_daily: { // date of last time user claimed daily
             type: DataTypes.DATE
         },
-        settings: {
+        claimedVote: { // true if user has voted in the current 12 hour period, false otherwise
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        settings: { // user settings
             type: DataTypes.JSON,
             allowNull: false,
             defaultValue: {
