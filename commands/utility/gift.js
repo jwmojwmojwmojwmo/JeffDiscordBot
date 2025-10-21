@@ -18,6 +18,7 @@ async function gift(interaction, tbl, victim_id, victim_name, culprit_id, culpri
 }
 
 // TODO: add tax based on global nom count (jeff more/less hungry)
+// TODO: add reputation gain when gifting sum
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('gift')
