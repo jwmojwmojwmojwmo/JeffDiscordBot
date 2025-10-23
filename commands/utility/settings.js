@@ -27,10 +27,10 @@ const deleteInfoButton = new ButtonBuilder()
 const settingsRow = new ActionRowBuilder().addComponents(dailyRemindersButton, voteReminders, DonateJeffDMButton); // the row of buttons below the text
 const utilSettingsRow = new ActionRowBuilder().addComponents(requestInfoButton, deleteInfoButton); // the row of buttons below the text
 
-async function settingsFunction(tbl, interaction, user_id, user_name) {
+async function settingsFunction(interaction, user) {
     const buildEmbed = () =>
         new EmbedBuilder()
-            .setTitle(`${user_name}'s Settings`)
+            .setTitle(`${user.username}'s Settings`)
             .addFields(
                 {
                     name: `Daily Reminders - **${user.settings.dailyReminders}**`,
@@ -45,8 +45,6 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
                     value: `Get DMs about your /donatejeff submissions!`,
                 }
             );
-    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
-
     const reply = await interaction.reply({ embeds: [buildEmbed()], components: [settingsRow, utilSettingsRow], flags: MessageFlags.Ephemeral });
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     const collector = reply.createMessageComponentCollector({
@@ -57,11 +55,9 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
         if (i.customId === 'deleteInfo') {
             collector.stop('deleteInfo');
             await deleteInfo(user, i, collectorFilter);
-            return;
         }
         if (i.customId === 'requestInfo') {
             await requestInfo(user, i, interaction, collector, collectorFilter);
-            return;
         }
         user.settings[i.customId] = !user.settings[i.customId];
         user.changed('settings', true);
@@ -72,7 +68,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
             flags: MessageFlags.Ephemeral,
         });
     });
-    collector.on('end', async (_collected, reason) => {
+    collector.on('end', async (_collected, reason) => { // TODO: add close button
         if (reason === 'deleteInfo') return;
         await interaction.editReply({
             content: 'This interaction timed out.',
@@ -150,6 +146,7 @@ module.exports = {
         .setDescription('Look at and change your user-specific settings'),
     async execute(interaction) {
         const name = interaction.member?.displayName || interaction.user.username;
-        await settingsFunction(interaction.client.db.jeff, interaction, interaction.user.id, name);
+        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, name, false);
+        await settingsFunction(interaction, user);
     },
 };

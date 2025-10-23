@@ -20,15 +20,13 @@ const highLowRow = new ActionRowBuilder().addComponents(lowerButton, jackpotButt
 
 // TODO: constants for blackjack UI
 
-async function playHighLow(interaction, tbl, user_id, user_name) {
+async function playHighLow(interaction, user) {
     const thinkingNum = Math.floor(Math.random() * 101); // the num jeffy is thinking of, 0-100
     const givenNum = Math.floor(Math.random() * 101); // the num the user sees, 0-100
     const highLowReply = await interaction.reply({
         content: `Jeff says: MRR!!! MRRRR MRR!! YUMMY YUMMY! (translation: I'm thinking of a number from 0-100! Is it lower or higher than ${givenNum}?)\nUse Jackpot if you think they're the same number!`,
         components: [highLowRow],
-        withResponse: true,
     });
-    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     try {
         const response = await highLowReply.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 }); // give 20 sec for response before erroring
@@ -69,13 +67,12 @@ function getHighLowPenalty(diff) {
 }
 
 
-async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
+async function playBlackJack(interaction, user, bet) {
     console.log(`${user.username} (${user.userid}) tried to play blackjack.`);
     return interaction.reply('Work in progress...'); // comment out when blackjack is done
 
     // stub
     const reply = await interaction.reply('stub'); // initial reply
-    const user = await getUserAndUpdate(tbl, user_id, user_name, false); // returns user who started interaction
     const collectorFilter = i => i.user.id === interaction.user.id; // returns true if the user pressing the button is the user who started the interaction
     const collector = reply.createMessageComponentCollector({ // creates a collector, lasting for two minutes, using the filter, that 'collects' every time an action is performed
         filter: collectorFilter,
@@ -110,15 +107,16 @@ module.exports = {
                         .setDescription('Reputation you would like to bet')
                         .setRequired(true))),
     async execute(interaction) {
-        const tbl = interaction.client.db.jeff;
+        const db = interaction.client.db.jeff;
         const name = interaction.member?.displayName || interaction.user.username;
         const id = interaction.user.id;
+        const user = await getUserAndUpdate(db, id, name, false);
         if (interaction.options.getSubcommand() === 'highlow') {
-            await playHighLow(interaction, tbl, id, name);
+            await playHighLow(interaction, user);
         }
         else {
             // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current reputation
-            await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet'));
+            await playBlackJack(interaction, user, interaction.options.getInteger('bet'));
         }
     },
 };

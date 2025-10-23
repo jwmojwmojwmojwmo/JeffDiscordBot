@@ -5,11 +5,10 @@ const path = require('path');
 const { getUserAndUpdate, reportError } = require('../../utils.js');
 const donationPath = path.join(__dirname, '..', '..', 'donations.txt');
 
-async function addDonation(picture, tbl, user_name, user_id) {
+async function addDonation(user, picture) {
     const date = new Date();
-    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
-    fs.appendFile(donationPath, '\n\n' + JSON.stringify({ url: picture.url }, null, 1) + ', ' + user_name + ', ' + user_id
-        + ', ' + user.settings.donateJeffDM + ',' + date.toLocaleString(), (err) => {
+    fs.appendFile(donationPath, '\n\n' + JSON.stringify({ url: picture.url }, null, 1) + ', ' + user.username + ', ' + user.userid
+        + ', ' + user.settings.donateJeffDM + ', ' + date.toLocaleString(), (err) => {
             if (err) {
                 reportError(err);
                 return;
@@ -29,7 +28,8 @@ module.exports = {
                 .setRequired(true)),
     async execute(interaction) {
         const jwmo = await interaction.client.users.fetch(ownerId);
-        await addDonation(interaction.options.getAttachment('picture'), interaction.client.db.jeff, interaction.user.username.toString(), interaction.user.id);
+        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.user.username, false);
+        await addDonation(user, interaction.options.getAttachment('picture'));
         await jwmo.send('A Jeff was donated');
         await interaction.reply({ content: 'Thank you for your donation! It will be reviewed and approved if deemed appropriate!', flags: MessageFlags.Ephemeral });
     },
