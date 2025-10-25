@@ -3,23 +3,6 @@ const { getUserAndUpdate } = require('../../utils.js');
 
 const energyToSpit = 25;
 
-// return -1 if success, or energy needed to spit
-async function spit(tbl, victim_id, victim_name, culprit_id, culprit_name) {
-	let victim = await getUserAndUpdate(tbl, victim_id, victim_name, false);
-	let culprit = await getUserAndUpdate(tbl, culprit_id, culprit_name, false);
-	if (culprit.energy < energyToSpit) {
-        await victim.save();
-        await culprit.save();
-		return energyToSpit - culprit.energy;
-	}
-	culprit.energy -= energyToSpit;
-	victim.reputation -= 1;
-	await victim.save();
-	await culprit.save();
-    console.log(`${victim.username} (${victim.userid}) was spit on by ${culprit.username} (${culprit.userid})`);
-	return -1;
-}
-
 module.exports = {
 	cooldown: 7,
 	data: new SlashCommandBuilder()
@@ -37,13 +20,23 @@ module.exports = {
 		if (interaction.options.getUser('user').id === interaction.user.id) {
 			return interaction.reply({ content: 'You can\'t spit on yourself!', flags: MessageFlags.Ephemeral });
 		}
-		const tbl = interaction.client.db.jeff;
-		const victim = interaction.options.getMember('user').displayName;
-		const culprit = interaction.member.displayName;
-		const success = await spit(tbl, interaction.options.getUser('user').id, victim, interaction.user.id, culprit);
-		if (success === -1) {
-			return interaction.reply(`${culprit} spit on ${victim}! ${culprit} has used ${energyToSpit} energy, and ${victim} has lost 1 reputation!`);
-		}
-		await interaction.reply({ content: `You need ${success} more energy to run this command!`, flags: MessageFlags.Ephemeral });
+        const db = interaction.client.db.jeff;
+        const victim_name = interaction.options.getMember('user').displayName;
+        const culprit_name = interaction.member.displayName;
+        const victim = await getUserAndUpdate(db, interaction.options.getUser('user').id, victim_name, false);
+        const culprit = await getUserAndUpdate(db, interaction.user.id, culprit_name, false);
+        // spitting logic
+        if (culprit.energy < energyToSpit) {
+            await victim.save();
+            await culprit.save();
+            await interaction.reply({ content: `You need ${energyToSpit - culprit.energy} more energy to run this command!`, flags: MessageFlags.Ephemeral });
+        } else {
+            culprit.energy -= energyToSpit;
+            victim.reputation -= 1;
+            await victim.save();
+            await culprit.save();
+            console.log(`${victim.username} (${victim.userid}) was spit on by ${culprit.username} (${culprit.userid})`);
+            await interaction.reply(`${culprit_name} spit on ${victim_name}! ${culprit_name} has used ${energyToSpit} energy, and ${victim_name} lost 1 reputation!`);
+        }
 	},
 };

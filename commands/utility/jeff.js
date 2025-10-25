@@ -22,7 +22,10 @@ function getFile() {
             console.log('No files in assets folder.');
             return;
         }
-        fileName = files[Math.floor(Math.random() * files.length)]; // grabs random filename from assets
+        do {
+            fileName = files[Math.floor(Math.random() * (files.length - 1))]; // grabs random filename from assets
+        } while (!fileName.includes('jeff'));
+        fileName = files[Math.floor(Math.random() * (files.length - 1))]; // grabs random filename from assets
         file = new AttachmentBuilder('assets/' + fileName); // creates file from filename
         gallery = new MediaGalleryBuilder().addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://' + fileName)); // creates discord media gallery from filename
     });

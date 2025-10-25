@@ -9,13 +9,6 @@ const killMsg = [
 	' got Jeff’ed. Nomfest initiated!',
 ];
 
-async function kill(tbl, victim_id, victim_name) {
-	let victim = await getUserAndUpdate(tbl, victim_id, victim_name, false);
-	victim.num_nommed += 1;
-	await victim.save();
-    console.log(`${victim.username} (${victim.userid}) was nommed.`);
-}
-
 module.exports = {
 	cooldown: 7,
 	data: new SlashCommandBuilder()
@@ -30,12 +23,16 @@ module.exports = {
 		if (!interaction.guild) {
 			return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
 		}
-        const victimId = interaction.options.getUser('user').id;
-        const victimName = interaction.options.getMember('user').displayName;
-		if (victimId === interaction.user.id) {
+        const victim_id = interaction.options.getUser('user').id;
+        const victim_name = interaction.options.getMember('user').displayName;
+		if (victim_id === interaction.user.id) {
 			return interaction.reply({ content: 'You can\'t nom yourself!', flags: MessageFlags.Ephemeral });
 		}
-		await kill(interaction.client.db.jeff, victimId, victimName);
+        const victim = await getUserAndUpdate(interaction.client.db.jeff, victim_id, victim_name, false);
+        // nom logic
+        victim.num_nommed += 1;
+        await victim.save();
+        console.log(`${victim.username} (${victim.userid}) was nommed.`);
 		await interaction.reply(victimName + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
 	},
 };

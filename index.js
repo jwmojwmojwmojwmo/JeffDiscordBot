@@ -102,10 +102,10 @@ client.on(Events.InteractionCreate, async interaction => {
     catch (error) {
         reportError(error);
         if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. Note that Discord messages must be 2000 characters or fewer.', flags: MessageFlags.Ephemeral });
+            await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. -- please report this error --', flags: MessageFlags.Ephemeral });
         }
         else {
-            await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: 'There was an error while executing this command! -- please report this error --', flags: MessageFlags.Ephemeral });
         }
     }
 });

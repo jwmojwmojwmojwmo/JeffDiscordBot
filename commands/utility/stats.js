@@ -21,12 +21,10 @@ module.exports = {
         .addUserOption(option =>
             option
                 .setName('user')
-                .setDescription('User that you want to see stats of')
-                .setRequired(true))
+                .setDescription('User that you want to see stats of'))
         .addStringOption(option =>
             option.setName('stat_type')
                 .setDescription('Type of stat you want to see')
-                .setRequired(true)
                 .addChoices(
                     { name: 'all_stats', value: 'all_stats' },
                     { name: 'nom_count', value: 'num_nommed' },
@@ -35,9 +33,9 @@ module.exports = {
                 )),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-        let msg = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user').username;
-        const statType = interaction.options.getString('stat_type');
-        const stat = await getStat(tbl, interaction.options.getUser('user').id, msg, statType);
+        let msg = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user')?.username || interaction.user.username;
+        const statType = interaction.options.getString('stat_type') || 'all_stats';
+        const stat = await getStat(tbl, interaction.options.getUser('user')?.id || interaction.user.id, msg, statType);
         if (statType === 'num_nommed') {
             msg += ` has been nommed ${stat} time${stat === 1 ? '' : 's'}!`; // 1 time vs multiple times in message
         }
@@ -47,7 +45,6 @@ module.exports = {
         else {
             msg += ` has ${stat} ${statType}!`;
         }
-        console.log(`The following stat was checked: ${msg}.`);
         await interaction.reply(msg);
     },
 };

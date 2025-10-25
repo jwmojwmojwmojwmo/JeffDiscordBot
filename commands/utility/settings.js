@@ -38,7 +38,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
                 },
                 {
                     name: `Vote Reminders - **${user.settings.voteReminders}**`,
-                    value: `Get reminded to vote for more rewards! (This feature is coming soon)`,
+                    value: `Get reminded to vote for more rewards!`,
                 },
                 {
                     name: `Donate Jeff DMs - **${user.settings.donateJeffDM}**`,
