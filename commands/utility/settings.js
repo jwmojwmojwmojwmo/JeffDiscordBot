@@ -13,7 +13,7 @@ const voteReminders = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary);
 const DonateJeffDMButton = new ButtonBuilder()
     .setCustomId('donateJeffDM')
-    .setLabel('Toggle Donate Jeff DMs')
+    .setLabel('Toggle Jeff DMs')
     .setStyle(ButtonStyle.Primary);
 const requestInfoButton = new ButtonBuilder()
     .setCustomId('requestInfo')
@@ -41,8 +41,8 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
                     value: `Get reminded to vote for more rewards!`,
                 },
                 {
-                    name: `Donate Jeff DMs - **${user.settings.donateJeffDM}**`,
-                    value: `Get DMs about your /donatejeff submissions!`,
+                    name: `Jeff DMs - **${user.settings.donateJeffDM}**`,
+                    value: `Get DMs from /jeff about any donation submissions!`,
                 }
             );
     let user = await getUserAndUpdate(tbl, user_id, user_name, false);

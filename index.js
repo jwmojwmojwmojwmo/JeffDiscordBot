@@ -121,13 +121,13 @@ client.on(Events.MessageCreate, async message => {
             try {
                 const user = await client.users.fetch(userId);
                 if (yesorno === 'y') {
-                    await user.send('Thanks for your submission to Jeff Bot! Your submission has been approved!\n\nPlease note this bot is currently unable to receive replies.');
+                    await user.send('Thanks for your submission to Jeff Bot! Your submission has been approved!\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
                 }
                 else if (yesorno === 'n') {
-                    await user.send('Thanks for your submission to Jeff Bot! Unfortunately, your submission was not approved for the following reason: "' + msg + '"\n\nPlease note this bot is currently unable to receive replies.');
+                    await user.send('Thanks for your submission to Jeff Bot! Unfortunately, your submission was not approved for the following reason: "' + msg + '"\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
                 }
                 else {
-                    await user.send(msg + '\n\nPlease note this bot is currently unable to receive replies.');
+                    await user.send(msg + '\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
                 }
                 await message.reply('DM sent!');
             }
@@ -142,6 +142,7 @@ client.on(Events.MessageCreate, async message => {
             try {
                 const user = await client.users.fetch(userId);
                 await user.send(`You recently requested your user information as stored by Jeff Bot. Please find your information below.\n\n${msg}\n\nPlease note this bot is currently unable to receive replies.`);
+                await message.reply('DM sent!');
             }
             catch (err) {
                 reportError(err);

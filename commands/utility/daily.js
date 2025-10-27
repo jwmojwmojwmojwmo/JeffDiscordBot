@@ -36,7 +36,12 @@ module.exports = {
         else {
             await interaction.reply({ content: `You’ve already claimed your daily today! Next claim <t:${success}:R>`, flags: MessageFlags.Ephemeral });
         }
-        const voted = await TopggAPI.hasVoted(user.userid);
+        let voted;
+        try {
+            voted = await TopggAPI.hasVoted(user.userid);
+        } catch (err) {
+            console.log('TOPGG 404 ERROR -> USER PROBABLY HAS NEVER VOTED BUT TODO: CHECK THIS ERROR'); // TODO
+        }
         if (!voted && user.settings.voteReminders) {
             await interaction.followUp({ content: `You haven't voted yet! Run /vote before AND after you vote to get additional rewards!\n\nYou can turn these reminders off by using /settings.`, flags: MessageFlags.Ephemeral });
         }

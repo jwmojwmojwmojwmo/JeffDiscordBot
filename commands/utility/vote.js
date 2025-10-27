@@ -20,7 +20,12 @@ module.exports = {
         const id = interaction.user.id;
         await interaction.reply({ content: `Fetching vote information...`, flags: MessageFlags.Ephemeral });
         const user = await getUserAndUpdate(interaction.client.db.jeff, id, name, false);
-        const voted = await TopggAPI.hasVoted(id);
+        let voted = false;
+        try {
+            voted = await TopggAPI.hasVoted(id);
+        } catch (err) {
+            console.log('TOPGG 404 ERROR -> USER PROBABLY HAS NEVER VOTED BUT TODO: CHECK THIS ERROR'); // TODO
+        }
         let reward = 25;
         // rewarding logic
         if (!voted) {
