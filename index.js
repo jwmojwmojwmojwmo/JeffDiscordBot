@@ -138,6 +138,7 @@ client.on(Events.MessageCreate, async message => {
             try {
                 const user = await client.users.fetch(userId);
                 await user.send(`You recently requested your user information as stored by Jeff Bot. Please find your information below.\n\n${msg}\n\nPlease note this bot is currently unable to receive replies.`);
+                await message.reply('DM sent!');
             }
             catch (err) {
                 reportError(err);

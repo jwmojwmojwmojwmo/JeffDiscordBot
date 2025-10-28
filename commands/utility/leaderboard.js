@@ -67,13 +67,12 @@ module.exports = {
         .addStringOption(option =>
             option.setName('scope')
                 .setDescription('Choose global or server leaderboard')
-                .setRequired(true)
                 .addChoices(
                     { name: 'Global', value: 'global' },
                     { name: 'Server', value: 'server' },
                 )),
     async execute(interaction) {
-        const scope = interaction.options.getString('scope');
+        const scope = interaction.options.getString('scope') || 'global';
         const stat = interaction.options.getString('stat_type');
         if (!interaction.guild && scope === 'server') {
             return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
