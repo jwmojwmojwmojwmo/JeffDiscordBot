@@ -36,7 +36,7 @@ module.exports = {
         else {
             await interaction.reply({ content: `You’ve already claimed your daily today! Next claim <t:${success}:R>`, flags: MessageFlags.Ephemeral });
         }
-        let voted;
+        let voted = false;
         try {
             voted = await TopggAPI.hasVoted(user.userid);
         } catch (err) {

@@ -33,6 +33,6 @@ module.exports = {
         victim.num_nommed += 1;
         await victim.save();
         console.log(`${victim.username} (${victim.userid}) was nommed.`);
-		await interaction.reply(victimName + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
+		await interaction.reply(victim_name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
 	},
 };
