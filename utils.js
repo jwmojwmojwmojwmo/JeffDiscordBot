@@ -1,9 +1,14 @@
-const fs = require('fs');
-const errPath = './errors.txt';
-
 // Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
 // Note that if update === false, the callee must manually do user.save(), or the updated username will not persist. There ane NO CHECKS for this
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
+/**
+ * Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
+ * @param {number} tbl - database
+ * @param {import('discord.js').Snowflake} user_id - userid
+ * @param {String} user_name - username
+ * @param {boolean} update - if update === false, the callee must manually do user.save(), or the updated username will not persist. There are NO CHECKS for this. Note that if update === true and an unneccesary .save() occurs, it is a performance loss
+ * @returns {object} - user object with updated username. The username has not been saved to the database unless update === true
+ */
 async function getUserAndUpdate(tbl, user_id, user_name, update) {
 	let user = await tbl.findByPk(user_id);
 	if (user) {
@@ -23,11 +28,7 @@ async function getUserAndUpdate(tbl, user_id, user_name, update) {
 	return user;
 }
 
-// Given an error, record it in errors.txt and log it in console
-function reportError(err) {
-	const date = new Date();
-	fs.appendFileSync(errPath, err.stack + ', ' + date.toLocaleString() + '\n\n');
-	console.error(err);
-}
+// TODO: ratelimiterror
+// TODO: remove all mentions of reportError
 
-module.exports = { getUserAndUpdate, reportError };
+module.exports = { getUserAndUpdate };

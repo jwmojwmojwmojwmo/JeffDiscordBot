@@ -42,7 +42,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
                 },
                 {
                     name: `Jeff DMs - **${user.settings.donateJeffDM}**`,
-                    value: `Get DMs from /jeff about any donation submissions!`,
+                    value: `Get DMs from Jeff bot about any donation submissions!`,
                 }
             );
     let user = await getUserAndUpdate(tbl, user_id, user_name, false);
@@ -82,6 +82,8 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
         });
     })
 }
+
+// TODO: fix settings bug where names of buttons in requestInfo and deleteInfo are stored into settings JSON
 async function requestInfo(user, i, interaction, collector, collectorFilter) {
     await i.update({
         content: `Would you like to request all user information tied to your Discord account that Jeff Bot has stored?\nNote that confirmation of this request, as well as this information will be DMed to you. Please keep your DMs open for Jeff Bot :)`,

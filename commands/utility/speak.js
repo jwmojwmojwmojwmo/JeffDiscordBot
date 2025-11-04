@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, bold } = require('discord.js');
 const { GoogleGenAI } = require('@google/genai');
 const { geminiAPIKey } = require('../../config.json');
-const { reportError } = require('../../utils.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -74,6 +73,7 @@ function timeout(ms) {
 }
 
 // jeff msg according to google gemini
+// TODO: use beta branch's prompt, log explanations, fix new line bug in beta branch
 async function fullAIMsg(askedMsg) {
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-lite',
@@ -94,7 +94,7 @@ function fullMsg() {
     let index = Math.floor(Math.random() * 4); // randomise emotion
     if (index > 2) { // higher chance for positive
         index = 0;
-    }
+    }   
     const msgNum = Math.floor(Math.random() * 4) + 1; // randomise # of msgs
     for (let i = 0; i <= msgNum; i++) {
         msg += '\n' + getMsg(index);
@@ -126,7 +126,7 @@ module.exports = {
         }
         catch (err) {
             jeffReply = fullMsg(); // fallback to non-ai method of getting reply
-            reportError(err);
+            console.error(err);
         }
         console.log(msg + jeffReply);
         await interaction.editReply(msg + jeffReply);

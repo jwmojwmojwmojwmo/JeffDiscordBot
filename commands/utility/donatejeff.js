@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { ownerId } = require('../../betaconfig.json');
 const fs = require('fs');
 const path = require('path');
-const { getUserAndUpdate, reportError } = require('../../utils.js');
+const { getUserAndUpdate } = require('../../utils.js');
 const donationPath = path.join(__dirname, '..', '..', 'donations.txt');
 
 // TODO: use template literals
@@ -11,7 +11,7 @@ async function addDonation(user, picture) {
     fs.appendFile(donationPath, '\n\n' + JSON.stringify({ url: picture.url }, null, 1) + ', ' + user.username + ', ' + user.userid
         + ', ' + user.settings.donateJeffDM + ', ' + date.toLocaleString(), (err) => {
             if (err) {
-                reportError(err);
+                console.error(err);
                 return;
             }
             console.log('File written successfully! ' + date.toLocaleString());

@@ -93,7 +93,7 @@ async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
 }
 
 module.exports = {
-    cooldown: 10,
+    cooldown: 7,
     data: new SlashCommandBuilder()
         .setName('play')
         .setDescription('Play a game with Jeff!')

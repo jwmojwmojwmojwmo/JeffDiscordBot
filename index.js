@@ -4,7 +4,6 @@ const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, A
 const { token, ownerId, topggAPIKey } = require('./config.json');
 const { scheduleDailyReminders } = require('./schedulers.js');
 const { Sequelize } = require('sequelize');
-const { reportError } = require('./utils.js');
 const { AutoPoster } = require("topgg-autoposter");
 const sequelize = new Sequelize({
     host: 'localhost',
@@ -51,7 +50,7 @@ for (const folder of commandFolders) {
 
 // Sets ready state for Jeff Bot
 client.once(Events.ClientReady, readyClient => {
-    client.user.setActivity('/jeff', { type: ActivityType.Listening });
+    client.user.setActivity('Waiting for /jeff', { type: ActivityType.Custom });
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     scheduleDailyReminders(client, client.db.jeff);
 });
@@ -100,7 +99,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
     catch (error) {
-        reportError(error);
+        console.error(error);
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. -- please report this error --', flags: MessageFlags.Ephemeral });
         }
@@ -132,7 +131,7 @@ client.on(Events.MessageCreate, async message => {
                 await message.reply('DM sent!');
             }
             catch (err) {
-                reportError(err);
+                console.error(err);
                 await message.reply('Failed to DM.');
             }
         }
@@ -145,17 +144,22 @@ client.on(Events.MessageCreate, async message => {
                 await message.reply('DM sent!');
             }
             catch (err) {
-                reportError(err);
+                console.error(err);
                 await message.reply('Failed to DM.');
             }
+        }
+        if (message.content.startsWith('!getinfo')) {
+            const [cmd, userId] = message.content.split(' ');
+            const user = await client.db.jeff.findByPk(userId);
+            await message.reply(JSON.stringify(user, null, 1));
         }
     }
 });
 
 AutoPoster(topggAPIKey, client).on("posted", () => {
     console.log("[AutoPoster] Posted stats to Top.gg!");
-  });
-  
+});
+
 (async () => {
     await jeff.sync();
     // await jeff.sync({ alter: true }); // when modifying db info 

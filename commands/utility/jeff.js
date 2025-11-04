@@ -1,5 +1,4 @@
 const { AttachmentBuilder, MediaGalleryBuilder, MessageFlags, SlashCommandBuilder } = require('discord.js');
-const { reportError } = require('../../utils.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const assetsDir = path.join(__dirname, '..', '..', 'assets');
@@ -15,7 +14,7 @@ function getFile() {
     let fileName = '';
     fs.readdir(assetsDir, (err, files) => {
         if (err) {
-            reportError(err);
+            console.error(err);
             return;
         }
         if (files.length === 0) { // shouldn't happen
