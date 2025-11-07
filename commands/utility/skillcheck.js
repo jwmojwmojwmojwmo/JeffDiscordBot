@@ -1,9 +1,10 @@
-const { SlashCommandBuilder, MessageFlags, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
-const { rivalsAPIKey, ownerId, testerId } = require('../../config.json');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { rivalsAPIKey, ownerId, testerId } = require('../../betaconfig.json');
+const { RateLimitError, RivalsAPIError } = require('../../utils.js')
 const axios = require("axios");
-const fs = require('fs');
-const util = require('util');
+
 const rivalsBaseURL = 'https://marvelrivalsapi.com';
+const season = 4.5;
 
 const lastUpdate = {}; // playerID: timestamp
 
@@ -13,137 +14,150 @@ function canUpdate(playerId) {
     return now - last >= 30 * 60 * 1000;
 }
 
+async function getPlayer(interaction, uid) {
+    // let uid;
+    // try {
+    //     uid = await axios.get(`${rivalsBaseURL}/api/v1/find-player/${name}`,
+    //         { headers: { 'x-api-key': rivalsAPIKey } });
+    // } catch (err) {
+    //     console.log(err);
+    //     if (err.response.status === 400 || err.response.status === 404) {
+    //         throw new Error('UNDEFINED_USER');
+    //     } else {
+    //         throw new Error('RATE_LIMIT_REACHED')
+    //     }
+    // }
+    // uid = uid.data.uid;
+    if (canUpdate(uid)) {
+        try {
+            await axios.get(`${rivalsBaseURL}/api/v1/player/${uid}/update`,
+                { headers: { "x-api-key": rivalsAPIKey } }).then(res => {
+                    console.log("Player updated request sent!");
+                    lastUpdate[uid] = Date.now();
+                });
+        } catch (err) {
+            if (err.response.status === 400 || err.response.status === 404) {
+                throw new Error('UNDEFINED_USER');
+            } else {
+                lastUpdate[uid] = Date.now();
+                console.log("Player is on 30-minute lock, according to the API. Try later.");
+            }
+        }
+    } else {
+        console.log("Player is on 30-minute lock. Try later.");
+    }
+    let data;
+    await interaction.editReply(`Player: ${uid}\n\nFetching player stats...`);
+    try {
+        data = await axios.get(`${rivalsBaseURL}/api/v1/player/${uid}`,
+            { params: { 'season': season }, headers: { 'x-api-key': rivalsAPIKey } });
+    } catch (err) {
+        if (err.response.status === 403) {
+            throw new Error('PRIVATE_USER');
+        } else if (err.response.status === 429) {
+            throw new RivalsAPIError('RATE_LIMIT_REACHED', err.response.headers['x-ratelimit-reset'], '');
+        } else {
+            console.error(err);
+            throw new RivalsAPIError('API_ERROR', '', err.response?.data?.message || 'unknown error');
+        }
+    }
+    return data;
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('skillcheck')
         .setDescription('Checks your skill level at Jeff')
         .addStringOption(option =>
             option
-                .setName('player_name')
-                .setDescription('In-game name of player to check.')
+                .setName('player')
+                .setDescription('Marvel Rivals in-game name or uid of player to check.')
                 .setRequired(true)),
     async execute(interaction) {
-        await interaction.deferReply();
-        let uid;
-        try {
-            uid = await axios.get(`${rivalsBaseURL}/api/v1/find-player/${interaction.options.getString('player_name')}`,
-                {
-                    headers: { 'x-api-key': rivalsAPIKey }
-                });
-        } catch (err) {
-            console.log(err);
-            if (err.response.status === 400 || err.response.status === 404) {
-                return interaction.editReply('Cannot find user, please check you typed the username correctly. Usernames are case-sensitive.');
-            } else {
-                return interaction.editReply('The API seems to be busy at the moment, please try again in a minute.');
-            }
-        }
-        uid = uid.data.uid;
-        console.log(uid);
-        if (canUpdate(uid)) {
-            try {
-                await axios.get(`${rivalsBaseURL}/api/v1/player/${uid}/update`,
-                    {
-                        headers: { "x-api-key": rivalsAPIKey }
-                    }).then(res => {
-                        console.log("Player updated request sent!");
-                        lastUpdate[uid] = Date.now();
-                    });
-            } catch (err) {
-                console.log("Player is on 30-minute lock, according to the API. Try later.");
-            }
-        } else {
-            console.log("Player is on 30-minute lock. Try later.");
-        }
+        let name = interaction.options.getString('player');
+        await interaction.reply({ content: `Player: ${name}\n\nPlease hold while Jeff negotiates with the Marvel Rivals servers...`, flags: MessageFlags.Ephemeral });
         let data;
         try {
-            data = await axios.get(`${rivalsBaseURL}/api/v1/player/${uid}`,
-            {
-                params: { 'season': 4.5 }, // TODO: decide on whether to use latest season or all seasons or smth else
-                headers: { 'x-api-key': rivalsAPIKey }
-            });
+            data = await getPlayer(interaction, name);
         } catch (err) {
-            if (err.response.status === 403) {
-                return interaction.editReply('This user\'s profile is set to private.');
-            } else {
-                return interaction.editReply('The API seems to be busy at the moment, please try again in a minute.');
+            if (err instanceof RivalsAPIError) {
+                if (err.message === 'RATE_LIMIT_REACHED') {
+                    return interaction.editReply({ content: `Jeff may be cute but the Marvel Rivals servers are refusing him access because he's being a little too pushy. Please let Jeffy rest and try again <t:${err.time}:R>.`, flags: MessageFlags.Ephemeral });
+                }
+                return interaction.editReply({content: `Something unexpected happened. If this issue persists, please report it. Error message: ${err.info}`});
+            }
+            if (err.message === 'UNDEFINED_USER') {
+                return interaction.editReply({ content: 'Cannot find user, please check you typed the username correctly. Usernames are case-sensitive. Note that this could be because the user\'s profile is set to private.\nIf you believe everything is correct and this error still shows, try searching by UID.', flags: MessageFlags.Ephemeral });
+            }
+            if (err.message === 'PRIVATE_USER') {
+                return interaction.editReply({ content: 'This user\'s profile is set to private.', flags: MessageFlags.Ephemeral });
             }
         }
+        const rank_history = data.data.rank_history;
+        rank_history.sort((a, b) => b.match_time_stamp - a.match_time_stamp);
+        console.log(data.data.player.rank, rank_history[0].score_progression.total_score);
+        name = data.data.name;
         let matchup = data.data.hero_matchups.find(h => h.hero_id === 1047); // matchup is this hero's winrate against yours, ie the player's winrate against jeff is 100%-matchup; competitive only
         let ranked = data.data.heroes_ranked.find(h => h.hero_id === 1047);
-        let unranked = data.data.heroes_unranked.find(h => h.hero_id === 1047);
-        let rankedWinrate;
-        let rankedMVPRate;
-        let rankedSVPRate;
-        let rankedKDA;
-        let rankedPlayTime;
-        let rankedTotalDamage;
-        let rankedTotalHealing;
-        let rankedTotalDamageBlocked;
-        let rankedAccuracy;
-        let unrankedWinrate;
-        let unrankedMVPRate;
-        let unrankedSVPRate;
-        let unrankedKDA;
-        let unrankedPlayTime;
-        let unrankedTotalDamage;
-        let unrankedTotalHealing;
-        let unrankedTotalDamageBlocked;
-        let unrankedAccuracy;
+        if (ranked == null) {
+            return interaction.editReply({ content: 'Cannot calculate skill level without Jeff games played in ranked this season.', flags: MessageFlags.Ephemeral });
+        }
+        let rankedWinrate = (ranked.wins / ranked.matches) * 100;
+        let rankedMVPRate = (ranked.mvp / ranked.wins) * 100;
+        let rankedSVPRate = (ranked.svp / (ranked.matches - ranked.wins)) * 100;
+        let rankedKDA = (ranked.kills + ranked.assists) / (ranked.deaths);
+        let rankedPlayTime = ranked.play_time / 3600;
+        let rankedTotalDamage = Math.round(ranked.damage);
+        let rankedTotalHealing = Math.round(ranked.heal);
+        let rankedMultiplier = 0.72;
+        let score = 0;
         if (matchup != null) {
             matchup = matchup.win_rate;
+            score += (100 - matchup) * 0.03;
+        } else {
+            rankedMultiplier += 0.03;
         }
-        if (ranked != null) {
-            rankedWinrate = (ranked.wins / ranked.matches) * 100;
-            rankedMVPRate = (ranked.mvp / ranked.wins) * 100;
-            rankedSVPRate = (ranked.svp / (ranked.matches - ranked.wins)) * 100;
-            rankedKDA = (ranked.kills + ranked.assists) / (ranked.deaths);
-            rankedPlayTime = ranked.play_time / 3600;
-            rankedTotalDamage = Math.round(ranked.damage);
-            rankedTotalHealing = Math.round(ranked.heal);
-            rankedTotalDamageBlocked = Math.round(ranked.damage_taken);
-            rankedAccuracy = (ranked.main_attack.hits / ranked.main_attack.total) * 100;
-        }
-        if (unranked != null) {
-            unrankedWinrate = (unranked.wins / unranked.matches) * 100;
-            unrankedMVPRate = (unranked.mvp / unranked.wins) * 100;
-            unrankedSVPRate = (unranked.svp / (unranked.matches - unranked.wins)) * 100;
-            unrankedKDA = (unranked.kills + unranked.assists) / (unranked.deaths);
-            unrankedPlayTime = unranked.play_time / 3600;
-            unrankedTotalDamage = Math.round(unranked.damage);
-            unrankedTotalHealing = Math.round(unranked.heal);
-            unrankedTotalDamageBlocked = Math.round(unranked.damage_taken);
-            unrankedAccuracy = (unranked.main_attack.hits / unranked.main_attack.total) * 100;
-        }
+        rankedMultiplier += 0.25; // TODO: decide whether or not to score with unranked
+        let damageTenMinutes = (rankedTotalDamage / rankedPlayTime) / 6;
+        let healingTenMinutes = (rankedTotalHealing / rankedPlayTime) / 6;
+        score += (Math.min(100 * Math.pow(rankedWinrate / 70, 1.8), 100) * 0.36 + rankedMVPRate * 0.12 + rankedSVPRate * 0.06 + Math.min(rankedKDA * (100 / 12), 100) * 0.32
+            + Math.min(damageTenMinutes / 120, 100) * 0.06 + Math.min(healingTenMinutes / 220, 100) * 0.08) * rankedMultiplier;
+        const scoreScale = 25 * Math.pow(rank_history[0].score_progression.total_score / 5200, 2.5);
+        console.log(score, scoreScale);
+        score += scoreScale;
+        // Score starts at 100 and decreases based on: TODO:
+        // Matchup: 3% weight, if the player's winrate against Jeff is 100% then they get 100% score for this section
+        // Ranked: 72% weight, +3% if no matchup
+        // Within ranked the following weightings apply:
+        // Winrate: 36%, giving 100% points at 70% and scaling down, anything lower getting exponentially less points
+        // MVPRate: 12%
+        // SVPRate: 6%
+        // KDA: 32%, capped at 12 KDA
+        // Total Damage: 6%, in average damage/10 min, capped at 12,000
+        // Total Healing:8%, in average healing/10 min, capped at 22,000
+        // scores curved up to give more accurate representation of 1-100 scale
+        const confidence = Math.max(0.5, 5 * Math.pow(1.1, 25 - rankedPlayTime));
+        interaction.editReply({ content: 'Success!', flags: MessageFlags.Ephemeral });
+        const reply =
+            `${name}'s Jeff skill score (out of 100): ${Math.min(score.toFixed(2), 100)}±${confidence.toFixed(1)}
 
-        await interaction.editReply( // TODO: create scoring system so Jeff can score a player's Jeff skills
-`${interaction.options.getString('player_name')} Jeff stats:
-Winrate against Jeff: ${matchup ? `${(100 - matchup)}%` : `Never played against Jeff!`}
-
-Ranked:
-${ranked ? 
-`Winrate: ${rankedWinrate.toFixed(2)}%
+Score calculated with ${name}'s Jeff stats for Season 4.5:
+        
+**Ranked:**
+Rank: ${data.data.player.rank.rank}
+Winrate against Jeff: ${matchup !== -1 ? `${(100 - matchup)}%` : `Never played against Jeff!`}
+Winrate: ${rankedWinrate.toFixed(2)}%
 MVP Rate: ${rankedMVPRate.toFixed(2)}%
 SVP Rate: ${rankedSVPRate.toFixed(2)}%
 KDA: ${rankedKDA.toFixed(2)}
 PlayTime: ${rankedPlayTime.toFixed(2)} hours
-Total Damage: ${rankedTotalDamage}
-Total Healing: ${rankedTotalHealing}
-Total Damage Blocked: ${rankedTotalDamageBlocked}
-Accuracy: ${rankedAccuracy.toFixed(2)}%` :
-`Never played ranked with Jeff!`}
-
-Unranked:
-${unranked ?
-`Winrate: ${unrankedWinrate.toFixed(2)}%
-MVP Rate: ${unrankedMVPRate.toFixed(2)}%
-SVP Rate: ${unrankedSVPRate.toFixed(2)}%
-KDA: ${unrankedKDA.toFixed(2)}
-PlayTime: ${unrankedPlayTime.toFixed(2)} hours
-Total Damage: ${unrankedTotalDamage}
-Total Healing: ${unrankedTotalHealing}
-Total Damage Blocked: ${unrankedTotalDamageBlocked}
-Accuracy: ${unrankedAccuracy.toFixed(2)}%` :
-`Never played unranked with Jeff!`}`);
+Average Damage / 10 min: ${Math.round(damageTenMinutes)}
+Average Healing / 10 min: ${Math.round(healingTenMinutes)}
+                        
+Tip: If these stats are outdated, it is because this user was not queried for a while. Please wait for Jeff to refresh stats before running the command again. This should only take a couple of minutes, but could take up to 30 minutes.
+        
+This command is in development! Please /donatesuggestions if you think the scoring is unfair or unclear in any way!`
+        console.log(reply);
+        await interaction.followUp(reply);
     },
 };

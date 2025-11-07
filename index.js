@@ -4,7 +4,6 @@ const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, A
 const { token, ownerId } = require('./betaconfig.json');
 const { scheduleDailyReminders } = require('./schedulers.js');
 const { Sequelize } = require('sequelize');
-const { reportError } = require('./utils.js');
 const sequelize = new Sequelize({
     host: 'localhost',
     dialect: 'sqlite',
@@ -49,7 +48,7 @@ for (const folder of commandFolders) {
 }
 
 client.once(Events.ClientReady, readyClient => {
-    client.user.setActivity('/jeff', { type: ActivityType.Watching });
+    client.user.setActivity('Waiting for /jeff', { type: ActivityType.Custom });
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     scheduleDailyReminders(client, client.db.jeff);
 });
@@ -96,7 +95,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
     catch (error) {
-        reportError(error);
+        console.error(error);
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. Note that Discord messages must be 2000 characters or fewer.', flags: MessageFlags.Ephemeral });
         }
@@ -128,7 +127,7 @@ client.on(Events.MessageCreate, async message => {
                 await message.reply('DM sent!');
             }
             catch (err) {
-                reportError(err);
+                console.error(err);
                 await message.reply('Failed to DM.');
             }
         }
@@ -141,7 +140,7 @@ client.on(Events.MessageCreate, async message => {
                 await message.reply('DM sent!');
             }
             catch (err) {
-                reportError(err);
+                console.error(err);
                 await message.reply('Failed to DM.');
             }
         }

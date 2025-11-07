@@ -31,11 +31,13 @@ async function getUserAndUpdate(tbl, user_id, user_name, update) {
 	return user;
 }
 
-// Given an error, record it in errors.txt and log it in console
-function reportError(err) {
-	const date = new Date();
-	fs.appendFileSync(errPath, err.stack + ', ' + date.toLocaleString() + '\n\n');
-	console.error(err);
+class RivalsAPIError extends Error {
+    constructor(message, time, info) {
+        super(message);
+        this.name = 'RivalsAPIError';
+        this.time = time;
+        this.info = info;
+    }
 }
 
-module.exports = { getUserAndUpdate, reportError };
+module.exports = { getUserAndUpdate, RivalsAPIError };

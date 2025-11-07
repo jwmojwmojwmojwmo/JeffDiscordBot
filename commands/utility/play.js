@@ -101,7 +101,7 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('blackjack')
-                .setDescription('Bet reputation to play blackjack against Jeff')
+                .setDescription('Bet reputation to play blackjack against Jeff') // TODO: maybe change to energy?
                 .addIntegerOption(option =>
                     option.setName('bet')
                         .setDescription('Reputation you would like to bet')

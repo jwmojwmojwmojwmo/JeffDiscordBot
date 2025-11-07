@@ -4,12 +4,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const errPath = 'errors.txt';
 
-function reportError(err) {
-	const date = new Date();
-	fs.appendFileSync(errPath, err.stack + ', ' + date.toLocaleString() + '\n\n');
-	console.error(err);
-}
-
 const commands = [];
 // Grab all the command folders from the commands directory you created earlier
 const foldersPath = path.join(__dirname, 'commands');
@@ -49,6 +43,6 @@ const rest = new REST().setToken(token);
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	}
 	catch (error) {
-		reportError(error);
+		console.error(error);
 	}
 })();

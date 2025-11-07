@@ -13,7 +13,7 @@ const voteReminders = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary);
 const DonateJeffDMButton = new ButtonBuilder()
     .setCustomId('donateJeffDM')
-    .setLabel('Toggle Donate Jeff DMs')
+    .setLabel('Toggle Jeff DMs')
     .setStyle(ButtonStyle.Primary);
 const requestInfoButton = new ButtonBuilder()
     .setCustomId('requestInfo')
@@ -27,10 +27,10 @@ const deleteInfoButton = new ButtonBuilder()
 const settingsRow = new ActionRowBuilder().addComponents(dailyRemindersButton, voteReminders, DonateJeffDMButton); // the row of buttons below the text
 const utilSettingsRow = new ActionRowBuilder().addComponents(requestInfoButton, deleteInfoButton); // the row of buttons below the text
 
-async function settingsFunction(interaction, user) {
+async function settingsFunction(tbl, interaction, user_id, user_name) {
     const buildEmbed = () =>
         new EmbedBuilder()
-            .setTitle(`${user.username}'s Settings`)
+            .setTitle(`${user_name}'s Settings`)
             .addFields(
                 {
                     name: `Daily Reminders - **${user.settings.dailyReminders}**`,
@@ -38,13 +38,15 @@ async function settingsFunction(interaction, user) {
                 },
                 {
                     name: `Vote Reminders - **${user.settings.voteReminders}**`,
-                    value: `Get reminded to vote for more rewards! (This feature is coming soon)`,
+                    value: `Get reminded to vote for more rewards!`,
                 },
                 {
-                    name: `Donate Jeff DMs - **${user.settings.donateJeffDM}**`,
-                    value: `Get DMs about your /donatejeff submissions!`,
+                    name: `Jeff DMs - **${user.settings.donateJeffDM}**`,
+                    value: `Get DMs from /jeff about any donation submissions!`,
                 }
             );
+    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
+
     const reply = await interaction.reply({ embeds: [buildEmbed()], components: [settingsRow, utilSettingsRow], flags: MessageFlags.Ephemeral });
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     const collector = reply.createMessageComponentCollector({
@@ -55,9 +57,11 @@ async function settingsFunction(interaction, user) {
         if (i.customId === 'deleteInfo') {
             collector.stop('deleteInfo');
             await deleteInfo(user, i, collectorFilter);
+            return;
         }
         if (i.customId === 'requestInfo') {
             await requestInfo(user, i, interaction, collector, collectorFilter);
+            return;
         }
         user.settings[i.customId] = !user.settings[i.customId];
         user.changed('settings', true);
@@ -68,7 +72,7 @@ async function settingsFunction(interaction, user) {
             flags: MessageFlags.Ephemeral,
         });
     });
-    collector.on('end', async (_collected, reason) => { // TODO: add close button
+    collector.on('end', async (_collected, reason) => {
         if (reason === 'deleteInfo') return;
         await interaction.editReply({
             content: 'This interaction timed out.',
@@ -78,7 +82,6 @@ async function settingsFunction(interaction, user) {
         });
     })
 }
-
 async function requestInfo(user, i, interaction, collector, collectorFilter) {
     await i.update({
         content: `Would you like to request all user information tied to your Discord account that Jeff Bot has stored?\nNote that confirmation of this request, as well as this information will be DMed to you. Please keep your DMs open for Jeff Bot :)`,
@@ -146,7 +149,6 @@ module.exports = {
         .setDescription('Look at and change your user-specific settings'),
     async execute(interaction) {
         const name = interaction.member?.displayName || interaction.user.username;
-        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, name, false);
-        await settingsFunction(interaction, user);
+        await settingsFunction(interaction.client.db.jeff, interaction, interaction.user.id, name);
     },
 };
