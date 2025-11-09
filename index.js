@@ -12,6 +12,7 @@ const sequelize = new Sequelize({
 });
 
 const jeff = require('./models/jeff.js')(sequelize, Sequelize.DataTypes);
+const rivalsdata = require('./models/rivalsdata.js')(sequelize, Sequelize.DataTypes);
 
 const client = new Client({
     intents: [
@@ -27,7 +28,7 @@ module.exports = client;
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
-client.db = { jeff };
+client.db = { jeff, rivalsdata };
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -148,5 +149,6 @@ client.on(Events.MessageCreate, async message => {
 });
 (async () => {
     await jeff.sync(); // jeff.sync({ alter: true }); when modifying db info
+    await rivalsdata.sync();
     await client.login(token);
 })();
