@@ -100,7 +100,7 @@ module.exports = {
                 if (err.message === 'RATE_LIMIT_REACHED') {
                     return interaction.editReply({ content: `Jeff may be cute but the Marvel Rivals servers are refusing him access because he's being a little too pushy. Please let Jeffy rest and try again <t:${err.time}:R>.`, flags: MessageFlags.Ephemeral });
                 }
-                return interaction.editReply({ content: `Something unexpected happened. If this issue persists, please report it. Error message: ${err.info}\n\nIt is possible this happened because of a mistyped username. Please note usernames are case-sensitive.` });
+                return interaction.editReply({ content: `Something unexpected happened. Error message: ${escapeMarkdown(err.info)}\nIf this issue persists, please report it.\n\nIt is possible this happened because of a mistyped username. Please note usernames are case-sensitive.` });
             }
             if (err.message === 'UNDEFINED_USER') {
                 return interaction.editReply({ content: 'Cannot find user, please check you typed the username correctly. Usernames are case-sensitive. Note that this could be because the user\'s profile is set to private.\nIf you believe everything is correct and this error still shows, try searching by UID.', flags: MessageFlags.Ephemeral });
