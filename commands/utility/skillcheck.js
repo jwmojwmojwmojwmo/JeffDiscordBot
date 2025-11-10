@@ -83,7 +83,7 @@ async function updateRivalsPlayer(db, data) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('skillcheck')
-        .setDescription('Checks your skill level at Jeff')
+        .setDescription('Checks your skill level at Jeff (This command is currently experimental)')
         .addStringOption(option =>
             option
                 .setName('player')

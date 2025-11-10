@@ -17,7 +17,7 @@ module.exports = {
             await user.save();
             const nextClaim = new Date(today);
             nextClaim.setDate(nextClaim.getDate() + 1); // tomorrow midnight
-            console.log(`${user.username} (${user.userid}) attempted to claim their daily`); // TODO: use user_name instead of user.username and so forth
+            console.log(`${user.username} (${user.userid}) attempted to claim their daily`);
             await interaction.reply({ content: `You’ve already claimed your daily today! Next claim <t:${nextClaim.getTime() / 1000}:R>`, flags: MessageFlags.Ephemeral });
         } else {
             user.energy += 25;
@@ -33,6 +33,7 @@ module.exports = {
             console.log('TOPGG 404 ERROR -> USER PROBABLY HAS NEVER VOTED BUT TODO: CHECK THIS ERROR'); // TODO
         }
         if (!voted && user.settings.voteReminders) {
+            console.log(`Sent vote reminder to ${user.userid}`);
             await interaction.followUp({ content: `You haven't voted yet! Run /vote before AND after you vote to get additional rewards!\n\nYou can turn these reminders off by using /settings.`, flags: MessageFlags.Ephemeral });
         }
     },
