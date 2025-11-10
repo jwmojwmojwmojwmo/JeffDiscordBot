@@ -28,7 +28,13 @@ async function getUserAndUpdate(tbl, user_id, user_name, update) {
 	return user;
 }
 
-// TODO: ratelimiterror
-// TODO: remove all mentions of reportError
+class RivalsAPIError extends Error {
+    constructor(message, time, info) {
+        super(message);
+        this.name = 'RivalsAPIError';
+        this.time = time;
+        this.info = info;
+    }
+}
 
-module.exports = { getUserAndUpdate };
+module.exports = { getUserAndUpdate, RivalsAPIError };

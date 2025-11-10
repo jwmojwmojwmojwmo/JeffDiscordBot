@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, escapeMarkdown } = require('discord.js');
 const { getUserAndUpdate } = require('../../utils.js');
 
 async function getStat(tbl, user_id, user_name, stat_type) {
@@ -33,9 +33,10 @@ module.exports = {
                 )),
     async execute(interaction) {
         const tbl = interaction.client.db.jeff;
-        let msg = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user')?.username || interaction.user.username;
+        let msg = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user')?.username || interaction.member?.displayName || interaction.user.username;
         const statType = interaction.options.getString('stat_type') || 'all_stats';
         const stat = await getStat(tbl, interaction.options.getUser('user')?.id || interaction.user.id, msg, statType);
+        msg = escapeMarkdown(msg);
         if (statType === 'num_nommed') {
             msg += ` has been nommed ${stat} time${stat === 1 ? '' : 's'}!`; // 1 time vs multiple times in message
         }

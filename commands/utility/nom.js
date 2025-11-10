@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, escapeMarkdown } = require('discord.js');
 const { getUserAndUpdate } = require('../../utils.js');
 const killMsg = [
 	' got gobbled by Jeff. Chomp chomp! NOM NOM!',
@@ -33,6 +33,6 @@ module.exports = {
         victim.num_nommed += 1;
         await victim.save();
         console.log(`${victim.username} (${victim.userid}) was nommed.`);
-		await interaction.reply(victim_name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
+		await interaction.reply(escapeMarkdown(victim_name + killMsg[Math.floor(Math.random() * killMsg.length)])); // random kill msg
 	},
 };

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, escapeMarkdown } = require('discord.js');
 const { getUserAndUpdate } = require('../../utils.js');
 
 async function gift(interaction, victim, culprit, amount) {
@@ -16,19 +16,19 @@ async function gift(interaction, victim, culprit, amount) {
     culprit.energy -= amountWithTax;
     victim.energy += amount;
     if (amountTaxed > 25) {
-        const chance = Math.min(0.6, amountTaxed * 0.002);
+        const chance = Math.min(0.75, amountTaxed * 0.002);
         if (Math.random() < chance) {
-            reputationGained = Math.round(Math.min(20, amountTaxed * 0.04));
+            reputationGained = Math.round(Math.min(50, amountTaxed * 0.1));
         }
     }
     culprit.reputation += reputationGained;
     await victim.save();
     await culprit.save();
     console.log(`${victim.username} (${victim.userid}) was given ${amount} energy by ${culprit.username} (${culprit.userid}), but spent ${amountWithTax} and gained ${reputationGained} reputation.`);
-    return interaction.reply(
+    return interaction.reply(escapeMarkdown(
         `${culprit.username} gave ${amount} energy to ${victim.username}!\n\n` +
         `Jeff saw everything. Jeff is proud.${amountTaxed === 0 ? '' : ` Jeff may have sneakily munched ${amountTaxed} energy as a tax snack.`} ${reputationGained > 0 ? `Impressed with ${culprit.username}'s generosity, Jeff burped out ${reputationGained} reputation for ${culprit.username}!` : `Jeff nods approvingly.`}`
-    );
+    ));
 }
 
 module.exports = {
@@ -47,7 +47,7 @@ module.exports = {
                 .setRequired(true)),
     async execute(interaction) {
         const amount = interaction.options.getInteger('amount');
-        const victim_id = interaction.options.getUser('user').id; 
+        const victim_id = interaction.options.getUser('user').id;
         if (!interaction.guild) {
             return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
         }
@@ -55,8 +55,8 @@ module.exports = {
             return interaction.reply({ content: `You can't gift this amount!`, flags: MessageFlags.Ephemeral });
         }
         if (victim_id === interaction.user.id) {
-			return interaction.reply({ content: 'You can\'t gift to yourself!', flags: MessageFlags.Ephemeral });
-		}
+            return interaction.reply({ content: 'You can\'t gift to yourself!', flags: MessageFlags.Ephemeral });
+        }
         const victim_name = interaction.options.getMember('user').displayName;
         const culprit_name = interaction.member.displayName;
         const db = interaction.client.db.jeff;

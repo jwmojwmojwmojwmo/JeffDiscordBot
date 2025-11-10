@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags, escapeMarkdown } = require('discord.js');
 const { getUserAndUpdate } = require('../../utils.js');
 const { ownerId } = require('../../config.json');
 
@@ -30,7 +30,7 @@ const utilSettingsRow = new ActionRowBuilder().addComponents(requestInfoButton, 
 async function settingsFunction(tbl, interaction, user_id, user_name) {
     const buildEmbed = () =>
         new EmbedBuilder()
-            .setTitle(`${user_name}'s Settings`)
+            .setTitle(`${escapeMarkdown(user_name)}'s Settings`)
             .addFields(
                 {
                     name: `Daily Reminders - **${user.settings.dailyReminders}**`,

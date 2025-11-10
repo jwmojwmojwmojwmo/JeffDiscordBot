@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, bold, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, bold, MessageFlags, escapeMarkdown } = require('discord.js');
 const statLabels = {
     num_nommed: 'Nom Count',
     energy: 'Energy',
@@ -17,9 +17,9 @@ async function getTopFive(tbl, guild, stat_type) {
         topFive = entries.slice(0, 5);
     }
     else { // server scope
-        // guild.members.cache.forEach(member => {
-        //     console.log(member.user.username, member.id);
-        // });
+        guild.members.cache.forEach(member => {
+            console.log(member.user.username, member.id);
+        });
         for (const entry of entries) {
             if (topFive.length === 5) break;
             let member;
@@ -40,10 +40,10 @@ async function getTopFive(tbl, guild, stat_type) {
     let rank = 1;
     for (const user of topFive) {
         if (stat_type === 'num_nommed') {
-            leaderboard += `\n#${bold(rank)} ${user.username}: ${user[stat_type]} time${user[stat_type] === 1 ? '' : 's'} nommed!`;
+            leaderboard += `\n#${bold(rank)} ${escapeMarkdown(user.username)}: ${user[stat_type]} time${user[stat_type] === 1 ? '' : 's'} nommed!`;
         }
         else {
-            leaderboard += `\n#${bold(rank)} ${user.username}: ${user[stat_type]} ${stat_type}!`;
+            leaderboard += `\n#${bold(rank)} ${escapeMarkdown(user.username)}: ${user[stat_type]} ${stat_type}!`;
         }
         rank++;
     }

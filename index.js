@@ -13,6 +13,7 @@ const sequelize = new Sequelize({
 });
 
 const jeff = require('./models/jeff.js')(sequelize, Sequelize.DataTypes);
+const rivalsData = require('./models/rivalsdata.js')(sequelize, Sequelize.DataTypes);
 
 const client = new Client({
     intents: [
@@ -28,7 +29,7 @@ module.exports = client;
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
-client.db = { jeff };
+client.db = { jeff, rivalsData };
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -163,5 +164,7 @@ AutoPoster(topggAPIKey, client).on("posted", () => {
 (async () => {
     await jeff.sync();
     // await jeff.sync({ alter: true }); // when modifying db info 
+    await rivalsData.sync();
+    // await rivalsData.sync({ alter: true }); // when modifying db info 
     await client.login(token);
 })();

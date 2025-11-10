@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, escapeMarkdown } = require('discord.js');
 const { getUserAndUpdate } = require('../../utils.js');
 
 const energytoBubble = 25;
@@ -36,7 +36,7 @@ module.exports = {
             await victim.save();
             await culprit.save();
             console.log(`${victim.username} (${victim.userid}) was bubbled by ${culprit.username} (${culprit.userid})`);
-            await interaction.reply(`${culprit_name} bubbled ${victim_name}! ${culprit_name} has used ${energytoBubble} energy, and ${victim_name} has gained 1 reputation!`);
+            await interaction.reply(escapeMarkdown(`${culprit_name} bubbled ${victim_name}! ${culprit_name} has used ${energytoBubble} energy, and ${victim_name} has gained 1 reputation!`));
         }
     },
 };
