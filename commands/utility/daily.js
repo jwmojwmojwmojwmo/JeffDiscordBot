@@ -33,7 +33,6 @@ module.exports = {
             console.log('TOPGG 404 ERROR -> USER PROBABLY HAS NEVER VOTED BUT TODO: CHECK THIS ERROR'); // TODO
         }
         if (!voted && user.settings.voteReminders) {
-            console.log(`Sent vote reminder to ${user.userid}`);
             await interaction.followUp({ content: `You haven't voted yet! Run /vote before AND after you vote to get additional rewards!\n\nYou can turn these reminders off by using /settings.`, flags: MessageFlags.Ephemeral });
         }
     },

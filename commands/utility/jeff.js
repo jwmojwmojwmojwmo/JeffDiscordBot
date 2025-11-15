@@ -1,5 +1,5 @@
 const { AttachmentBuilder, MediaGalleryBuilder, MessageFlags, SlashCommandBuilder } = require('discord.js');
-const fs = require('node:fs');
+const fs = require('fs/promises');
 const path = require('node:path');
 const assetsDir = path.join(__dirname, '..', '..', 'assets');
 
@@ -10,24 +10,18 @@ let gallery = new MediaGalleryBuilder()
 
 getFile(); // randomise before first call
 
-function getFile() {
+async function getFile() {
     let fileName = '';
-    fs.readdir(assetsDir, (err, files) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        if (files.length === 0) { // shouldn't happen
-            console.log('No files in assets folder.');
-            return;
-        }
-        do {
-            fileName = files[Math.floor(Math.random() * (files.length - 1))]; // grabs random filename from assets
-        } while (!fileName.includes('jeff'));
-        fileName = files[Math.floor(Math.random() * (files.length - 1))]; // grabs random filename from assets
-        file = new AttachmentBuilder('assets/' + fileName); // creates file from filename
-        gallery = new MediaGalleryBuilder().addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://' + fileName)); // creates discord media gallery from filename
-    });
+    const files = await fs.readdir(assetsDir);
+    if (files.length === 0) { // shouldn't happen
+        console.log('No files in assets folder.');
+        return;
+    }
+    do {
+        fileName = files[Math.floor(Math.random() * files.length)]; // grabs random filename from assets
+    } while (!fileName.includes('jeff'));
+    file = new AttachmentBuilder('assets/' + fileName); // creates file from filename
+    gallery = new MediaGalleryBuilder().addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://' + fileName)); // creates discord media gallery from filename
 }
 
 module.exports = {
@@ -35,7 +29,7 @@ module.exports = {
         .setName('jeff')
         .setDescription('Gives Jeff!'),
     async execute(interaction) {
-        getFile();
+        await getFile();
         console.log("Jeff pictures were requested.");
         await interaction.reply({
             // sends discord media gallery with created file

@@ -100,6 +100,7 @@ module.exports = {
                 if (err.message === 'RATE_LIMIT_REACHED') {
                     return interaction.editReply({ content: `Jeff may be cute but the Marvel Rivals servers are refusing him access because he's being a little too pushy. Please let Jeffy rest and try again <t:${err.time}:R>.`, flags: MessageFlags.Ephemeral });
                 }
+                console.error(err);
                 return interaction.editReply({ content: `Something unexpected happened. Error message: ${escapeMarkdown(err.info)}\nIf this issue persists, please report it.\n\nIt is possible this happened because of a mistyped username. Please note usernames are case-sensitive.` });
             }
             if (err.message === 'UNDEFINED_USER') {
@@ -108,7 +109,6 @@ module.exports = {
             if (err.message === 'PRIVATE_USER') {
                 return interaction.editReply({ content: 'This user\'s profile is set to private.', flags: MessageFlags.Ephemeral });
             }
-            console.err(err);
         }
         await updateRivalsPlayer(interaction.client.db.rivalsData, data.data);
         const ranked = data.data.heroes_ranked.find(h => h.hero_id === 1047);
