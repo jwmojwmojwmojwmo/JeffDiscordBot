@@ -26,6 +26,7 @@ async function playHighLow(interaction, user) {
     const highLowReply = await interaction.reply({
         content: `Jeff says: MRR!!! MRRRR MRR!! YUMMY YUMMY! (translation: I'm thinking of a number from 0-100! Is it lower or higher than ${givenNum}?)\nUse Jackpot if you think they're the same number!`,
         components: [highLowRow],
+        withResponse: true
     });
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     try {
@@ -45,7 +46,8 @@ async function playHighLow(interaction, user) {
         }
         await user.save(); // saves update user info to db
     }
-    catch { // catch error throw if response exceeds 20 sec
+    catch (err) { // catch error throw if response exceeds 20 sec
+        console.error(err);
         await interaction.editReply({ content: 'You left Jeffy alone too long :(( cancelling', flags: MessageFlags.Ephemeral, components: [] });
     }
 }
@@ -70,7 +72,6 @@ function getHighLowPenalty(diff) {
 async function playBlackJack(interaction, user, bet) {
     console.log(`${user.username} (${user.userid}) tried to play blackjack.`);
     return interaction.reply('Work in progress...'); // comment out when blackjack is done
-
     // stub
     const reply = await interaction.reply('stub'); // initial reply
     const collectorFilter = i => i.user.id === interaction.user.id; // returns true if the user pressing the button is the user who started the interaction
@@ -79,14 +80,15 @@ async function playBlackJack(interaction, user, bet) {
         time: 120_000, // 2 minutes
     });
     collector.on('collect', async i => { // runs whenever a button is pressed
-        // perform some action
+        // perform some action: TODO main blackjack logic
         await user.save(); // saves user information to db, try to reduce calls to this whenevere possible
         await i.update('stub'); // updates the message panel from the initial reply
     });
-    collector.on('end', async () => { // runs once when time is over
-        await interaction.editReply('You left Jeffy alone too long :(( cancelling'); // use interaction.editReply() for the final edit, use i.update() otherwise
+    collector.on('end', async (_collected, reason) => { // pass reason for ending collector with collector.stop(reason)
+        // perform some action: TODO blackjack ending logic
+        await interaction.editReply('This interaction timed out.'); // use interaction.editreply for final edit, use i.update otherwise
     })
-    // TODO: implement blackjack, see highlow function for help, see settings command for more help
+    // TODO: implement blackjack, see settings.js for help with collectors
 }
 
 module.exports = {
