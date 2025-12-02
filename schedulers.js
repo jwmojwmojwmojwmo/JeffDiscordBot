@@ -1,6 +1,8 @@
 const { reportError } = require('./utils.js');
 const { ownerId } = require('./config.json');
 
+let msg = "";
+
 async function sendDailyReminders(client, tbl) {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -10,7 +12,7 @@ async function sendDailyReminders(client, tbl) {
         if (user.settings?.dailyReminders && user.last_daily && user.last_daily < now) {
             try {
                 const member = await client.users.fetch(user.userid);
-                await member.send("Jeffy wants to remind you to claim your daily! Woop Woop!\n\nYou can turn these reminders off by using /settings.");
+                await member.send("Jeffy wants to remind you to claim your daily! Woop Woop!\n\nYou can turn these reminders off by using /settings.\n\n" + msg);
                 console.log(`[DailyReminders] Sent reminder to ${user.userid}`);
             } catch (err) {
                 console.error(`Failed to DM user ${user.userid}`);

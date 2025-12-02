@@ -4,7 +4,10 @@ const { RivalsAPIError } = require('../../utils.js')
 const axios = require('axios');
 
 const rivalsBaseURL = 'https://marvelrivalsapi.com';
-const season = 4.5;
+const season = 5;
+
+//const disclaimer = `\n\nNote this command currently uses data from Season ${season}. It will be updated to use data from the current season in a few days, when enough ranked Jeff gameplay data is gathered.`;
+const disclaimer = ``;
 
 const lastUpdate = {}; // playerID: timestamp
 
@@ -45,7 +48,7 @@ async function getPlayer(db, interaction, uid) {
         console.log("Player is on 30-minute lock. Try later.");
     }
     let data;
-    await interaction.editReply(`Player: ${name}\n\nFetching player stats...`);
+    await interaction.editReply(`Player: ${name}\n\nFetching player stats...${disclaimer}`);
     try {
         data = await axios.get(`${rivalsBaseURL}/api/v1/player/${uid}`,
             { params: { 'season': season }, headers: { 'x-api-key': rivalsAPIKey } });
@@ -91,7 +94,7 @@ module.exports = {
                 .setRequired(true)),
     async execute(interaction) {
         let name = interaction.options.getString('player');
-        await interaction.reply({ content: `Player: ${name}\n\nPlease hold while Jeff negotiates with the Marvel Rivals servers...\nThis may take some time...`, flags: MessageFlags.Ephemeral });
+        await interaction.reply({ content: `Player: ${name}\n\nPlease hold while Jeff negotiates with the Marvel Rivals servers...\nThis may take some time...${disclaimer}`, flags: MessageFlags.Ephemeral });
         let data;
         try {
             data = await getPlayer(interaction.client.db.rivalsData, interaction, name);
@@ -113,7 +116,7 @@ module.exports = {
         await updateRivalsPlayer(interaction.client.db.rivalsData, data.data);
         const ranked = data.data.heroes_ranked.find(h => h.hero_id === 1047);
         if (ranked == null) {
-            return interaction.editReply({ content: 'Cannot calculate skill level without Jeff games played in ranked this season.', flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ content: 'Cannot calculate skill level without Jeff games played in ranked this season. (Placement matches do not count)', flags: MessageFlags.Ephemeral });
         }
         let matchup = data.data.hero_matchups.find(h => h.hero_id === 1047); // matchup is this hero's winrate against yours, ie the player's winrate against jeff is 100%-matchup; competitive only
         let rankedWinrate = (ranked.wins / ranked.matches) * 100;
@@ -148,7 +151,12 @@ module.exports = {
         // scores curved up to give more accurate representation of 1-100 scale
         const rank_history = data.data.rank_history;
         rank_history.sort((a, b) => b.match_time_stamp - a.match_time_stamp);
-        const scoreScale = 25 * Math.pow((rank_history[0].score_progression.total_score - 3000) / 2200, 2.1);
+        let scoreScale;
+        try {
+            scoreScale = 25 * Math.pow((rank_history[0].score_progression.total_score - 3000) / 2200, 2.1);
+        } catch (err) {
+            return interaction.editReply({ content: 'Cannot calculate skill level without Jeff games played in ranked this season. (Placement matches do not count)', flags: MessageFlags.Ephemeral });
+        }
         console.log(score, scoreScale);
         score += scoreScale;
         const confidence = Math.max(0.5, 5 * Math.pow(1.1, 25 - rankedPlayTime));
@@ -158,7 +166,7 @@ module.exports = {
         let reply =
             `${name}'s Jeff skill score (out of 100): ${Math.min(score.toFixed(2), 100)}±${confidence.toFixed(1)}
 
-Score calculated with ${name}'s Jeff stats for Season 4.5:
+Score calculated with ${name}'s Jeff stats for Season ${season}:
         
 **Ranked:**
 Rank: ${data.data.player.rank.rank}
