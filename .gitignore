@@ -4,7 +4,7 @@ jeff.sqlite
 jeffbackup.sqlite
 donations.txt
 errors.txt
-ecosystem.config.js
+ecosystem.config.cjs
 eslint.config.mjs
 betaconfig.json
 quizquestions.js

@@ -9,7 +9,7 @@
  * @param {boolean} update - if update === false, the callee must manually do user.save(), or the updated username will not persist. There are NO CHECKS for this. Note that if update === true and an unneccesary .save() occurs, it is a performance loss
  * @returns {object} - user object with updated username. The username has not been saved to the database unless update === true
  */
-async function getUserAndUpdate(tbl, user_id, user_name, update) {
+export async function getUserAndUpdate(tbl, user_id, user_name, update) {
 	let user = await tbl.findByPk(user_id);
 	if (user) {
 		user.username = user_name;
@@ -28,7 +28,7 @@ async function getUserAndUpdate(tbl, user_id, user_name, update) {
 	return user;
 }
 
-class RivalsAPIError extends Error {
+export class RivalsAPIError extends Error {
     constructor(message, time, info) {
         super(message);
         this.name = 'RivalsAPIError';
@@ -36,5 +36,3 @@ class RivalsAPIError extends Error {
         this.info = info;
     }
 }
-
-module.exports = { getUserAndUpdate, RivalsAPIError };

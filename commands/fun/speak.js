@@ -1,8 +1,7 @@
-const { SlashCommandBuilder, bold, escapeMarkdown } = require('discord.js');
-const { GoogleGenAI } = require('@google/genai');
-const { geminiAPIKey } = require('../../config.json');
-const fs = require('fs');
-const path = require('path');
+import { SlashCommandBuilder, bold, escapeMarkdown } from 'discord.js';
+import { GoogleGenAI } from '@google/genai';
+import config from '../../helpers/config.json' with { type: "json" };
+const { geminiAPIKey } = config;
 
 const ai = new GoogleGenAI({ apiKey: geminiAPIKey });
 
@@ -175,32 +174,29 @@ function getMsg(index) {
     return bold(allmsgs[index][Math.floor(Math.random() * allmsgs[index].length)]); // chooses a given emotion 'index' and grabs random msg from emotion
 }
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('speak')
-        .setDescription('Say something to Jeff')
-        .addStringOption(option =>
-            option
-                .setName('phrase')
-                .setDescription('What you want to say to Jeff')
-                .setRequired(true)),
-    async execute(interaction) {
-        let msg = interaction.member?.displayName || interaction.user.username;
-        await interaction.deferReply();
-        msg += ` says: ${interaction.options.getString('phrase')}\n\nJeff says:`;
-        msg = escapeMarkdown(msg);
-        let jeffReply;
-        do {
-            try {
-                jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(6000)]); // awaits AI message, times out and throws err after 6s
-            }
-            catch (err) {
-                jeffReply = fullMsg(); // fallback to non-ai method of getting reply
-                console.error(err);
-            }
-        } while (jeffReply === "happyjasondog");
-        msg = msg + "\n" + jeffReply;
-        console.log(msg);
-        await interaction.editReply(msg);
-    },
-};
+export const data = new SlashCommandBuilder()
+    .setName('speak')
+    .setDescription('Say something to Jeff')
+    .addStringOption(option => option
+        .setName('phrase')
+        .setDescription('What you want to say to Jeff')
+        .setRequired(true));
+export async function execute(interaction) {
+    let msg = interaction.member?.displayName || interaction.user.username;
+    await interaction.deferReply();
+    msg += ` says: ${interaction.options.getString('phrase')}\n\nJeff says:`;
+    msg = escapeMarkdown(msg);
+    let jeffReply;
+    do {
+        try {
+            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(6000)]); // awaits AI message, times out and throws err after 6s
+        }
+        catch (err) {
+            jeffReply = fullMsg(); // fallback to non-ai method of getting reply
+            console.error(err);
+        }
+    } while (jeffReply === "happyjasondog");
+    msg = msg + "\n" + jeffReply;
+    console.log(msg);
+    await interaction.editReply(msg);
+}

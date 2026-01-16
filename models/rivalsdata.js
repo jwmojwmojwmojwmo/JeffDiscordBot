@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
     return sequelize.define('rivalsdata', {
         uid: { // marvel rivals uid
             type: DataTypes.STRING,

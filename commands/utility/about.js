@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 
 // constants for link buttons
 const GitHubButton = new ButtonBuilder()
@@ -29,12 +29,10 @@ const aboutEmbed = new EmbedBuilder()
     // .setImage("https://i.imgur.com/ntg31Zx.jpeg")    
     .setFooter({ text: 'Jeff Bot by jwmo, all rights reserved', iconURL: 'https://i.imgur.com/e0xvSJ9.png' });
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('about')
-        .setDescription('About the bot'),
-    async execute(interaction) {
-        console.log(`About was checked.`);
-        await interaction.reply({ embeds: [aboutEmbed], components: [linkRow] });
-    },
-};
+export const data = new SlashCommandBuilder()
+    .setName('about')
+    .setDescription('About the bot');
+export async function execute(interaction) {
+    console.log(`About was checked.`);
+    await interaction.reply({ embeds: [aboutEmbed], components: [linkRow] });
+}

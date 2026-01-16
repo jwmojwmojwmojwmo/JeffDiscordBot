@@ -1,5 +1,5 @@
-const { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
-const { getUserAndUpdate } = require('../../utils.js');
+import { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
+import { getUserAndUpdate } from '../../helpers/utils.js';
 
 // TODO: constants for highLow scoring
 
@@ -92,33 +92,28 @@ async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
     // TODO: implement blackjack, see highlow function for help, see settings command for more help
 }
 
-module.exports = {
-    cooldown: 7,
-    data: new SlashCommandBuilder()
-        .setName('play')
-        .setDescription('Play a game with Jeff!')
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('highlow')
-                .setDescription('Guess if the number Jeff is thinking of is lower or higher, winning gives energy'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('blackjack')
-                .setDescription('Bet reputation to play blackjack against Jeff')
-                .addIntegerOption(option =>
-                    option.setName('bet')
-                        .setDescription('Reputation you would like to bet')
-                        .setRequired(true))),
-    async execute(interaction) {
-        const tbl = interaction.client.db.jeff;
-        const name = interaction.member?.displayName || interaction.user.username;
-        const id = interaction.user.id;
-        if (interaction.options.getSubcommand() === 'highlow') {
-            await playHighLow(interaction, tbl, id, name);
-        }
-        else {
-            // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current reputation
-            await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet'));
-        }
-    },
-};
+export const cooldown = 7;
+export const data = new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Play a game with Jeff!')
+    .addSubcommand(subcommand => subcommand
+        .setName('highlow')
+        .setDescription('Guess if the number Jeff is thinking of is lower or higher, winning gives energy'))
+    .addSubcommand(subcommand => subcommand
+        .setName('blackjack')
+        .setDescription('Bet reputation to play blackjack against Jeff')
+        .addIntegerOption(option => option.setName('bet')
+            .setDescription('Reputation you would like to bet')
+            .setRequired(true)));
+export async function execute(interaction) {
+    const tbl = interaction.client.db.jeff;
+    const name = interaction.member?.displayName || interaction.user.username;
+    const id = interaction.user.id;
+    if (interaction.options.getSubcommand() === 'highlow') {
+        await playHighLow(interaction, tbl, id, name);
+    }
+    else {
+        // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current reputation
+        await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet'));
+    }
+}

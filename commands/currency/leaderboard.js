@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, bold, MessageFlags, escapeMarkdown } = require('discord.js');
+import { SlashCommandBuilder, bold, MessageFlags, escapeMarkdown } from 'discord.js';
 const statLabels = {
     num_nommed: 'Nom Count',
     energy: 'Energy',
@@ -51,41 +51,37 @@ async function getTopFive(tbl, guild, stat_type) {
 }
 
 // TODO: add autofill/default values
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('leaderboard')
-        .setDescription('Gets leaderboard of a statistic')
-        .addStringOption(option =>
-            option.setName('stat_type')
-                .setDescription('Type of stat for leaderboard')
-                .setRequired(true)
-                .addChoices(
-                    { name: 'nom_count', value: 'num_nommed' },
-                    { name: 'energy', value: 'energy' },
-                    { name: 'reputation', value: 'reputation' },
-                ))
-        .addStringOption(option =>
-            option.setName('scope')
-                .setDescription('Choose global or server leaderboard')
-                .addChoices(
-                    { name: 'Global', value: 'global' },
-                    { name: 'Server', value: 'server' },
-                )),
-    async execute(interaction) {
-        const scope = interaction.options.getString('scope') || 'global';
-        const stat = interaction.options.getString('stat_type');
-        if (!interaction.guild && scope === 'server') {
-            return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
-        }
-        const tbl = interaction.client.db.jeff;
-        await interaction.reply('Fetching...');
-        let reply;
-        if (scope === 'global') {
-            reply = await getTopFive(tbl, 0, stat);
-        }
-        else {
-            reply = await getTopFive(tbl, interaction.guild, stat);
-        }
-        await interaction.editReply(reply);
-    },
-};
+export const data = new SlashCommandBuilder()
+    .setName('leaderboard')
+    .setDescription('Gets leaderboard of a statistic')
+    .addStringOption(option => option.setName('stat_type')
+        .setDescription('Type of stat for leaderboard')
+        .setRequired(true)
+        .addChoices(
+            { name: 'nom_count', value: 'num_nommed' },
+            { name: 'energy', value: 'energy' },
+            { name: 'reputation', value: 'reputation' }
+        ))
+    .addStringOption(option => option.setName('scope')
+        .setDescription('Choose global or server leaderboard')
+        .addChoices(
+            { name: 'Global', value: 'global' },
+            { name: 'Server', value: 'server' }
+        ));
+export async function execute(interaction) {
+    const scope = interaction.options.getString('scope') || 'global';
+    const stat = interaction.options.getString('stat_type');
+    if (!interaction.guild && scope === 'server') {
+        return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
+    }
+    const tbl = interaction.client.db.jeff;
+    await interaction.reply('Fetching...');
+    let reply;
+    if (scope === 'global') {
+        reply = await getTopFive(tbl, 0, stat);
+    }
+    else {
+        reply = await getTopFive(tbl, interaction.guild, stat);
+    }
+    await interaction.editReply(reply);
+}

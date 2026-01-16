@@ -1,10 +1,17 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } = require('discord.js');
-const { token, ownerId, topggAPIKey } = require('./config.json');
-const { scheduleDailyReminders } = require('./schedulers.js');
-const { Sequelize } = require('sequelize');
-const { AutoPoster } = require("topgg-autoposter");
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+import { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } from 'discord.js';
+import config from './helpers/config.json' with { type: "json" };
+const { token } = config;
+const { ownerId } = config;
+const { topggAPIKey } = config;
+import { scheduleDailyReminders } from './helpers/schedulers.js';
+import { Sequelize } from 'sequelize';
+import { AutoPoster } from "topgg-autoposter";
 const sequelize = new Sequelize({
     host: 'localhost',
     dialect: 'sqlite',
@@ -12,8 +19,11 @@ const sequelize = new Sequelize({
     storage: 'jeff.sqlite',
 });
 
-const jeff = require('./models/jeff.js')(sequelize, Sequelize.DataTypes);
-const rivalsData = require('./models/rivalsdata.js')(sequelize, Sequelize.DataTypes);
+import jeffFactory from './models/jeff.js';
+import rivalsDataFactory from './models/rivalsdata.js';
+
+const jeff = jeffFactory(sequelize, Sequelize.DataTypes);
+const rivalsData = rivalsDataFactory(sequelize, Sequelize.DataTypes);
 
 const client = new Client({
     intents: [
@@ -25,21 +35,23 @@ const client = new Client({
     partials: [Partials.Channel], // needed so DM channels work
 });
 
-module.exports = client;
+export default client;
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
 client.db = { jeff, rivalsData };
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
+const foldersPath = join(__dirname, 'commands');
+const commandFolders = readdirSync(foldersPath);
 
 // Runs on initialization, grabs all commands in commands folder
 for (const folder of commandFolders) {
-    const commandsPath = path.join(foldersPath, folder);
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+    const commandsPath = join(foldersPath, folder);
+    const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
-        const command = require(filePath);
+        const filePath = join(commandsPath, file);
+        const fileUrl = pathToFileURL(filePath).href;
+        const commandImport = await import(fileUrl);
+        const command = commandImport.default || commandImport;
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
         }

@@ -1,6 +1,3 @@
-const { reportError } = require('./utils.js');
-const { ownerId } = require('./config.json');
-
 let msg = "";
 
 async function sendDailyReminders(client, tbl) {
@@ -22,7 +19,7 @@ async function sendDailyReminders(client, tbl) {
     console.log(`[DailyReminders] Sent reminders at ${new Date().toLocaleString()}`);
 }
 
-function scheduleDailyReminders(client, tbl) {
+export function scheduleDailyReminders(client, tbl) {
     const now = new Date();
     const nextTimeToDM = new Date(now);
     nextTimeToDM.setHours(17, 0, 0, 0);
@@ -36,5 +33,3 @@ function scheduleDailyReminders(client, tbl) {
         setInterval(() => sendDailyReminders(client, tbl), 24 * 60 * 60 * 1000);
     }, msUntilDM);
 }
-
-module.exports = { scheduleDailyReminders };

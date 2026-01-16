@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags, escapeMarkdown } = require('discord.js');
-const { getUserAndUpdate } = require('../../utils.js');
-const { ownerId } = require('../../config.json');
+import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
+import { getUserAndUpdate } from '../../helpers/utils.js';
+import config from '../../helpers/config.json' with { type: "json" };
+const { ownerId } = config;
 
 // constants for link buttons
 const dailyRemindersButton = new ButtonBuilder()
@@ -145,12 +146,10 @@ async function deleteInfo(user, i, collectorFilter) {
     }
 }
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('settings')
-        .setDescription('Look at and change your user-specific settings'),
-    async execute(interaction) {
-        const name = interaction.member?.displayName || interaction.user.username;
-        await settingsFunction(interaction.client.db.jeff, interaction, interaction.user.id, name);
-    },
-};
+export const data = new SlashCommandBuilder()
+    .setName('settings')
+    .setDescription('Look at and change your user-specific settings');
+export async function execute(interaction) {
+    const name = interaction.member?.displayName || interaction.user.username;
+    await settingsFunction(interaction.client.db.jeff, interaction, interaction.user.id, name);
+}
