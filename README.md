@@ -1,5 +1,7 @@
 Open Source Discord Bot for Jeff the Landshark from the Marvel Universe.
 See the Wiki on this GitHub for a list of commands.
+
+
 <img width="400" height="500" alt="Screenshot 2026-01-25 131039" src="https://github.com/user-attachments/assets/b46c01c8-12bf-495a-8c8a-3424fb3e9371" />
 
 
