@@ -64,7 +64,7 @@ for (const folder of commandFolders) {
 // Sets ready state for Jeff Bot
 client.once(Events.ClientReady, readyClient => {
     client.user.setActivity('Waiting for /jeff', { type: ActivityType.Custom });
-    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+    console.log(`Ready! Logged in as ${readyClient.user.tag} at ${new Date().toLocaleTimeString()}`);
     scheduleDailyReminders(client, client.db.jeff);
 });
 

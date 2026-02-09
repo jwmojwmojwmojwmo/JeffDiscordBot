@@ -9,4 +9,4 @@ eslint.config.mjs
 betaconfig.json
 quizquestions.js
 package-lock.json
-node_modules
+node_modules/
