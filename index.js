@@ -18,9 +18,12 @@ const sequelize = new Sequelize({
     logging: false,
     storage: 'jeff.sqlite',
 });
+import { Api } from "@top-gg/sdk";
+const TopggAPI = new Api(topggAPIKey);
 
 import jeffFactory from './models/jeff.js';
 import rivalsDataFactory from './models/rivalsdata.js';
+import { getUserAndUpdate } from './helpers/utils.js';
 
 const jeff = jeffFactory(sequelize, Sequelize.DataTypes);
 const rivalsData = rivalsDataFactory(sequelize, Sequelize.DataTypes);
@@ -29,6 +32,7 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
         GatewayIntentBits.DirectMessages, // allow DMs
         GatewayIntentBits.MessageContent, // allow reading DM content
     ],
@@ -122,10 +126,26 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
-// DM control
+// DM control and vote reading
 // !dm [userID] [y/n/e] [msg]
 // !info [userID] [info]
 client.on(Events.MessageCreate, async message => {
+    if (message.channel.id == "1472856269059784848") { // surely it's ok if this is public
+        const user_id = message.content.split(': ')[1].split(';')[0];
+        const user_name = message.content.split('UNBELIEVABLE: ')[1].split(';')[0];
+        const user = await tbl.findByPk(user_id);
+        if (user) {
+            let reward = 25;
+            if (await TopggAPI.isWeekend()) {
+                reward = reward * 2;
+            }
+            user.energy += reward;
+            await user.save();
+            const user_discord = await client.users.fetch(user_id);
+            await user_discord.send(`Thanks for voting! +${reward} energy! ${reward === 25 ? '' : ' (Rewards doubled because it is a weekend!)'}`);
+            console.log(`${user_name} (${user_id}) voted and claimed rewards.`);
+        }
+    }
     if (message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
         if (message.content.startsWith('!dm')) {
             const [cmd, userId, yesorno, ...msgParts] = message.content.split(' ');
@@ -168,6 +188,7 @@ client.on(Events.MessageCreate, async message => {
         }
     }
 });
+
 
 AutoPoster(topggAPIKey, client).on("posted", () => {
     console.log("[AutoPoster] Posted stats to Top.gg!");
