@@ -23,10 +23,14 @@ const TopggAPI = new Api(topggAPIKey);
 
 import jeffFactory from './models/jeff.js';
 import rivalsDataFactory from './models/rivalsdata.js';
-import { getUserAndUpdate } from './helpers/utils.js';
+import itemsFactory from './models/items.js';
+import inventoryFactory from './models/inventory.js'
+import { getUserAndUpdate, updateItemShop } from './helpers/utils.js';
 
 const jeff = jeffFactory(sequelize, Sequelize.DataTypes);
 const rivalsData = rivalsDataFactory(sequelize, Sequelize.DataTypes);
+const items = itemsFactory(sequelize, Sequelize.DataTypes);
+const inventory = inventoryFactory(sequelize, Sequelize.DataTypes);
 
 const client = new Client({
     intents: [
@@ -43,7 +47,7 @@ export default client;
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
-client.db = { jeff, rivalsData };
+client.db = { jeff, rivalsData, items, inventory };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
 
@@ -130,10 +134,10 @@ client.on(Events.InteractionCreate, async interaction => {
 // !dm [userID] [y/n/e] [msg]
 // !info [userID] [info]
 client.on(Events.MessageCreate, async message => {
-    if (message.channel.id == "1472856269059784848") { // surely it's ok if this is public
+    if (message.channel.id == "1472856269059784848" && message.content.startsWith("TECHNO")) { // surely it's ok if this is public
         const user_id = message.content.split(': ')[1].split(';')[0];
-        const user_name = message.content.split('UNBELIEVABLE: ')[1].split(';')[0];
-        const user = await tbl.findByPk(user_id);
+        const user_name = message.content.split('UNBELIEVABLE: ')[1].split(';')[0]; // random ahh "obfuscation" so now no one knows how the voting system works ha
+        const user = await jeff.findByPk(user_id);
         if (user) {
             let reward = 25;
             if (await TopggAPI.isWeekend()) {
@@ -189,15 +193,28 @@ client.on(Events.MessageCreate, async message => {
     }
 });
 
-
-AutoPoster(topggAPIKey, client).on("posted", () => {
-    console.log("[AutoPoster] Posted stats to Top.gg!");
-});
-
 (async () => {
-    await jeff.sync();
-    // await jeff.sync({ alter: true }); // when modifying db info 
-    await rivalsData.sync();
-    // await rivalsData.sync({ alter: true }); // when modifying db info 
+    // await jeff.sync({ alter: true });
+    // await rivalsData.sync({ alter: true });
+    // await items.sync({ alter: true });
+    // await inventory.sync({ alter: true });
+    jeff.hasMany(inventory, {
+        foreignKey: 'userid',
+        sourceKey: 'userid'
+    });
+    inventory.belongsTo(jeff, {
+        foreignKey: 'userid',
+        targetKey: 'userid'
+    });
+    items.hasMany(inventory, {
+        foreignKey: 'itemid',
+        sourceKey: 'itemid'
+    });
+    inventory.belongsTo(items, {
+        foreignKey: 'itemid',
+        targetKey: 'itemid'
+    });
+    await sequelize.sync();
+    await updateItemShop(items);
     await client.login(token);
 })();

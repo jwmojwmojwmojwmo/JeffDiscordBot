@@ -8,8 +8,8 @@ const { get } = axios;
 const rivalsBaseURL = 'https://marvelrivalsapi.com';
 const season = 6;
 
-//const disclaimer = `\n\nNote this command currently uses data from Season ${season}. It will be updated to use data from the current season in a few days, when enough ranked Jeff gameplay data is gathered.`;
-const disclaimer = ``;
+const disclaimer = `\n\nNote this command currently uses data from Season ${season}. It will be updated to use data from the current season in a few days, when enough ranked Jeff gameplay data is gathered.`;
+//const disclaimer = ``;
 
 const lastUpdate = {}; // playerID: timestamp
 

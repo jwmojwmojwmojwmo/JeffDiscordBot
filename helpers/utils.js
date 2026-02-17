@@ -1,3 +1,4 @@
+import item_list from "./itemlist.js";
 // Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
 // Note that if update === false, the callee must manually do user.save(), or the updated username will not persist. There ane NO CHECKS for this
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
@@ -26,6 +27,10 @@ export async function getUserAndUpdate(tbl, user_id, user_name, update) {
 		console.log('New user created:', user.toJSON(), date.toLocaleString());
 	}
 	return user;
+}
+
+export async function updateItemShop(items_tbl) {
+    await items_tbl.bulkCreate(item_list, {ignoreDuplicates: true});
 }
 
 export class RivalsAPIError extends Error {
