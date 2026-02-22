@@ -52,7 +52,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     const collector = reply.createMessageComponentCollector({
         filter: collectorFilter,
-        time: 120_000, // 2 minutes
+        time: 60_000, // 1 minute
     });
     collector.on('collect', async i => {
         if (i.customId === 'deleteInfo') {

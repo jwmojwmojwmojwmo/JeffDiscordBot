@@ -134,58 +134,17 @@ client.on(Events.InteractionCreate, async interaction => {
 // !dm [userID] [y/n/e] [msg]
 // !info [userID] [info]
 client.on(Events.MessageCreate, async message => {
-    if (message.channel.id == "1472856269059784848" && message.content.startsWith("TECHNO")) { // surely it's ok if this is public
-        const user_id = message.content.split(': ')[1].split(';')[0];
-        const user_name = message.content.split('UNBELIEVABLE: ')[1].split(';')[0]; // random ahh "obfuscation" so now no one knows how the voting system works ha
-        const user = await jeff.findByPk(user_id);
-        if (user) {
-            let reward = 25;
-            if (await TopggAPI.isWeekend()) {
-                reward = reward * 2;
-            }
-            user.energy += reward;
-            await user.save();
-            const user_discord = await client.users.fetch(user_id);
-            await user_discord.send(`Thanks for voting! +${reward} energy! ${reward === 25 ? '' : ' (Rewards doubled because it is a weekend!)'}`);
-            console.log(`${user_name} (${user_id}) voted and claimed rewards.`);
-        }
-    }
-    if (message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
+    if (message.channel.id == "1472856269059784848" && message.content.startsWith("BETATECHNO")) { // surely it's ok if this is public
+        await handleVote(message);
+    } else if (message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
+        // !dm control
         if (message.content.startsWith('!dm')) {
-            const [cmd, userId, yesorno, ...msgParts] = message.content.split(' ');
-            const msg = msgParts.join(' ');
-            try {
-                const user = await client.users.fetch(userId);
-                if (yesorno === 'y') {
-                    await user.send('Thank you for your /donatejeff submission to Jeff Bot! Your submission has been approved!\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
-                }
-                else if (yesorno === 'n') {
-                    await user.send('Thank you for your /donatejeff submission to Jeff Bot! Unfortunately, your submission was not approved for the following reason: "' + msg + '"\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
-                }
-                else {
-                    await user.send(msg + '\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
-                }
-                await message.reply('DM sent!');
-            }
-            catch (err) {
-                console.error(err);
-                await message.reply('Failed to DM.');
-            }
-        }
-        if (message.content.startsWith('!info')) {
-            const [cmd, userId, ...msgParts] = message.content.split(' ');
-            const msg = msgParts.join(' ');
-            try {
-                const user = await client.users.fetch(userId);
-                await user.send(`You recently requested your user information as stored by Jeff Bot. Please find your information below.\n\n${msg}\n\nPlease note this bot is currently unable to receive replies.`);
-                await message.reply('DM sent!');
-            }
-            catch (err) {
-                console.error(err);
-                await message.reply('Failed to DM.');
-            }
-        }
-        if (message.content.startsWith('!getinfo')) {
+            await handleJeffDonation(message);
+        // !info control
+        } else if (message.content.startsWith('!info')) {
+            await handleInfo(message);
+        // !getinfo control
+        } else if (message.content.startsWith('!getinfo')) {
             const [cmd, userId] = message.content.split(' ');
             const user = await client.db.jeff.findByPk(userId);
             await message.reply(JSON.stringify(user, null, 1));
@@ -196,7 +155,7 @@ client.on(Events.MessageCreate, async message => {
 (async () => {
     // await jeff.sync({ alter: true });
     // await rivalsData.sync({ alter: true });
-    // await items.sync({ alter: true });
+    await items.sync({ force: true });
     // await inventory.sync({ alter: true });
     jeff.hasMany(inventory, {
         foreignKey: 'userid',
@@ -218,3 +177,56 @@ client.on(Events.MessageCreate, async message => {
     await updateItemShop(items);
     await client.login(token);
 })();
+
+async function handleVote(message) {
+    const user_id = message.content.split(': ')[1].split(';')[0];
+    const user_name = message.content.split('UNBELIEVABLE: ')[1].split(';')[0]; // random ahh "obfuscation" so now no one knows how the voting system works ha
+    const user = await jeff.findByPk(user_id);
+    if (user) {
+        let reward = 25;
+        if (await TopggAPI.isWeekend()) {
+            reward = reward * 2;
+        }
+        user.energy += reward;
+        await user.save();
+        const user_discord = await client.users.fetch(user_id);
+        await user_discord.send(`Thanks for voting! +${reward} energy! ${reward === 25 ? '' : ' (Rewards doubled because it is a weekend!)'}`);
+        console.log(`${user_name} (${user_id}) voted and claimed rewards.`);
+    }
+}
+
+async function handleJeffDonation(message) {
+    const [cmd, userId, yesorno, ...msgParts] = message.content.split(' ');
+    const msg = msgParts.join(' ');
+    try {
+        const user = await client.users.fetch(userId);
+        if (yesorno === 'y') {
+            await user.send('Thank you for your /donatejeff submission to Jeff Bot! Your submission has been approved!\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
+        }
+        else if (yesorno === 'n') {
+            await user.send('Thank you for your /donatejeff submission to Jeff Bot! Unfortunately, your submission was not approved for the following reason: "' + msg + '"\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
+        }
+        else {
+            await user.send(msg + '\n\nPlease note this bot is currently unable to receive replies. If you would like to stop recieving DMs from Jeff Bot, use /settings.');
+        }
+        await message.reply('DM sent!');
+    }
+    catch (err) {
+        console.error(err);
+        await message.reply('Failed to DM.');
+    }
+}
+
+async function handleInfo(message) {
+    const [cmd, userId, ...msgParts] = message.content.split(' ');
+    const msg = msgParts.join(' ');
+    try {
+        const user = await client.users.fetch(userId);
+        await user.send(`You recently requested your user information as stored by Jeff Bot. Please find your information below.\n\n${msg}\n\nPlease note this bot is currently unable to receive replies.`);
+        await message.reply('DM sent!');
+    }
+    catch (err) {
+        console.error(err);
+        await message.reply('Failed to DM.');
+    }
+}

@@ -30,7 +30,15 @@ export async function getUserAndUpdate(tbl, user_id, user_name, update) {
 }
 
 export async function updateItemShop(items_tbl) {
-    await items_tbl.bulkCreate(item_list, {ignoreDuplicates: true});
+    try {
+        console.log("Starting item database sync...");
+        for (const item of item_list) {
+            await items_tbl.upsert(item);
+        }
+        console.log(`Successfully synced ${item_list.length} items to the database.`);
+    } catch (error) {
+        console.error("Failed to sync item shop:", error);
+    }
 }
 
 export class RivalsAPIError extends Error {

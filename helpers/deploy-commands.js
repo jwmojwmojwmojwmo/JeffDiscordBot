@@ -54,6 +54,7 @@ const rest = new REST().setToken(token);
 
 // and deploy your commands!
 (async () => {
+
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
