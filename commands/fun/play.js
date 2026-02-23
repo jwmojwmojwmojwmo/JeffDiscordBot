@@ -19,6 +19,38 @@ const jackpotButton = new ButtonBuilder()
 const highLowRow = new ActionRowBuilder().addComponents(lowerButton, jackpotButton, higherButton); // the row of buttons below the text
 
 // TODO: constants for blackjack UI
+const hit = new ButtonBuilder()
+    .setCustomId('hit')
+    .setLabel('Hit')
+    .setStyle(ButtonStyle.Primary);
+
+const stand = new ButtonBuilder()
+    .setCustomId('stand')
+    .setLabel('Stand')
+    .setStyle(ButtonStyle.Primary);
+
+const double = new ButtonBuilder()
+    .setCustomId('double')
+    .setLabel('Double')
+    .setStyle(ButtonStyle.Secondary);
+
+const split = new ButtonBuilder()
+    .setCustomId('split')
+    .setLabel('Split')
+    .setStyle(ButtonStyle.Secondary);
+
+const insure = new ButtonBuilder()
+    .setCustomId('insure')
+    .setLabel('Insure')
+    .setStyle(ButtonStyle.Secondary);
+
+const surrender = new ButtonBuilder()
+    .setCustomId('surrender')
+    .setLabel('Surrender')
+    .setStyle(ButtonStyle.Secondary);
+
+const alwaysActions = new ActionRowBuilder().addComponents(hit, stand, double, surrender);
+
 
 async function playHighLow(interaction, tbl, user_id, user_name) {
     const thinkingNum = Math.floor(Math.random() * 101); // the num jeffy is thinking of, 0-100
@@ -70,27 +102,62 @@ function getHighLowPenalty(diff) {
 
 
 async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
-    console.log(`${user_name} (${user_id}) tried to play blackjack.`);
-    return interaction.reply('Work in progress...'); // comment out when blackjack is done
+    async function playBlackJack(interaction, user, bet) {
+        console.log(`${user.username} (${user.userid}) tried to play blackjack. Hi Jason im doin it okk`);
+        jeffCards;
 
-    // stub
-    const reply = await interaction.reply('stub'); // initial reply
-    const user = await getUserAndUpdate(tbl, user_id, user_name, false); // returns user who started interaction
-    const collectorFilter = i => i.user.id === interaction.user.id; // returns true if the user pressing the button is the user who started the interaction
-    const collector = reply.createMessageComponentCollector({ // creates a collector, lasting for two minutes, using the filter, that 'collects' every time an action is performed
-        filter: collectorFilter,
-        time: 120_000, // 2 minutes
-    });
-    collector.on('collect', async i => { // runs whenever a button is pressed
-        // perform some action
-        await user.save(); // saves user information to db, try to reduce calls to this whenevere possible
-        await i.update('stub'); // updates the message panel from the initial reply
-    });
-    collector.on('end', async () => { // runs once when time is over
-        await interaction.editReply('You left Jeffy alone too long :(( cancelling'); // use interaction.editReply() for the final edit, use i.update() otherwise
-    })
-    // TODO: implement blackjack, see highlow function for help, see settings command for more help
+        const buildEmbed = () =>
+            new EmbedBuilder()
+                .setTitle(`${user.username}'s Blackjack Game`)
+                .addFields(
+                    {
+                        name: `Jeffy`,
+                        value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
+                    },
+                    {
+                        name: `${user_name}`,
+                        value: `Cards: ${userCards}\nSum: ${userSum}`
+                    },
+                    {
+                        name: '',
+                        value: `${result} won! You ${operation} ${amount} reputation!`
+                    }
+                );
+        
+        
+    
+        const reply = await interaction.reply({
+            embeds: [buildEmbed],
+            components: [alwaysActions],
+        }); // initial reply
+        const collectorFilter = i => i.user.id === interaction.user.id; // returns true if the user pressing the button is the user who started the interaction
+        const collector = reply.createMessageComponentCollector({ // creates a collector, lasting for two minutes, using the filter, that 'collects' every time an action is performed
+            filter: collectorFilter,
+            time: 120_000, // 2 minutes
+        });
+        collector.on('collect', async i => {
+    
+            if(i.customId === 'hit') {
+    
+                //grab card and put in user's hand
+                await i.update({
+                    embeds: [buildEmbed()],
+                    components: [alwaysActions]
+                });
+            }
+            // runs whenever a button is pressed
+            // perform some action: TODO main blackjack logic
+            await user.save(); // saves user information to db, try to reduce calls to this whenevere possible
+            await i.update('stub'); // updates the message panel from the initial reply
+        });
+        collector.on('end', async (_collected, reason) => { // pass reason for ending collector with collector.stop(reason)
+            // perform some action: TODO blackjack ending logic
+            await interaction.editReply('This interaction timed out.'); // use interaction.editreply for final edit, use i.update otherwise
+        })
+        // TODO: implement blackjack, see settings.js for help with collectors
+    }
 }
+
 
 export const cooldown = 7;
 export const data = new SlashCommandBuilder()
