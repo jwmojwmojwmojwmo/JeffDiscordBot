@@ -49,7 +49,8 @@ export async function execute(interaction) {
         container
             .addSectionComponents((s) => s
                 .addTextDisplayComponents((text) => text.setContent(getFormattedShopItem(allItems, item, user)))
-                .setButtonAccessory((button) => button.setCustomId(`buy_${item.itemid}`).setLabel(`Buy ${item.name}`).setStyle(ButtonStyle.Primary)));
+                .setButtonAccessory((button) => button.setCustomId(`buy_${item.itemid}`).setLabel(`Buy ${item.name}`).setStyle(ButtonStyle.Primary)))
+            .addSeparatorComponents((separator) => separator);
     }
     container
         .addActionRowComponents((row) => row.addComponents(

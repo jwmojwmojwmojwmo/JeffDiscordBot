@@ -50,7 +50,7 @@ export default client;
 client.commands = new Collection();
 client.cooldowns = new Collection();
 client.itemCache = null; // when database synced this will become a local cache for the items db
-client.db = { jeff, rivalsData, items, inventory };
+client.db = { jeff, rivalsData, items, inventory, equipment };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
 
