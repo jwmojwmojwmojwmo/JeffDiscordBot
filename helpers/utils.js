@@ -11,24 +11,25 @@ import item_list from "./itemlist.js";
  * @returns {object} - user object with updated username. The username has not been saved to the database unless update === true
  */
 export async function getUserAndUpdate(tbl, user_id, user_name, update) {
-	let user = await tbl.findByPk(user_id);
-	if (user) {
-		user.username = user_name;
-		if (update) {
-			await user.save();
-		}
-	}
-	else {
-		user = await tbl.create({
-			userid: user_id,
-			username: user_name,
-		});
-		const date = new Date();
-		console.log('New user created:', user.toJSON(), date.toLocaleString());
-	}
-	return user;
+    let user = await tbl.findByPk(user_id);
+    if (user) {
+        user.username = user_name;
+        if (update) {
+            await user.save();
+        }
+    }
+    else {
+        user = await tbl.create({
+            userid: user_id,
+            username: user_name,
+        });
+        const date = new Date();
+        console.log('New user created:', user.toJSON(), date.toLocaleString());
+    }
+    return user;
 }
 
+// adds items to item database from itemlist.js
 export async function updateItemShop(items_tbl) {
     try {
         console.log("Starting item database sync...");
@@ -38,6 +39,36 @@ export async function updateItemShop(items_tbl) {
         console.log(`Successfully synced ${item_list.length} items to the database.`);
     } catch (error) {
         console.error("Failed to sync item shop:", error);
+    }
+}
+
+// given an inventory row, removes some amount of item from that row and deletes row if 0 amount left
+export async function removeAmountFromInventory(tbl_row, amount) {
+    tbl_row.amount -= amount;
+    if (tbl_row.amount === 0) {
+        await tbl_row.destroy();
+    } else {
+        await tbl_row.save();
+    }
+}
+
+// given an inventory db, add some amount of item to a user if they have some already, or create a new row if not
+export async function addAmountToInventory(tbl, user_id, item, amount) {
+    const itemRow = await tbl.findOne({
+        where: {
+            userid: user_id,
+            itemid: item.itemid
+        }
+    })
+    if (itemRow) {
+        itemRow.amount += amount;
+        await itemRow.save();
+    } else {
+        await tbl.create({
+            userid: user_id,
+            itemid: item.itemid,
+            amount: amount
+        });
     }
 }
 

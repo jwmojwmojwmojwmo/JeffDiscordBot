@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown, bold, italic, ContainerBuilder, ButtonStyle, heading, ButtonBuilder } from 'discord.js';
-import { getUserAndUpdate } from '../../helpers/utils.js';
+import { getUserAndUpdate, removeAmountFromInventory, addAmountToInventory } from '../../helpers/utils.js';
+import { Op } from 'sequelize';
 
 const timeoutContainer = new ContainerBuilder()
     .addTextDisplayComponents((text) => text.setContent(`This interaction timed out.`));
@@ -17,15 +18,30 @@ function getFormattedShopItem(allItems, shopItem, user) {
     return `${bold(`${shopItem.name}  ${shopItem.emoji}`)}\nCost: ${costsText}\n${italic(shopItem.description)}`
 }
 
+async function attemptToPurchase(item, userinv, id, tbl) {
+    for (const [itemId, amount] of Object.entries(item.cost)) {
+        const costItem = userinv.find(i => i.itemid === itemId);
+        if ((costItem?.amount || 0) < amount) {
+            return -1;
+        }
+    }
+    for (const [itemId, amount] of Object.entries(item.cost)) {
+        const costItem = userinv.find(i => i.itemid === itemId);
+        await removeAmountFromInventory(costItem, amount);
+    }
+    await addAmountToInventory(tbl, id, item, 1);
+    return 1;
+}
+
 export const data = new SlashCommandBuilder()
     .setName('trader')
     .setDescription(`Check the trader to trade items with!`);
 export async function execute(interaction) {
-    console.log("Someone opened the trader.");
     const itemsDb = interaction.client.db.items;
     const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, true);
     const allItems = await itemsDb.findAll();
     const shopItems = allItems.filter(i => i.cost !== null);
+    // build display container
     const container = new ContainerBuilder()
         .setAccentColor(0x80aaff)
         .addTextDisplayComponents((text) => text.setContent(`${heading("🏝️ Jeff's Trading Post", 1)}\nMRRR!! MRR! (Translation: All sales are final. No refunds.)`))
@@ -43,6 +59,7 @@ export async function execute(interaction) {
                 .setLabel('Close Shop')
                 .setStyle(ButtonStyle.Danger)));
     const reply = await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    // interaction collector
     const collectorFilter = i => i.user.id === interaction.user.id;
     const collector = await reply.createMessageComponentCollector({
         filter: collectorFilter,
@@ -57,15 +74,27 @@ export async function execute(interaction) {
             await i.update({ components: [timeoutContainer], flags: MessageFlags.IsComponentsV2 });
             collector.stop();
             return;
-        }
-        const id = i.customId.split("_")[1];
-        let item = shopItems.find(i => i.itemid === id);
-        for (const [itemId, amount] of Object.entries(item.cost)) {
-            let costItem = allItems.find(i => i.itemid === itemId);
-            // TODO
+        } else {
+            const id = i.customId.split("_")[1];
+            const item = shopItems.find(i => i.itemid === id);
+            const requiredItemIds = Object.keys(item.cost);
+            const userinv = await interaction.client.db.inventory.findAll({
+                where: {
+                    userid: interaction.user.id,
+                    itemid: { [Op.in]: requiredItemIds }
+                }
+            });
+            const purchaseSuccess = await attemptToPurchase(item, userinv, interaction.user.id, interaction.client.db.inventory);
+            if (purchaseSuccess === -1) {
+                await i.reply({ content: "You don't have enough materials to purchase this!", flags: MessageFlags.Ephemeral });
+                console.log(`${interaction.user.username} (${interaction.user.id}) tried to purchase ${item.name} but couldn't afford it.`);
+            } else {
+                await i.reply({ content: `Purchased ${item.name}!`, flags: MessageFlags.Ephemeral });
+                console.log(`${interaction.user.username} (${interaction.user.id}) purchased ${item.name}.`);
+            }
         }
     });
     collector.on('end', async (_collected, reason) => {
-        await interaction.deleteReply();
+        await interaction.deleteReply().catch(console.error); // in case the message is deleted some other way
     })
 }

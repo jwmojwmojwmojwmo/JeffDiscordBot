@@ -156,7 +156,6 @@ client.on(Events.MessageCreate, async message => {
     // await jeff.sync({ alter: true });
     // await rivalsData.sync({ alter: true });
     await items.sync({ force: true });
-    // await inventory.sync({ alter: true });
     jeff.hasMany(inventory, {
         foreignKey: 'userid',
         sourceKey: 'userid'
