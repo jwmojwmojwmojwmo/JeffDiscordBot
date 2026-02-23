@@ -29,7 +29,6 @@ export async function execute(interaction) {
     const userinv = await interaction.client.db.inventory.findAll({
         where: { userid: user_id }
     });
-    const allItems = await interaction.client.db.items.findAll();
     const container = new ContainerBuilder()
         .setAccentColor(0x80aaff)
         .addTextDisplayComponents((text) => text.setContent(`${heading(`${escapeMarkdown(user_name)}'s Inventory`, 2)}\n`))
@@ -38,7 +37,7 @@ export async function execute(interaction) {
         container.addTextDisplayComponents((text) => text.setContent("You don't have anything in your inventory yet!"));
     }
     for (const item of userinv) {
-        container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(allItems, item, user)));
+        container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(interaction.client.itemCache, item, user)));
     }
     await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
 }

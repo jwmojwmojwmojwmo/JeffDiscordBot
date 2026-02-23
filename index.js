@@ -25,12 +25,14 @@ import jeffFactory from './models/jeff.js';
 import rivalsDataFactory from './models/rivalsdata.js';
 import itemsFactory from './models/items.js';
 import inventoryFactory from './models/inventory.js'
+import equipmentFactory from './models/equipment.js'
 import { getUserAndUpdate, updateItemShop } from './helpers/utils.js';
 
 const jeff = jeffFactory(sequelize, Sequelize.DataTypes);
 const rivalsData = rivalsDataFactory(sequelize, Sequelize.DataTypes);
 const items = itemsFactory(sequelize, Sequelize.DataTypes);
 const inventory = inventoryFactory(sequelize, Sequelize.DataTypes);
+const equipment = equipmentFactory(sequelize, Sequelize.DataTypes);
 
 const client = new Client({
     intents: [
@@ -47,6 +49,7 @@ export default client;
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
+client.itemCache = null; // when database synced this will become a local cache for the items db
 client.db = { jeff, rivalsData, items, inventory };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
@@ -79,53 +82,61 @@ client.once(Events.ClientReady, readyClient => {
 // Main command handling function
 client.on(Events.InteractionCreate, async interaction => {
     // checks if slash command is slash command and exists
-    if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
     const command = interaction.client.commands.get(interaction.commandName);
 
     if (!command) {
         console.error(`No command matching ${interaction.commandName} was found.`);
         return;
     }
-    // cooldown handling
-    const { cooldowns } = interaction.client;
-
-    if (!cooldowns.has(command.data.name)) {
-        cooldowns.set(command.data.name, new Collection());
-    }
-
-    const now = Date.now();
-    const timestamps = cooldowns.get(command.data.name);
-    // const defaultCooldownDuration = 3;
-    const cooldownAmount = (command.cooldown) * 1000;
-
-    if (timestamps.has(interaction.user.id)) {
-        const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
-
-        if (now < expirationTime) {
-            const expiredTimestamp = Math.round(expirationTime / 1000);
-            return interaction.reply({ content: `\`${command.data.name}\` is on a cooldown. You can use it again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+    if (interaction.isAutocomplete()) {
+        try {
+            await command.autocomplete(interaction);
+        } catch (error) {
+            console.error(error);
         }
-    }
-    timestamps.set(interaction.user.id, now);
-    setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+    } else {
+        // cooldown handling
+        const { cooldowns } = interaction.client;
 
-    // runs command according to command file with error handling
-    try {
-        //TODO: pass interaction into helpers and return replies through helper whenever possible
-        await command.execute(interaction);
-        if (interaction.guild) {
-            console.log(`Commands were run in ${interaction.guild.name}.`);
-        } else {
-            console.log(`Commands were run in DMs.`);
+        if (!cooldowns.has(command.data.name)) {
+            cooldowns.set(command.data.name, new Collection());
         }
-    }
-    catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. -- please report this error --', flags: MessageFlags.Ephemeral });
+
+        const now = Date.now();
+        const timestamps = cooldowns.get(command.data.name);
+        // const defaultCooldownDuration = 3;
+        const cooldownAmount = (command.cooldown) * 1000;
+
+        if (timestamps.has(interaction.user.id)) {
+            const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+
+            if (now < expirationTime) {
+                const expiredTimestamp = Math.round(expirationTime / 1000);
+                return interaction.reply({ content: `\`${command.data.name}\` is on a cooldown. You can use it again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+            }
         }
-        else {
-            await interaction.reply({ content: 'There was an error while executing this command! -- please report this error --', flags: MessageFlags.Ephemeral });
+        timestamps.set(interaction.user.id, now);
+        setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+
+        // runs command according to command file with error handling
+        try {
+            //TODO: pass interaction into helpers and return replies through helper whenever possible
+            await command.execute(interaction);
+            if (interaction.guild) {
+                console.log(`Commands were run in ${interaction.guild.name}.`);
+            } else {
+                console.log(`Commands were run in DMs.`);
+            }
+        }
+        catch (error) {
+            console.error(error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ content: 'Something unexpected happened while interacting with this command. -- please report this error --', flags: MessageFlags.Ephemeral });
+            }
+            else {
+                await interaction.reply({ content: 'There was an error while executing this command! -- please report this error --', flags: MessageFlags.Ephemeral });
+            }
         }
     }
 });
@@ -140,10 +151,10 @@ client.on(Events.MessageCreate, async message => {
         // !dm control
         if (message.content.startsWith('!dm')) {
             await handleJeffDonation(message);
-        // !info control
+            // !info control
         } else if (message.content.startsWith('!info')) {
             await handleInfo(message);
-        // !getinfo control
+            // !getinfo control
         } else if (message.content.startsWith('!getinfo')) {
             const [cmd, userId] = message.content.split(' ');
             const user = await client.db.jeff.findByPk(userId);
@@ -172,8 +183,25 @@ client.on(Events.MessageCreate, async message => {
         foreignKey: 'itemid',
         targetKey: 'itemid'
     });
+    jeff.hasMany(equipment, {
+        foreignKey: 'userid',
+        sourceKey: 'userid'
+    });
+    equipment.belongsTo(jeff, {
+        foreignKey: 'userid',
+        targetKey: 'userid'
+    });
+    items.hasMany(equipment, {
+        foreignKey: 'itemid',
+        sourceKey: 'itemid'
+    });
+    equipment.belongsTo(items, {
+        foreignKey: 'itemid',
+        targetKey: 'itemid'
+    });
+    const allItems = await updateItemShop(items);
+    client.itemCache = allItems;
     await sequelize.sync();
-    await updateItemShop(items);
     await client.login(token);
 })();
 

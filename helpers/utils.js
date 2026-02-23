@@ -37,6 +37,8 @@ export async function updateItemShop(items_tbl) {
             await items_tbl.upsert(item);
         }
         console.log(`Successfully synced ${item_list.length} items to the database.`);
+        const allItems = await items_tbl.findAll();
+        return allItems;
     } catch (error) {
         console.error("Failed to sync item shop:", error);
     }
