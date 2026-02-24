@@ -2,8 +2,7 @@
     "token": "",
     "clientId": "",
     "ownerId": "",
-    "testerId": ["", ""],
-    "guildId": "",
+    "voteChannelId": "",
     "geminiAPIKey": "",
     "topggAPIKey": "",
     "rivalsAPIKey": ""

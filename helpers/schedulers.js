@@ -10,6 +10,7 @@ async function sendDailyReminders(client, tbl) {
             try {
                 const member = await client.users.fetch(user.userid);
                 await member.send("Jeffy wants to remind you to claim your daily! Woop Woop!\n\nYou can turn these reminders off by using /settings.\n\n" + msg);
+                await member.send("Psst... Jeff's in a funny mood today. Wanna see what's brewing behind the scenes? Run /preview to get access to Jeff Bot Beta. This command will only be available for a limited time! (P.S. Totally not doing this cuz I feel bad for not updating the bot in forever)");
                 console.log(`[DailyReminders] Sent reminder to ${user.userid}`);
             } catch (err) {
                 console.error(`Failed to DM user ${user.userid}`);

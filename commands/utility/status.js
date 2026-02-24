@@ -17,7 +17,7 @@ const statusEmbed = new EmbedBuilder()
     .addFields(
         { name: `Status: ${Status.ONLINE}`, value: `\nPlanned to go offline for 12 hours starting at ${timea}` },
         { name: `Known issues:`, value: `Voting was recently changed, and /skillcheck is new and experimental! Please report any issues.` },
-        { name: 'Latest update: v0.85', value: 'Changes: HI GUYS I\'M BACK! Sorry for the break. Anyways the recent update was pretty small, but I learned a lot about webhooks and stuff. Basically the voting system should work a lot better. Stay tuned for actual big updates in the near future!\nAdded /quiz! Earn energy by answering trivia questions about Jeff with various difficulties. If you have any suggestions for new quiz questions, feel free to send it using /donatesuggestions!' },
+        { name: 'Latest update: v0.85', value: 'Changes: HI GUYS I\'M BACK! Sorry for the break. Anyways the recent update was pretty small, but I learned a lot about webhooks and stuff. Basically the voting system should work a lot better. Stay tuned for actual big updates in the near future! For a limited time, check out /preview for more info!\nAdded /quiz! Earn energy by answering trivia questions about Jeff with various difficulties. If you have any suggestions for new quiz questions, feel free to send it using /donatesuggestions!' },
         { name: 'Comments:', value: '\nHi guys!' },
         { name: '\u200B', value: `Updated at <t:${now}:f>` },
     );
