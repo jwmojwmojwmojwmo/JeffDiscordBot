@@ -43,11 +43,17 @@ export async function updateItemShop(items_tbl) {
         console.error("Failed to sync item shop:", error);
     }
 }
-
+// TODO: ensure equipment is synced with inventory
 // given an inventory row, removes some amount of item from that row and deletes row if 0 amount left
-export async function removeAmountFromInventory(tbl_row, amount) {
+export async function removeAmountFromInventory(eq_tbl, tbl_row, amount) {
     tbl_row.amount -= amount;
     if (tbl_row.amount === 0) {
+        const eq_tbl_row = await eq_tbl.findOne({
+            where: { userid: tbl_row.userid, itemid: tbl_row.itemid }
+        })
+        if (eq_tbl_row) {
+            await eq_tbl_row.destroy();
+        }
         await tbl_row.destroy();
     } else {
         await tbl_row.save();

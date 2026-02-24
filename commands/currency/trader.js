@@ -15,10 +15,10 @@ function getFormattedShopItem(allItems, shopItem, user) {
         costsText += `${amount} ${itemName}${amount === 1 ? "" : "s"} + `;
     }
     costsText = costsText.slice(0, -3);
-    return `${bold(`${shopItem.name}  ${shopItem.emoji}`)}\nCost: ${costsText}\n${italic(shopItem.description)}`
+    return `${bold(`${shopItem.name}  ${shopItem.emoji}`)}\n${italic(shopItem.description)}\n\nCost: ${costsText}`
 }
 
-async function attemptToPurchase(item, userinv, id, tbl) {
+async function attemptToPurchase(item, userinv, id, tbl, eq_tbl) {
     for (const [itemId, amount] of Object.entries(item.cost)) {
         const costItem = userinv.find(i => i.itemid === itemId);
         if ((costItem?.amount || 0) < amount) {
@@ -27,7 +27,7 @@ async function attemptToPurchase(item, userinv, id, tbl) {
     }
     for (const [itemId, amount] of Object.entries(item.cost)) {
         const costItem = userinv.find(i => i.itemid === itemId);
-        await removeAmountFromInventory(costItem, amount);
+        await removeAmountFromInventory(eq_tbl, costItem, amount);
     }
     await addAmountToInventory(tbl, id, item, 1);
     return 1;
@@ -59,6 +59,7 @@ export async function execute(interaction) {
                 .setLabel('Close Shop')
                 .setStyle(ButtonStyle.Danger)));
     const reply = await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    console.log("Trader was checked.");
     // interaction collector
     const collectorFilter = i => i.user.id === interaction.user.id;
     const collector = await reply.createMessageComponentCollector({
@@ -84,7 +85,7 @@ export async function execute(interaction) {
                     itemid: { [Op.in]: requiredItemIds }
                 }
             });
-            const purchaseSuccess = await attemptToPurchase(item, userinv, interaction.user.id, interaction.client.db.inventory);
+            const purchaseSuccess = await attemptToPurchase(item, userinv, interaction.user.id, interaction.client.db.inventory, interaction.client.db.equipment);
             if (purchaseSuccess === -1) {
                 await i.reply({ content: "You don't have enough materials to purchase this!", flags: MessageFlags.Ephemeral });
                 console.log(`${interaction.user.username} (${interaction.user.id}) tried to purchase ${item.name} but couldn't afford it.`);

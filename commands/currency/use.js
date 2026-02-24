@@ -32,16 +32,22 @@ export async function autocomplete(interaction) {
     await interaction.respond(filteredItemList);
 }
 export async function execute(interaction) {
-    const item = interaction.client.itemCache.find((i) => i.itemid === interaction.options.getString('item'));
-    switch (item.effect.type) {
+    let item = await interaction.client.db.inventory.findOne({
+        where: { userid: interaction.user.id, itemid: interaction.options.getString("item") }
+    });
+    if (!item || item.amount <= 0) {
+        await interaction.reply({ content: "You entered an invalid item or an item you don't own yet!", flags: MessageFlags.Ephemeral });
+    }
+    item = interaction.client.itemCache.find((i) => i.itemid === interaction.options.getString("item"));
+    switch (item.effect?.type || 0) {
         case "FUNNY":
             await interaction.reply({ content: item.effect.message, flags: MessageFlags.Ephemeral });
             break;
         case "EQUIP":
-            await equipItem(interaction.client.db.equipment, item, interaction.user.id, 'fishing_rod');
+            await equipItem(interaction.client.db.equipment, item, interaction.user.id, item.effect.slot);
             await interaction.reply({ content: `You equipped ${item.name}.`, flags: MessageFlags.Ephemeral });
             break;
         default:
-            await interaction.reply({ content: `You can't use this item! If this is in error, please report it!`, flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: `You entered an invalid item or you can't use this item! If you believe this is in error, please report it!`, flags: MessageFlags.Ephemeral });
     }
 }

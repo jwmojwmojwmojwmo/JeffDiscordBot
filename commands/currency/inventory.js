@@ -40,4 +40,5 @@ export async function execute(interaction) {
         container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(interaction.client.itemCache, item, user)));
     }
     await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    console.log(`${user_name}'s inventory was checked.`)
 }

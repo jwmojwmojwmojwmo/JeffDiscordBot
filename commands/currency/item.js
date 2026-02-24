@@ -34,11 +34,14 @@ export const data = new SlashCommandBuilder()
 export async function autocomplete(interaction) {
     const focusedValue = interaction.options.getFocused();
     let filteredItemList = interaction.client.itemCache.filter((i) => i.name.toLowerCase().includes(focusedValue.toLowerCase()));
-    filteredItemList = filteredItemList.slice(0, 25).map((i) => ({ name: `${i.name} ${i.emoji}`, value: i.itemid }));
+    filteredItemList = filteredItemList.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 25).map((i) => ({ name: `${i.name} ${i.emoji}`, value: i.itemid }));
     await interaction.respond(filteredItemList);
 }
 export async function execute(interaction) {
     const item = interaction.client.itemCache.find((i) => i.itemid === interaction.options.getString('item'));
+    if (!item) {
+        return interaction.reply({ content: "That isn't a valid item!", flags: MessageFlags.Ephemeral });
+    }
     const rarityText = `${bold("Rarity")}: ${RARITY_MAPPINGS[item.rarity] || "unknown"}`;
     const buyableText = `${bold("Buyable")}: ${item.cost ? `Yes, costs ${getItemCost(interaction.client.itemCache, item.cost)}.` : `No`}`;
     let useableText = `${bold("Usable")}: `;
@@ -61,6 +64,7 @@ export async function execute(interaction) {
         .addSeparatorComponents((separator) => separator)
         .addTextDisplayComponents((text) => text.setContent(italic(item.description)))
         .addSeparatorComponents((separator) => separator)
+        .addTextDisplayComponents((text) => text.setContent(`${bold("Item ID")}: ${item.itemid}`))
         .addTextDisplayComponents((text) => text.setContent(rarityText))
         .addTextDisplayComponents((text) => text.setContent(buyableText))
         .addTextDisplayComponents((text) => text.setContent(useableText))

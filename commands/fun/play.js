@@ -71,7 +71,7 @@ function getHighLowPenalty(diff) {
 
 async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
     console.log(`${user_name} (${user_id}) tried to play blackjack.`);
-    return interaction.reply('Work in progress...'); // comment out when blackjack is done
+    return interaction.reply('GUYS I PROMISE WE ARE WORKING ON IT :(('); // comment out when blackjack is done
 
     // stub
     const reply = await interaction.reply('stub'); // initial reply
