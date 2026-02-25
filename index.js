@@ -113,7 +113,18 @@ client.on(Events.InteractionCreate, async interaction => {
 
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
-                return interaction.reply({ content: `\`${command.data.name}\` is on a cooldown. You can use it again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+                switch (command.data.name) {
+                    case "fish":
+                        return interaction.reply({ content: `You're scaring the fish away! You can cast your line again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+                    case "nom":
+                        return interaction.reply({ content: `Jeff's tummy is way too full! He'll be hungry enough to nom someone else <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+                    case "spit":
+                        return interaction.reply({ content: `Jeff's out of ammo! He'll be able to spit again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+                    case "bubble":
+                        return interaction.reply({ content: `Jeff is all out of bubbles! He'll be ready again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+                    default:
+                        return interaction.reply({ content: `Jeff got distracted by some food, he can't help you right now... \`${command.data.name}\` will be ready again <t:${expiredTimestamp}:R>.`, flags: MessageFlags.Ephemeral });
+                }
             }
         }
         timestamps.set(interaction.user.id, now);

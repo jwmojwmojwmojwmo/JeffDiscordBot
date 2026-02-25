@@ -9,7 +9,8 @@ const RARITY_MAPPINGS = Object.freeze({
 
 const EFFECT_MAPPINGS = Object.freeze({
     FUNNY: `but may still be useless.`,
-    EQUIP: `can be equipped.`
+    EQUIP: `can be equipped.`,
+    CONSUME: `can be consumed for some kind of effect.`
 })
 
 function getItemCost(allItems, cost) {
