@@ -58,6 +58,7 @@ export async function execute(interaction) {
     const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, false);
     if (user.energy < energyToFish) {
         await user.save();
+        interaction.client.cooldowns.get('fish').delete(interaction.user.id); //reset cooldown
         return interaction.reply({ content: "You don't have enough energy to fish!", flags: MessageFlags.Ephemeral });
     }
     user.energy -= energyToFish;

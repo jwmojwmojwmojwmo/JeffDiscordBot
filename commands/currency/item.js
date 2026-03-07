@@ -70,5 +70,6 @@ export async function execute(interaction) {
         .addTextDisplayComponents((text) => text.setContent(buyableText))
         .addTextDisplayComponents((text) => text.setContent(useableText))
         .addTextDisplayComponents((text) => text.setContent(amountText));
+        console.log(`Item ${item.name} was checked.`);
     await interaction.reply({ components: [container], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
 }

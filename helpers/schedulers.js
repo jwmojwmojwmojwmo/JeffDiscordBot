@@ -3,7 +3,7 @@ let msg = "";
 async function sendDailyReminders(client, tbl) {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    // TODO: pagination
+    // TODO: use SQL to auto filter db, divide users into chunks and call a Promise on each chunk without awaiting
     const users = await tbl.findAll();
     for (const user of users) {
         if (user.settings?.dailyReminders && user.last_daily && user.last_daily < now) {

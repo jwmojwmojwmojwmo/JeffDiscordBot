@@ -7,7 +7,7 @@ const timeoutContainer = new ContainerBuilder()
 // keep user obj in case we wanna have # of item in inventory
 function getFormattedInventoryItem(allItems, invItem, user) {
     const item = allItems.find(i => i.itemid === invItem.itemid);
-    return `${item.name}  ${item.emoji}   ─   ${invItem.amount}`
+    return `${item.name}  ${item.emoji}   ─   ${invItem.amount}`;
 }
  
 export const data = new SlashCommandBuilder()

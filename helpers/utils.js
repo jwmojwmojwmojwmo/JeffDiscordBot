@@ -4,7 +4,7 @@ import item_list from "./itemlist.js";
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
 /**
  * Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
- * @param {number} tbl - database
+ * @param {import('sequelize').ModelStatic} tbl - database
  * @param {import('discord.js').Snowflake} user_id - userid
  * @param {String} user_name - username
  * @param {boolean} update - if update === false, the callee must manually do user.save(), or the updated username will not persist. There are NO CHECKS for this. Note that if update === true and an unneccesary .save() occurs, it is a performance loss
@@ -43,8 +43,13 @@ export async function updateItemShop(items_tbl) {
         console.error("Failed to sync item shop:", error);
     }
 }
-// TODO: ensure equipment is synced with inventory
-// given an inventory row, removes some amount of item from that row and deletes row if 0 amount left
+
+/**
+ * Given the equipment database, a row from the inventory database, and amount, remove some amount of the item represented in that row from that user
+ * @param {import('sequelize').ModelStatic} eq_tbl - equipment database
+ * @param {import('sequelize').Model} tbl_row - a row from the inventory database, which contains a userid mapped to an itemid with some amount
+ * @param {number} amount - amount to remove
+ */
 export async function removeAmountFromInventory(eq_tbl, tbl_row, amount) {
     tbl_row.amount -= amount;
     if (tbl_row.amount === 0) {
@@ -60,7 +65,13 @@ export async function removeAmountFromInventory(eq_tbl, tbl_row, amount) {
     }
 }
 
-// given an inventory db, add some amount of item to a user if they have some already, or create a new row if not
+/**
+ * Given the inventory database, userid, item object from the items database, and amount, add that amount of that item to the user
+ * @param {import('sequelize').ModelStatic} tbl - inventory database
+ * @param {import('discord.js').Snowflake} user_id - userid
+ * @param {import('sequelize').Model} item - a row from the items database, which represents an item
+ * @param {number} amount - amount to remove
+ */
 export async function addAmountToInventory(tbl, user_id, item, amount) {
     const itemRow = await tbl.findOne({
         where: {
@@ -73,7 +84,7 @@ export async function addAmountToInventory(tbl, user_id, item, amount) {
         await itemRow.save();
     } else {
         await tbl.create({
-            userid: user_id,
+            userid: user_id,    
             itemid: item.itemid,
             amount: amount
         });

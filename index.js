@@ -24,8 +24,9 @@ const TopggAPI = new Api(topggAPIKey);
 import jeffFactory from './models/jeff.js';
 import rivalsDataFactory from './models/rivalsdata.js';
 import itemsFactory from './models/items.js';
-import inventoryFactory from './models/inventory.js'
-import equipmentFactory from './models/equipment.js'
+import inventoryFactory from './models/inventory.js';
+import equipmentFactory from './models/equipment.js';
+import petsFactory from './models/pets.js';
 import { getUserAndUpdate, updateItemShop } from './helpers/utils.js';
 
 const jeff = jeffFactory(sequelize, Sequelize.DataTypes);
@@ -33,6 +34,7 @@ const rivalsData = rivalsDataFactory(sequelize, Sequelize.DataTypes);
 const items = itemsFactory(sequelize, Sequelize.DataTypes);
 const inventory = inventoryFactory(sequelize, Sequelize.DataTypes);
 const equipment = equipmentFactory(sequelize, Sequelize.DataTypes);
+const pets = petsFactory(sequelize, Sequelize.DataTypes);
 
 const client = new Client({
     intents: [
@@ -50,7 +52,7 @@ export default client;
 client.commands = new Collection();
 client.cooldowns = new Collection();
 client.itemCache = null; // when database synced this will become a local cache for the items db
-client.db = { jeff, rivalsData, items, inventory, equipment };
+client.db = { jeff, rivalsData, items, inventory, equipment, pets };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
 
@@ -178,6 +180,7 @@ client.on(Events.MessageCreate, async message => {
     // await jeff.sync({ alter: true });
     // await rivalsData.sync({ alter: true });
     await items.sync({ force: true });
+    await pets.sync({ force: true });
     jeff.hasMany(inventory, {
         foreignKey: 'userid',
         sourceKey: 'userid'
