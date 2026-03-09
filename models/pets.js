@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
     return sequelize.define('pets', {
-        userid: { 
+        userid: {
             type: DataTypes.STRING,
             primaryKey: true
         },
@@ -13,7 +13,7 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             defaultValue: "jeff.webp"
         },
-        xp: { 
+        xp: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
             allowNull: false
@@ -28,7 +28,12 @@ export default (sequelize, DataTypes) => {
             defaultValue: 50,
             allowNull: false
         },
-        last_interacted: {
+        last_fed: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            allowNull: false
+        },
+        last_played: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false

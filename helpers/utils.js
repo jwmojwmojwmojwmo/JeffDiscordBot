@@ -93,26 +93,34 @@ export async function addAmountToInventory(tbl, user_id, item, amount) {
 
 export async function updatePetStats(pet, currentLevel) {
     const currentTime = Date.now();
-    const msPerHour = 1000 * 60 * 60;
+    // use minutes for accuracy
+    const msPerMinute = 1000 * 60; 
 
     // Calculate time elapsed
-    const hoursSinceFed = (currentTime - pet.last_interacted) / msPerHour;
-    const hoursSincePlayed = (currentTime - pet.last_interacted) / msPerHour;
+    const minutesSinceFed = (currentTime - pet.last_fed) / msPerMinute;
+    const minutesSincePlayed = (currentTime - pet.last_played) / msPerMinute;
 
-    const baseDecayPerHour = 5;
-    const slowDownFactor = 1 + (0.5 * (currentLevel - 1));
+    const baseDecayPerMinute = 5 / 60;
+    const slowDownFactor = 1 + (0.1 * currentLevel);
+    // minutes per point lost
+    const minsPerPoint = 1 / (baseDecayPerMinute / slowDownFactor);    
 
-    const hungerDecay = Math.floor((hoursSinceFed * baseDecayPerHour) / slowDownFactor);
-    const affectionDecay = Math.floor((hoursSincePlayed * baseDecayPerHour) / slowDownFactor);
+    const hungerDecay = Math.floor(minutesSinceFed / minsPerPoint);
+    const affectionDecay = Math.floor(minutesSincePlayed / minsPerPoint);
+    // essentially we calculate how many minutes its been since the player last interacted
+    // then use that to find how many points to subtract
+    // then use those minutes again to add to pet.last_fed
+    // this way if player checks at the 15 minute mark, we subtract 1 point / 12 minutes
+    // if pet.last_fed = Date.now() then we lose all 15 minutes so we lost 3 minutes
+    // this way we add 12 to pet.last_fed and the 3 minutes still there
     if (hungerDecay > 0) {
         pet.hunger = Math.max(0, pet.hunger - hungerDecay);
-        pet.last_interacted = currentTime;
+        pet.last_fed += Math.floor(hungerDecay * minsPerPoint) * 60000;
     }
     if (affectionDecay > 0) {
         pet.affection = Math.max(0, pet.affection - affectionDecay);
-        pet.last_interacted = currentTime;
+        pet.last_played += Math.floor(affectionDecay * minsPerPoint) * 60000;
     }
-
     await pet.save();
 }
 
