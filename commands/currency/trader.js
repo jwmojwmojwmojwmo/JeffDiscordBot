@@ -37,7 +37,7 @@ export const data = new SlashCommandBuilder()
     .setName('trader')
     .setDescription(`Check the trader to trade items with!`);
 export async function execute(interaction) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, true);
+    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
     const allItems = interaction.client.itemCache;
     const shopItems = allItems.filter(i => i.cost !== null);
     // build display container
@@ -88,10 +88,10 @@ export async function execute(interaction) {
             const purchaseSuccess = await attemptToPurchase(item, userinv, interaction.user.id, interaction.client.db.inventory, interaction.client.db.equipment);
             if (purchaseSuccess === -1) {
                 await i.reply({ content: "You don't have enough materials to purchase this!", flags: MessageFlags.Ephemeral });
-                console.log(`${interaction.user.username} (${interaction.user.id}) tried to purchase ${item.name} but couldn't afford it.`);
+                console.log(`${interaction.user.displayName} (${interaction.user.id}) tried to purchase ${item.name} but couldn't afford it.`);
             } else {
                 await i.reply({ content: `Purchased ${item.name}!`, flags: MessageFlags.Ephemeral });
-                console.log(`${interaction.user.username} (${interaction.user.id}) purchased ${item.name}.`);
+                console.log(`${interaction.user.displayName} (${interaction.user.id}) purchased ${item.name}.`);
             }
         }
     });

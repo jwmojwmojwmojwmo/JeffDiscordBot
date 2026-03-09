@@ -28,13 +28,10 @@ export default (sequelize, DataTypes) => {
             defaultValue: 50,
             allowNull: false
         },
-        last_fed: {
+        last_interacted: {
             type: DataTypes.DATE,
-            defaultValue: null
-        },
-        last_played: {
-            type: DataTypes.DATE,
-            defaultValue: null
+            defaultValue: DataTypes.NOW,
+            allowNull: false
         }
     }, {
         tableName: 'pets',

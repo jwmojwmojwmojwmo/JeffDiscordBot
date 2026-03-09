@@ -177,18 +177,17 @@ client.on(Events.MessageCreate, async message => {
 });
 
 (async () => {
-    // await jeff.sync({ alter: true });
-    // await rivalsData.sync({ alter: true });
-    await items.sync({ force: true });
-    await pets.sync({ force: true });
+    // one user can be in many inventory rows, and one inventory row maps to one user
     jeff.hasMany(inventory, {
         foreignKey: 'userid',
-        sourceKey: 'userid'
+        sourceKey: 'userid',
+        onDelete: 'CASCADE'
     });
     inventory.belongsTo(jeff, {
         foreignKey: 'userid',
         targetKey: 'userid'
     });
+    // one item can be in many inventory rows, and one inventory row maps to one item
     items.hasMany(inventory, {
         foreignKey: 'itemid',
         sourceKey: 'itemid'
@@ -197,14 +196,17 @@ client.on(Events.MessageCreate, async message => {
         foreignKey: 'itemid',
         targetKey: 'itemid'
     });
+    // one user can be in many equipment rows, and one equipment row maps to one user
     jeff.hasMany(equipment, {
         foreignKey: 'userid',
-        sourceKey: 'userid'
+        sourceKey: 'userid',
+        onDelete: 'CASCADE'
     });
     equipment.belongsTo(jeff, {
         foreignKey: 'userid',
         targetKey: 'userid'
     });
+    // one item can be in many equipment rows, and one equipment row maps to one item
     items.hasMany(equipment, {
         foreignKey: 'itemid',
         sourceKey: 'itemid'
@@ -213,6 +215,17 @@ client.on(Events.MessageCreate, async message => {
         foreignKey: 'itemid',
         targetKey: 'itemid'
     });
+    // one user maps to one pet, and one pet maps to one user
+    jeff.hasOne(pets, {
+        foreignKey: 'userid',
+        sourceKey: 'userid',
+        onDelete: 'CASCADE'
+    });
+    pets.belongsTo(jeff, {
+        foreignKey: 'userid',
+        targetKey: 'userid'
+    });
+    await items.sync({ force: true });
     const allItems = await updateItemShop(items);
     client.itemCache = allItems;
     await sequelize.sync();

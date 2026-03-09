@@ -16,7 +16,7 @@ export const data = new SlashCommandBuilder()
     .setName('vote')
     .setDescription('Vote for Jeff Bot for additional rewards!');
 export async function execute(interaction) {
-    const name = interaction.member?.displayName || interaction.user.username;
+    const name = interaction.member?.displayName || interaction.user.displayName;
     const id = interaction.user.id;
     await interaction.reply({ content: `Fetching vote information...`, flags: MessageFlags.Ephemeral });
     const user = await getUserAndUpdate(interaction.client.db.jeff, id, name, false);

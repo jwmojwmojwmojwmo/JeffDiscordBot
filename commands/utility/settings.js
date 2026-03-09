@@ -150,6 +150,6 @@ export const data = new SlashCommandBuilder()
     .setName('settings')
     .setDescription('Look at and change your user-specific settings');
 export async function execute(interaction) {
-    const name = interaction.member?.displayName || interaction.user.username;
+    const name = interaction.member?.displayName || interaction.user.displayName;
     await settingsFunction(interaction.client.db.jeff, interaction, interaction.user.id, name);
 }

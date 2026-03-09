@@ -91,6 +91,31 @@ export async function addAmountToInventory(tbl, user_id, item, amount) {
     }
 }
 
+export async function updatePetStats(pet, currentLevel) {
+    const currentTime = Date.now();
+    const msPerHour = 1000 * 60 * 60;
+
+    // Calculate time elapsed
+    const hoursSinceFed = (currentTime - pet.last_interacted) / msPerHour;
+    const hoursSincePlayed = (currentTime - pet.last_interacted) / msPerHour;
+
+    const baseDecayPerHour = 5;
+    const slowDownFactor = 1 + (0.5 * (currentLevel - 1));
+
+    const hungerDecay = Math.floor((hoursSinceFed * baseDecayPerHour) / slowDownFactor);
+    const affectionDecay = Math.floor((hoursSincePlayed * baseDecayPerHour) / slowDownFactor);
+    if (hungerDecay > 0) {
+        pet.hunger = Math.max(0, pet.hunger - hungerDecay);
+        pet.last_interacted = currentTime;
+    }
+    if (affectionDecay > 0) {
+        pet.affection = Math.max(0, pet.affection - affectionDecay);
+        pet.last_interacted = currentTime;
+    }
+
+    await pet.save();
+}
+
 export class RivalsAPIError extends Error {
     constructor(message, time, info) {
         super(message);

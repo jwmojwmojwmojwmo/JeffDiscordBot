@@ -21,7 +21,7 @@ export async function execute(interaction) {
     const user_id = target.id;
     let user_name;
     if (!interaction.guild) {
-        user_name = target.username;
+        user_name = target.displayName;
     } else {
         user_name = interaction.options.getMember('user')?.displayName || interaction.member.displayName;
     }

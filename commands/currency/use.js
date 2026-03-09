@@ -7,6 +7,7 @@ import { Op, TimeoutError } from 'sequelize';
 const jeffFightTable = Object.freeze({
     "Bite": 30,
     "Tail Smack": 30,
+    "Splash": 45,
     "Aqua Burst": 70,
     "Roar": -30,
     "Hide And Seek": 0,
@@ -59,7 +60,7 @@ async function equipItem(tbl, item, user_id) {
 }
 
 async function consumeItem(interaction, item, itemRow) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, false);
+    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     user[item.effect.stat] += item.effect.amount;
     await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
     await user.save();
@@ -75,18 +76,16 @@ async function consumeItem(interaction, item, itemRow) {
 }
 
 async function tameJeff(interaction, itemRow) {
-    // await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1); // uncomment out once we done testing
-    // let msg = "You picked up the unknown fish and tried to use it. It looks...weird. It doesn't look like any fish you've seen before. In fact, it looks more like a shark. But as you examine it closer, you realise, this isn't any ordinary shark. This one...has legs?";
-    // await interaction.reply(msg);
-    // await setTimeout(4000);
-    // msg += "\n\nSuddenly, the shark twitches! Its beady eyes snap open, fixing on you with unnerving intelligence. It squirms in your grasp, then with a surprising burst of strength, leaps from your hands! It lands on the ground, turning to face you. A low growl rumbles from its throat. You must have angered it."
-    // await interaction.editReply(msg);
-    // await setTimeout(5000);
-    // msg += "\n\nDespite the menacing growl, its oddly endearing, like a grumpy puppy. You can't help but feel a strange desire to tame this bizarre creature. But as you reach out a hand, it suddenly lunges, teeth bared!"
-    // await interaction.editReply(msg);
-    // await setTimeout(5000);
-    // TEMPORARRY MESSAGE
-    await interaction.reply("placeholder");
+    await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1); // uncomment out once we done testing
+    let msg = "You picked up the unknown fish and tried to use it. It looks...weird. It doesn't look like any fish you've seen before. In fact, it looks more like a shark. But as you examine it closer, you realise, this isn't any ordinary shark. This one...has legs?";
+    await interaction.reply(msg);
+    await setTimeout(4000);
+    msg += "\n\nSuddenly, the shark twitches! Its beady eyes snap open, fixing on you with unnerving intelligence. It squirms in your grasp, then with a surprising burst of strength, leaps from your hands! It lands on the ground, turning to face you. A low growl rumbles from its throat. You must have angered it."
+    await interaction.editReply(msg);
+    await setTimeout(5000);
+    msg += "\n\nDespite the menacing growl, it's oddly endearing, like a grumpy puppy. You can't help but feel a strange desire to tame this bizarre creature. But as you reach out a hand, it suddenly lunges, teeth bared!"
+    await interaction.editReply(msg);
+    await setTimeout(5000);
     const askMsg = await interaction.followUp({
         content: "The shark is trying to attack you. Would you like to try to tame this mysterious shark?",
         components: [askRow],
@@ -110,7 +109,7 @@ async function tameJeff(interaction, itemRow) {
         }
     } catch (error) {
         console.log(error);
-        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, false);
+        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
         const lostEnergy = Math.min(user.energy, Math.max(70, Math.round(Math.random() * 100)));
         user.energy -= lostEnergy;
         await user.save();
@@ -120,16 +119,20 @@ async function tameJeff(interaction, itemRow) {
 
 // i'm gonna shoot myself ts pmoo
 async function tameJeffGameplay(interaction, response) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, false);
+    let isGameOver = false;
+    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     const maxEnergy = user.energy;
     let jeffWildness = 250;
+    jeffWildness = 0; //TODO TESTING ONLY
     let jeffUlt = 0;
     let jeffResistance = 0;
     let decAmount = 0;
     const collectorFilter = i => i.user.id === interaction.user.id;
     const executeJeffTurn = async (currI) => {
+        if (isGameOver) return false;
         await currI.editReply({ content: generateMessage("Shark's Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
         await setTimeout(2000);
+        if (isGameOver) return false;
         let action = getAction(jeffUlt);
         let dmg = jeffFightTable[action];
         if (dmg > 0) {
@@ -149,6 +152,7 @@ async function tameJeffGameplay(interaction, response) {
         await currI.editReply({ content: generateMessage("Shark's Turn:", getActionMessage(action), jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
         //await currI.followUp({ content: `Logging purposes: JeffUlt = ${jeffUlt}, JeffResistance = ${jeffResistance}`, flags: MessageFlags.Ephemeral });
         await setTimeout(2000);
+        if (isGameOver) return false;
         if (user.energy <= 0) return false;
         return true;
     }
@@ -157,9 +161,10 @@ async function tameJeffGameplay(interaction, response) {
     await response.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [battleRow] });
     const collector = response.message.createMessageComponentCollector({
         filter: collectorFilter,
-        time: 240_000
+        time: 600_000
     });
     collector.on('collect', async i => {
+        if (isGameOver) return;
         await i.deferUpdate();
         if (i.customId === 'wrestle') {
             if (user.energy < 50) return i.followUp({ content: `You don't have enough energy for this! (Required: 50 energy)`, flags: MessageFlags.Ephemeral });
@@ -170,12 +175,14 @@ async function tameJeffGameplay(interaction, response) {
         }
         if (i.customId === 'intimidate') {
             if (user.reputation < 15) return i.followUp({ content: `You aren't respected enough to scare the shark! (Required: 15 reputation)`, flags: MessageFlags.Ephemeral });
-            jeffUlt -= 50;
-            await i.editReply({ content: generateMessage("Your Turn:", "You used Intimidate! The shark temporarily lost its focus and lost some Ultimate charge as a result!", jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
+            jeffUlt = Math.max(0, jeffUlt - 70);
+            jeffResistance *= 0.5;
+            await i.editReply({ content: generateMessage("Your Turn:", "You used Intimidate! The shark temporarily lost its focus and lost some Ultimate charge and resistance as a result!", jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
         }
         if (i.customId === 'inventory') {
             await i.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
             const item_id = await jeffFightInventory(i, interaction);
+            if (isGameOver) return;
             if (item_id === "CHEVY") {
                 await i.editReply({ content: generateMessage("Your Turn:", "You opened your inventory but took so long that the shark decided to attack you again!", jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
                 await setTimeout(2000);
@@ -219,6 +226,7 @@ async function tameJeffGameplay(interaction, response) {
         await i.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [battleRow] });
     });
     collector.on('end', async (_collected, reason) => {
+        isGameOver = true;
         await user.save();
         if (reason === 'time') return response.editReply({ content: "Time's up! You took so long to calm down the shark that it was able to gain too much power. It charged up a powerful blast and knocked you down. By the time you caught your breath, it had already vanished back into the wild... (-1 Unknown Fish) ", components: [] });
         if (reason === "flee") return response.editReply({ content: "You backed away from the strange shark, dodging its sharp teeth. It turns around, growls at you one last time, and runs away surprisingly quickly, fleeing back to the water. (-1 Unknown Fish)", components: [] });
@@ -226,7 +234,7 @@ async function tameJeffGameplay(interaction, response) {
             await interaction.client.db.pets.create({
                 userid: interaction.user.id
             })
-            return response.editReply({ content: `With its anger depleted, the fierce shark suddenly calms down. It lets out a soft, confused little growl, lowers its guard, and promptly trots over to nuzzle you. You've successfully tamed it! Use /pet to start interacting with it. (-1 Unknown Fish)`, components: [] });
+            return response.editReply({ content: `With its anger depleted, the fierce shark suddenly calms down. It lets out a soft, confused little growl, lowers its guard, and promptly trots over to nuzzle you. You've successfully tamed it! You decide to call him Jeff for now (you can always change this later!). Use /pet view to start interacting with him! (-1 Unknown Fish)`, components: [] });
         }
         if (reason === "lost") return response.editReply({ content: `Your energy dropped to 0 and you lost! The shark ran away while you were exhausted... (-1 Unknown Fish)`, components: [] });
     })
@@ -373,7 +381,7 @@ export async function execute(interaction) {
         return interaction.reply({ content: "You entered an invalid item or an item you don't own yet!", flags: MessageFlags.Ephemeral });
     }
     const item = interaction.client.itemCache.find((i) => i.itemid === interaction.options.getString("item"));
-    console.log(`${interaction.user.username} (${interaction.user.id}) used ${item.name}.`);
+    console.log(`${interaction.user.displayName} (${interaction.user.id}) used ${item.name}.`);
     switch (item.effect?.type || 0) {
         case "FUNNY":
             await interaction.reply({ content: item.effect.message, flags: MessageFlags.Ephemeral });

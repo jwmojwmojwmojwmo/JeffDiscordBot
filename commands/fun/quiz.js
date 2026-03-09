@@ -32,7 +32,7 @@ export const data = new SlashCommandBuilder()
     .setName('quiz')
     .setDescription('Get a question related to Jeff! Win energy by getting it correct!');
 export async function execute(interaction) {
-    const name = interaction.member?.displayName || interaction.user.username;
+    const name = interaction.member?.displayName || interaction.user.displayName;
     let user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, name, false);
     let chosenQuestionBank = Math.floor(Math.random() * 4); // choose a random question bank from questions
     let difficulty;

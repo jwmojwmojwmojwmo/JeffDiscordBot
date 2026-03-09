@@ -28,7 +28,7 @@ export const data = new SlashCommandBuilder()
         .setRequired(true));
 export async function execute(interaction) {
     const jwmo = await interaction.client.users.fetch(ownerId);
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.user.username, false);
+    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.user.displayName, false);
     await addDonation(user, interaction.options.getString('suggestion'));
     await jwmo.send('A suggestion was donated');
     await interaction.reply({ content: 'Thank you for your suggestion(s)! All ideas are appreciated and will be reviewed and implemented if it\'s a cool enough idea.', flags: MessageFlags.Ephemeral });

@@ -182,7 +182,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('What you want to say to Jeff')
         .setRequired(true));
 export async function execute(interaction) {
-    let msg = interaction.member?.displayName || interaction.user.username;
+    let msg = interaction.member?.displayName || interaction.user.displayName;
     await interaction.deferReply();
     msg += ` says: ${interaction.options.getString('phrase')}\n\nJeff says:`;
     msg = escapeMarkdown(msg);

@@ -55,7 +55,7 @@ export const data = new SlashCommandBuilder()
     .setName('fish')
     .setDescription(`Go fishing for some goodies (costs ${energyToFish} energy)!`)
 export async function execute(interaction) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.username, false);
+    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     if (user.energy < energyToFish) {
         await user.save();
         interaction.client.cooldowns.get('fish').delete(interaction.user.id); //reset cooldown
@@ -84,7 +84,7 @@ export async function execute(interaction) {
     }
     await setTimeout(3000);
     if (caughtItem === "nothing") {
-        console.log(`${interaction.user.username} (${interaction.user.id}) went fishing and got nothing.`);
+        console.log(`${interaction.user.displayName} (${interaction.user.id}) went fishing and got nothing.`);
         return interaction.editReply(`You waited around, but didn't catch anything...`);
     }
     if (caughtItem === "09LE001" && (rod.itemid === "11CO001" || rod.itemid === "11CO002")) {
@@ -92,11 +92,11 @@ export async function execute(interaction) {
             where: { userid: interaction.user.id, itemid: rod.itemid }
         })
         await removeAmountFromInventory(interaction.client.db.equipment, rodRow, 1);
-        console.log(`${interaction.user.username} (${interaction.user.id}) went fishing and got their rod broken by Jeff.`);
+        console.log(`${interaction.user.displayName} (${interaction.user.id}) went fishing and got their rod broken by Jeff.`);
         return interaction.editReply(`You caught something huge! But it was so big that it snapped your fishing rod and swam away... (-1 ${rod.name})`);
     }
     caughtItem = interaction.client.itemCache.find((i) => i.itemid === caughtItem);
     await addAmountToInventory(interaction.client.db.inventory, interaction.user.id, caughtItem, 1);
     await interaction.editReply(`You caught 1 ${caughtItem.name} ${caughtItem.emoji}!`);
-    console.log(`${interaction.user.username} (${interaction.user.id}) went fishing and got ${caughtItem.name}.`)
+    console.log(`${interaction.user.displayName} (${interaction.user.id}) went fishing and got ${caughtItem.name}.`)
 }

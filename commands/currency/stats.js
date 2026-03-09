@@ -30,7 +30,7 @@ export const data = new SlashCommandBuilder()
         ));
 export async function execute(interaction) {
     const tbl = interaction.client.db.jeff;
-    let msg = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user')?.username || interaction.member?.displayName || interaction.user.username;
+    let msg = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user')?.username || interaction.member?.displayName || interaction.user.displayName;
     const statType = interaction.options.getString('stat_type') || 'all_stats';
     const stat = await getStat(tbl, interaction.options.getUser('user')?.id || interaction.user.id, msg, statType);
     msg = escapeMarkdown(msg);
