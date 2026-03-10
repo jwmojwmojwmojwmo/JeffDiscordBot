@@ -14,7 +14,10 @@
     "@top-gg/sdk": "^3.1.6",
     "axios": "^1.13.2",
     "bufferutil": "^4.0.9",
+    "canvas": "^3.2.1",
     "discord.js": "^14.21.0",
+    "gif-encoder-2": "^1.0.5",
+    "lodash": "^4.17.23",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",
     "topgg-autoposter": "^2.0.2"

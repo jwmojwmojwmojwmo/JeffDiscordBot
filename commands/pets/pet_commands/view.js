@@ -1,17 +1,14 @@
 import { SlashCommandSubcommandBuilder, MessageFlags, escapeMarkdown, heading, ContainerBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, LabelBuilder, TextInputBuilder, ActionRowBuilder, EmbedBuilder } from 'discord.js';
-import { getUserAndUpdate, updatePetStats } from '../../../helpers/utils.js';
+import { getPetLevel, getUserAndUpdate, updatePetStats } from '../../../helpers/utils.js';
 import { readdir } from 'fs/promises';
 import { join } from 'node:path';
 
 const assetsDir = join(process.cwd(), 'assets');
 
 function calculateLevelInfo(totalXp) {
-    const C = 100; // how fast you level up
+    const C = 100;
+    const level = getPetLevel(totalXp);
     const MAX_LEVEL = 10;
-
-    // Calculate current level based on total XP
-    let level = Math.floor(Math.sqrt(totalXp / C)) + 1;
-    level = Math.min(level, MAX_LEVEL);
 
     // Calculate the XP thresholds (based on algebruh)
     const currentLevelTotalXpRequired = Math.pow(level - 1, 2) * C;
@@ -83,7 +80,7 @@ async function changeAvatar(otherI, collectorFilter) {
     await otherI.deferUpdate();
     let msg = await otherI.followUp("Loading...");
     let files = await readdir(assetsDir);
-    files = files.filter(f => f !== "Jwmologo.png");
+    files = files.filter(f => f.includes("jeff"));
     let index = 0;
     let currentPage = Math.floor(index / 5) + 1;
     // wrap in promise to block everything
@@ -122,7 +119,7 @@ async function changeAvatar(otherI, collectorFilter) {
 
         const { embeds, fiveFiles, actionRow, actionRowTwo } = avatarWheelBuilder();
         await msg.edit({
-            content: "",
+            content: `Page ${currentPage}`,
             embeds: embeds,
             files: fiveFiles,
             components: [actionRow, actionRowTwo]
@@ -158,7 +155,7 @@ async function changeAvatar(otherI, collectorFilter) {
             currentPage = Math.floor(index / 5) + 1;
             const { embeds, fiveFiles, actionRow, actionRowTwo } = avatarWheelBuilder();
             await i.editReply({
-                content: "",
+                content: `Page ${currentPage}`,
                 embeds: embeds,
                 files: fiveFiles,
                 components: [actionRow, actionRowTwo]
@@ -176,7 +173,6 @@ export const data = new SlashCommandSubcommandBuilder()
     .setDescription('Check up on your pet!');
 export async function execute(interaction) {
     const user_id = interaction.user.id;
-    const user = await getUserAndUpdate(interaction.client.db.jeff, user_id, interaction.member?.displayName || interaction.user.displayName, true);
     const pet = await interaction.client.db.pets.findOne({
         where: { userid: user_id }
     });

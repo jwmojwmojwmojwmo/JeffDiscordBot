@@ -123,7 +123,6 @@ async function tameJeffGameplay(interaction, response) {
     const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     const maxEnergy = user.energy;
     let jeffWildness = 250;
-    jeffWildness = 0; //TODO TESTING ONLY
     let jeffUlt = 0;
     let jeffResistance = 0;
     let decAmount = 0;

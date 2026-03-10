@@ -91,6 +91,16 @@ export async function addAmountToInventory(tbl, user_id, item, amount) {
     }
 }
 
+export function getPetLevel(totalXp) {
+    const C = 100; // how fast you level up
+    const MAX_LEVEL = 10;
+
+    // Calculate current level based on total XP
+    let level = Math.floor(Math.sqrt(totalXp / C)) + 1;
+    level = Math.min(level, MAX_LEVEL);
+    return level;
+}
+
 export async function updatePetStats(pet, currentLevel) {
     const currentTime = Date.now();
     // use minutes for accuracy
@@ -113,13 +123,19 @@ export async function updatePetStats(pet, currentLevel) {
     // this way if player checks at the 15 minute mark, we subtract 1 point / 12 minutes
     // if pet.last_fed = Date.now() then we lose all 15 minutes so we lost 3 minutes
     // this way we add 12 to pet.last_fed and the 3 minutes still there
+    console.log(`--- PET STATS DEBUG ---`);
+    console.log(`Mins Since Fed: ${minutesSinceFed.toFixed(2)}`);
+    console.log(`Mins Since Played: ${minutesSincePlayed.toFixed(2)}`);
+    console.log(`Mins Per Point: ${minsPerPoint.toFixed(2)}`);
+    console.log(`Hunger to subtract: ${hungerDecay}`);
+    console.log(`Affection to subtract: ${affectionDecay}`);
     if (hungerDecay > 0) {
         pet.hunger = Math.max(0, pet.hunger - hungerDecay);
-        pet.last_fed += Math.floor(hungerDecay * minsPerPoint) * 60000;
+        pet.last_fed = new Date(pet.last_fed.getTime() + (hungerDecay * minsPerPoint * msPerMinute));
     }
     if (affectionDecay > 0) {
         pet.affection = Math.max(0, pet.affection - affectionDecay);
-        pet.last_played += Math.floor(affectionDecay * minsPerPoint) * 60000;
+        pet.last_played = new Date(pet.last_played.getTime() + (affectionDecay * minsPerPoint * msPerMinute));
     }
     await pet.save();
 }
