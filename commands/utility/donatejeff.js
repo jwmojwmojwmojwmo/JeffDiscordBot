@@ -21,7 +21,7 @@ async function addDonation(user, picture) {
 
 export const data = new SlashCommandBuilder()
     .setName('donatejeff')
-    .setDescription('Donate a Jeff picture to the bot that can show up when /jeff is used')
+    .setDescription('Donate a Jeff picture to the bot that can show up when /jeff is used or be used as a pet avatar')
     .addAttachmentOption(option => option
         .setName('picture')
         .setDescription('Picture of Jeff to donate')

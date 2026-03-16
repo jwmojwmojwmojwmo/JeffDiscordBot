@@ -90,7 +90,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Checks your skill level at Jeff (This command is currently experimental)')
     .addStringOption(option => option
         .setName('player')
-        .setDescription('Marvel Rivals in-game name or uid of player to check.')
+        .setDescription('Marvel Rivals in-game name or in-game uid of player to check.')
         .setRequired(true));
 export async function execute(interaction) {
     let name = interaction.options.getString('player');

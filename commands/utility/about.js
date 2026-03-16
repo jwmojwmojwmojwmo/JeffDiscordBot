@@ -13,7 +13,15 @@ const BuyMeACoffeeButton = new ButtonBuilder()
     .setURL('https://buymeacoffee.com/jwmo')
     .setLabel('Buy Me A Coffee')
     .setStyle(ButtonStyle.Link);
-const linkRow = new ActionRowBuilder().addComponents(GitHubButton, TopGGButton, BuyMeACoffeeButton); // the row of buttons below the text
+const PatreonButton = new ButtonBuilder()
+    .setURL('https://www.patreon.com/cw/jwmojwmojwmojwmo')
+    .setLabel('Patreon')
+    .setStyle(ButtonStyle.Link);
+const termsOfServiceButton = new ButtonBuilder()
+    .setURL('https://jwmo-website.vercel.app/jefftos')
+    .setLabel('Terms of Service & Privacy Policy')
+    .setStyle(ButtonStyle.Link);
+const linkRow = new ActionRowBuilder().addComponents(GitHubButton, TopGGButton, PatreonButton, BuyMeACoffeeButton, termsOfServiceButton); // the row of buttons below the text
 
 const aboutEmbed = new EmbedBuilder()
     .setTitle('Jeff Discord Bot v0.85')
@@ -27,7 +35,7 @@ const aboutEmbed = new EmbedBuilder()
         { name: 'Credits', value: 'Created with love by jwmo.\nDeveloped in partnership with Woofie.\nSpecial thanks to CrabKevin for his contributions!\nAnd a big thanks to everyone who donates Jeff pictures!' },
     )
     // .setImage("https://i.imgur.com/ntg31Zx.jpeg")    
-    .setFooter({ text: 'Jeff Bot by jwmo, all rights reserved', iconURL: 'https://i.imgur.com/e0xvSJ9.png' });
+    .setFooter({ text: 'Jeff Bot by jwmo, all rights reserved. By using the bot you agree to our Terms of Service & Privacy Policy', iconURL: 'https://i.imgur.com/e0xvSJ9.png' });
 
 export const data = new SlashCommandBuilder()
     .setName('about')
