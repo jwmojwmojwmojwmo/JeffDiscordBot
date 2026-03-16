@@ -1,13 +1,11 @@
-import { SlashCommandSubcommandBuilder, MessageFlags, escapeMarkdown, heading, ContainerBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, LabelBuilder, TextInputBuilder, ActionRowBuilder, EmbedBuilder } from 'discord.js';
-import { getPetLevel, getUserAndUpdate, removeAmountFromInventory, updatePetStats } from '../../../helpers/utils.js';
+import { SlashCommandSubcommandBuilder, MessageFlags, escapeMarkdown, heading, ContainerBuilder, AttachmentBuilder } from 'discord.js';
+import { getPetLevel, updatePetStats } from '../../../helpers/utils.js';
 
 import path from 'path';
-import { fileURLToPath } from 'url';
 import _ from 'lodash';
 import GIFEncoder from 'gif-encoder-2'; 
 import Canvas from 'canvas';
 
-const __filename = fileURLToPath(import.meta.url);
 
 const FRAMES = 10;
 const petGifCache = [];
@@ -57,21 +55,20 @@ async function generatePetPet(avatarURL, options = {}) {
 export const data = new SlashCommandSubcommandBuilder()
     .setName('pet')
     .setDescription('Play with your pet by petting them!');
-export async function execute(interaction) {
-    const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
-    if (!pet) return interaction.reply({ content: `You don't have a pet yet! But rumor has it if you fish up something unknown and use it, you might just find a feisty companion.`, flags: MessageFlags.Ephemeral });
-    await interaction.deferReply();
+export async function execute(interaction, pet) {
+    await interaction.reply(`${pet.name} is coming over for pets...`);
     const xp = 1;
     let affection = 5;
     // cap at 100
     affection = Math.min(100 - pet.affection, affection);
     const level = getPetLevel(pet.xp);
-    await updatePetStats(pet, level); 
+    const xpLoss = await updatePetStats(pet, level); 
     pet.xp += xp;
     pet.affection += affection;
     const currentTime = Date.now();
     pet.last_played = currentTime;
     await pet.save();
+    if (xpLoss > 0) await interaction.followUp({ content: `Oh no! While you were away, your pet's hunger and affection dropped to 0 for too long, losing ${xpLoss} XP. Spend some time with your buddy!`, flags: MessageFlags.Ephemeral });
     const gifBuffer = await generatePetPet(`./assets/${pet.picture}`);
     const file = new AttachmentBuilder(gifBuffer, { name: 'pet.gif' });
     await interaction.editReply({content: `You pet ${escapeMarkdown(pet.name)}! Aren't they so adorable? (+${affection} affection) (+${xp} xp)`, files: [file]});

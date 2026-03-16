@@ -1,12 +1,13 @@
-import { SlashCommandSubcommandBuilder, MessageFlags, escapeMarkdown, heading, ContainerBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, LabelBuilder, TextInputBuilder, ActionRowBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandSubcommandBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
 import { getPetLevel, getUserAndUpdate, removeAmountFromInventory, updatePetStats } from '../../../helpers/utils.js';
 
-// itemid fed to jeff: [hunger gained, xp gained]
+// itemid fed to jeff: [hunger gained, xp gained, affection]
 const jeffFeedTable = {
-    "01CO001": [15, 5],
-    "01RA002": [40, 15],
-    "01EP003": [65, 25],
-    "01LE004": [100, 40]
+    "01CO005": [5, 5, 0],
+    "01CO001": [10, 5, 0],
+    "01RA002": [25, 20, 2],
+    "01EP003": [50, 45, 8],
+    "01LE004": [100, 80, 20]
 };
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -32,9 +33,7 @@ export async function autocomplete(interaction) {
     }).filter((i) => i).slice(0, 25);
     await interaction.respond(filteredItemList);
 }
-export async function execute(interaction) {
-    const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
-    if (!pet) return interaction.reply({ content: `You don't have a pet yet! But rumor has it if you fish up something unknown and use it, you might just find a feisty companion.`, flags: MessageFlags.Ephemeral });
+export async function execute(interaction, pet) {
     const itemRow = await interaction.client.db.inventory.findOne({
         where: { userid: interaction.user.id, itemid: interaction.options.getString("item") }
     });
@@ -43,17 +42,22 @@ export async function execute(interaction) {
     }
     const item = interaction.client.itemCache.find((i) => i.itemid === interaction.options.getString("item"));
     const level = getPetLevel(pet.xp);
-    await updatePetStats(pet, level); 
+    const xpLoss = await updatePetStats(pet, level); 
     const xp = jeffFeedTable[item.itemid][1];
     await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
     let hunger = jeffFeedTable[item.itemid][0];
     // cap at 100
     hunger = Math.min(100 - pet.hunger, hunger);
+    let affection = jeffFeedTable[item.itemid][2];
+    // cap at 100
+    affection = Math.min(100 - pet.affection, affection);
     pet.hunger += hunger;
     pet.xp += xp;
+    pet.affection += affection;
     const currentTime = Date.now();
     pet.last_fed = currentTime;
     await pet.save();
-    await interaction.reply(`You fed ${escapeMarkdown(pet.name)} a ${item.name}! (+${hunger} hunger) (+${xp} xp)`);
+    await interaction.reply(`You fed ${escapeMarkdown(pet.name)} a ${item.name}! (+${hunger} hunger) (+${xp} xp) ${(affection > 0) ? `(+${affection} affection)` : ""}`);
+    if (xpLoss > 0) await interaction.followUp({ content: `Oh no! While you were away, your pet's hunger and affection dropped to 0 for too long, losing ${xpLoss} XP. Spend some time with your buddy!`, flags: MessageFlags.Ephemeral });
     console.log(`${interaction.user.displayName} (${interaction.user.id}) fed their pet with ${item.name}.`);
 }   

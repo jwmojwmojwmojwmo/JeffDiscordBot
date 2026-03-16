@@ -65,18 +65,21 @@ async function consumeItem(interaction, item, itemRow) {
     await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
     await user.save();
     let msg = "";
-    switch (item.itemid) {
-        case "03CO001": // seaweed
-            msg += `You ate the seaweed. It tasted horrible, but at least it was somewhat nutritious?`;
-            break;
-        default:
-            msg += `You consumed the item. Why did you do that?`;
+    if (item.itemid.startsWith("91")) {
+        msg += `You proudly present your ${item.name}. Word spreads about your award.`;
+    } else {
+        switch (item.itemid) {
+            case "03CO001": // seaweed
+                msg += `You ate the seaweed. It tasted horrible, but at least it was somewhat nutritious?`;
+                break;
+            default:
+                msg += `You consumed the item. Why did you do that?`;
+        }
     }
-    return interaction.reply({ content: `${msg} (${item.effect.amount < 0 ? "-" : "+"}${item.effect.amount} ${item.effect.stat})`, flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: `${msg} (- 1 ${item.name}) (${item.effect.amount < 0 ? "-" : "+"}${item.effect.amount} ${item.effect.stat})`, flags: MessageFlags.Ephemeral });
 }
 
 async function tameJeff(interaction, itemRow) {
-    await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1); // uncomment out once we done testing
     let msg = "You picked up the unknown fish and tried to use it. It looks...weird. It doesn't look like any fish you've seen before. In fact, it looks more like a shark. But as you examine it closer, you realise, this isn't any ordinary shark. This one...has legs?";
     await interaction.reply(msg);
     await setTimeout(4000);
@@ -101,6 +104,7 @@ async function tameJeff(interaction, itemRow) {
             if (pet) {
                 return response.update({ content: "You already have a pet! You must disown your current pet to try to tame another one.", components: [] });
             }
+            await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1); 
             await response.update({ content: "You try to tame the shark. But it seems angry, and wants a fight...", components: [] });
             await setTimeout(2000);
             await tameJeffGameplay(interaction, response);
@@ -109,6 +113,7 @@ async function tameJeff(interaction, itemRow) {
         }
     } catch (error) {
         console.log(error);
+        await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
         const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
         const lostEnergy = Math.min(user.energy, Math.max(70, Math.round(Math.random() * 100)));
         user.energy -= lostEnergy;
@@ -122,7 +127,7 @@ async function tameJeffGameplay(interaction, response) {
     let isGameOver = false;
     const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     const maxEnergy = user.energy;
-    let jeffWildness = 250;
+    let jeffWildness = 1;
     let jeffUlt = 0;
     let jeffResistance = 0;
     let decAmount = 0;
@@ -190,6 +195,11 @@ async function tameJeffGameplay(interaction, response) {
                 return;
             } else {
                 switch (item_id) {
+                    case "01CO005":
+                        decAmount = Math.round(5 * (1 - jeffResistance));
+                        jeffWildness -= decAmount;
+                        await i.editReply({ content: generateMessage("Your Turn:", `You threw a shrimp to the shark! It's small and kinda sad looking, but the shark eats it anyways. (-${decAmount} anger)`, jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
+                        break;
                     case "01CO001":
                         decAmount = Math.round(10 * (1 - jeffResistance));
                         jeffWildness -= decAmount;
@@ -216,10 +226,10 @@ async function tameJeffGameplay(interaction, response) {
                 await setTimeout(2000);
             }
         }
+        await setTimeout(2000);
         if (i.customId === 'flee') return collector.stop("flee");
         if (jeffWildness <= 0) return collector.stop("tame");
         await user.save();
-        await setTimeout(2000);
         survived = await executeJeffTurn(i);
         if (!survived) return collector.stop("lost");
         await i.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [battleRow] });
@@ -233,7 +243,10 @@ async function tameJeffGameplay(interaction, response) {
             await interaction.client.db.pets.create({
                 userid: interaction.user.id
             })
-            return response.editReply({ content: `With its anger depleted, the fierce shark suddenly calms down. It lets out a soft, confused little growl, lowers its guard, and promptly trots over to nuzzle you. You've successfully tamed it! You decide to call him Jeff for now (you can always change this later!). Use /pet view to start interacting with him! (-1 Unknown Fish)`, components: [] });
+            const user = await interaction.client.db.jeff.findByPk(interaction.user.id);
+            user.reputation += 10;
+            await user.save();
+            return response.editReply({ content: `With its anger depleted, the fierce shark suddenly calms down. It lets out a soft, confused little growl, lowers its guard, and promptly trots over to nuzzle you. You've successfully tamed it! You decide to call him Jeff for now (you can always change this later!). Use /pet view to start interacting with him! (-1 Unknown Fish) (+10 reputation)`, components: [] });
         }
         if (reason === "lost") return response.editReply({ content: `Your energy dropped to 0 and you lost! The shark ran away while you were exhausted... (-1 Unknown Fish)`, components: [] });
     })
@@ -265,14 +278,14 @@ function generateMessage(titleText, actionText, jeffWildness, energy, maxEnergy,
 function getAction(jeffUlt) {
     let action = Object.keys(jeffFightTable)[Math.floor(Math.random() * Object.keys(jeffFightTable).length)];
     if (jeffUlt < 100) {
-        while (action === Object.keys(jeffFightTable)[5]) {
+        while (action === "It's Jeff!") {
             action = Object.keys(jeffFightTable)[Math.floor(Math.random() * Object.keys(jeffFightTable).length)];
         }
         return action;
     } else {
         const ultChance = 35 * Math.pow(1.03, jeffUlt - 100);
         if (Math.random() * 100 < ultChance) {
-            return Object.keys(jeffFightTable)[5];
+            return "It's Jeff!";
         }
         return action;
     }
@@ -330,7 +343,7 @@ async function jeffFightInventory(i, interaction) {
                 components: [new ContainerBuilder().addTextDisplayComponents((text) => text.setContent(`You threw the fish to the shark!`))],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
             });
-            await i.webhook.deleteMessage(invMsg.id);
+            await i.webhook.deleteMessage(invMsg.id).catch(console.error);
             return item_id;
         }
         if (response.customId === "close") {
@@ -338,20 +351,20 @@ async function jeffFightInventory(i, interaction) {
                 components: [new ContainerBuilder().addTextDisplayComponents((text) => text.setContent(`You closed the inventory.`))],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
             });
-            await i.webhook.deleteMessage(invMsg.id);
+            await i.webhook.deleteMessage(invMsg.id).catch(console.error);
             return "CLOSE_INVENTORY";
         }
     } catch (error) {
         console.log(error);
         //await i.webhook.editMessage(invMsg.id, { components: [new ContainerBuilder().addTextDisplayComponents((text) => text.setContent("You took too long! The shark got impatient and attacked you!"))], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral });
-        await i.webhook.deleteMessage(invMsg.id);
+        await i.webhook.deleteMessage(invMsg.id).catch(console.error);
         return "CHEVY";
     }
 }
 
 export const data = new SlashCommandBuilder()
     .setName('use')
-    .setDescription(`Use an item in your inventory`)
+    .setDescription(`Use an item in your inventory (Use a currently equipped item to unequip it)`)
     .addStringOption(option => option
         .setName('item')
         .setDescription('Item to use/equip')

@@ -57,30 +57,13 @@ async function renamePet(i, collectorFilter) {
     }
 }
 
-// const avatarWheelBuilder = () => {
-//     const actionRow = new ActionRowBuilder();
-//     const fiveFiles = [];
-//     const container = new ContainerBuilder().setAccentColor(0x80aaff);
-//     for (let i = 0; i < 5; i++) {
-//         fiveFiles.push(new AttachmentBuilder(`assets/${files[index + i]}`, { name: files[index + i] }));
-//         container.addSectionComponents((section) => section
-//             .setThumbnailAccessory((tn) => tn.setURL(`attachment://${files[index + i]}`))
-//             .addTextDisplayComponents((t) => t.setContent(`Avatar #${index + i + 1}`)));
-//         actionRow.addComponents(new ButtonBuilder().setCustomId(`choose_${files[index + i]}`).setLabel(`Choose Avatar #${index + i + 1}`).setStyle(ButtonStyle.Primary));
-//     }
-//     container.addActionRowComponents((r) => r.addComponents(...actionRow.components));
-//     return { container, fiveFiles };
-// };
-// const { container, fiveFiles } = avatarWheelBuilder();
-// await msg.edit({ components: [container], files: fiveFiles, flags: MessageFlags.IsComponentsV2 });
-// console.log(files);
-
 // ts might be worse
 async function changeAvatar(otherI, collectorFilter) {
     await otherI.deferUpdate();
     let msg = await otherI.followUp("Loading...");
     let files = await readdir(assetsDir);
     files = files.filter(f => f.includes("jeff"));
+    files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })); // so it goes jeff1 -> jeff2 not jeff1 -> jeff 10
     let index = 0;
     let currentPage = Math.floor(index / 5) + 1;
     // wrap in promise to block everything
@@ -109,20 +92,21 @@ async function changeAvatar(otherI, collectorFilter) {
             const actionRowTwo = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId("first").setLabel(`<< Page 1`).setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder().setCustomId("previous").setLabel(`<- Page ${currentPage - 1}`).setStyle(ButtonStyle.Secondary).setDisabled(currentPage === 1),
+                new ButtonBuilder().setCustomId("choose").setLabel("Choose Page").setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder().setCustomId("next").setLabel(`Page ${currentPage + 1} ->`).setStyle(ButtonStyle.Secondary).setDisabled(currentPage === Math.ceil(files.length / 5)),
-                new ButtonBuilder().setCustomId("last").setLabel(`Page ${Math.ceil(files.length / 5)} >>`).setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder().setCustomId("cancel").setLabel(`Cancel`).setStyle(ButtonStyle.Danger)
+                new ButtonBuilder().setCustomId("last").setLabel(`Page ${Math.ceil(files.length / 5)} >>`).setStyle(ButtonStyle.Secondary)
             )
+            const cancelRow = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId("cancel").setLabel(`Cancel`).setStyle(ButtonStyle.Danger));
             // build the 5 embeds containing the 5 files, and add buttons for selecting each avatar and scrolling through pages
-            return { embeds, fiveFiles, actionRow, actionRowTwo };
+            return { embeds, fiveFiles, actionRow, actionRowTwo, cancelRow };
         }
 
-        const { embeds, fiveFiles, actionRow, actionRowTwo } = avatarWheelBuilder();
+        const { embeds, fiveFiles, actionRow, actionRowTwo, cancelRow } = avatarWheelBuilder();
         await msg.edit({
             content: `Page ${currentPage}`,
             embeds: embeds,
             files: fiveFiles,
-            components: [actionRow, actionRowTwo]
+            components: [actionRow, actionRowTwo, cancelRow]
         });
         const collector = msg.createMessageComponentCollector({
             filter: collectorFilter,
@@ -130,13 +114,20 @@ async function changeAvatar(otherI, collectorFilter) {
         });
         // simple collector
         collector.on("collect", async i => {
-            await i.update({ content: "Loading....", });
+            if (i.customId !== "choose") await i.update({ content: "Loading....", }); // cuz modals SUCK they have to be first greedy bastards
             if (i.customId === "first") {
                 index = 0;
                 currentPage = Math.floor(index / 5) + 1;
             } else if (i.customId === "previous") {
                 index = Math.max(0, index - 5);
-
+            } else if (i.customId === "choose") {
+                const page = await choosePage(i, collectorFilter, files);
+                if (page) {
+                    await i.editReply({ content: "Loading....", });
+                    index = (page - 1) * 5;
+                } else {
+                    return i.followUp({ content: `You entered an invalid page number!`, flags: MessageFlags.Ephemeral });
+                }
             } else if (i.customId === "next") {
                 index = Math.min(files.length - 1, index + 5);
                 currentPage = Math.floor(index / 5) + 1;
@@ -153,32 +144,54 @@ async function changeAvatar(otherI, collectorFilter) {
                 return;
             }
             currentPage = Math.floor(index / 5) + 1;
-            const { embeds, fiveFiles, actionRow, actionRowTwo } = avatarWheelBuilder();
+            const { embeds, fiveFiles, actionRow, actionRowTwo, cancelRow } = avatarWheelBuilder();
             await i.editReply({
                 content: `Page ${currentPage}`,
                 embeds: embeds,
                 files: fiveFiles,
-                components: [actionRow, actionRowTwo]
+                components: [actionRow, actionRowTwo, cancelRow]
             });
         })
         collector.on("end", async (_collected, reason) => {
-            await msg.delete();
+            if (reason === "time") await msg.edit({content: `This interaction timed out.`, embeds: [], files: [], components: []});
+            await msg.delete().catch(console.error);
             resolve(null);
         });
     });
 }
 
+// helper function to choose specific page
+async function choosePage(i, collectorFilter, files) {
+    const modal = new ModalBuilder().setCustomId("modal").setTitle("Choosing Page");
+    const nameInput = new TextInputBuilder().setCustomId("page").setStyle(TextInputStyle.Short).setPlaceholder("1");
+    const label = new LabelBuilder().setLabel("Choose a page to go to...").setTextInputComponent(nameInput);
+    modal.addLabelComponents(label);
+    await i.showModal(modal);
+    try {
+        const response = await i.awaitModalSubmit({ filter: collectorFilter, time: 120_000 });
+        if (response) {
+            await response.deferUpdate();
+            const page = parseInt(response.fields.getTextInputValue("page"));
+            if (page < 1 || page > Math.ceil(files.length / 5)) {
+                return null;
+            }
+            return page;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        // user cancelled modal or took too long, just pass
+        console.log(error);
+        return null;
+    }
+}
 export const data = new SlashCommandSubcommandBuilder()
     .setName('view')
     .setDescription('Check up on your pet!');
-export async function execute(interaction) {
-    const user_id = interaction.user.id;
-    const pet = await interaction.client.db.pets.findOne({
-        where: { userid: user_id }
-    });
-    if (!pet) return interaction.reply({ content: `You don't have a pet yet! But rumor has it if you fish up something unknown and use it, you might just find a feisty companion.`, flags: MessageFlags.Ephemeral });
-    const petLevel = calculateLevelInfo(pet.xp);
-    await updatePetStats(pet, petLevel.level);
+export async function execute(interaction, pet) {
+    let petLevel = calculateLevelInfo(pet.xp);
+    const xpLoss = await updatePetStats(pet, petLevel.level);
+    if (xpLoss > 0) petLevel = calculateLevelInfo(pet.xp);
     const xpBar = generateProgressBar(petLevel.current, petLevel.next, '🟩');
     const hungerBar = generateProgressBar(pet.hunger, 100, '🐟');
     const affectionBar = generateProgressBar(pet.affection, 100, '❤️');
@@ -196,7 +209,7 @@ export async function execute(interaction) {
             .addSeparatorComponents((separator) => separator)
             .addActionRowComponents((row) => row.addComponents(
                 new ButtonBuilder().setCustomId('rename').setLabel('Rename').setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId('avatar').setLabel('Change Avatar').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('avatar').setLabel(`Change Avatar (Current: #${pet.picture.split(".")[0].split("jeff")[1]})`).setStyle(ButtonStyle.Primary),
                 new ButtonBuilder().setCustomId('perks').setLabel('See Level Perks').setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder().setCustomId('close').setLabel('Close Dialog').setStyle(ButtonStyle.Danger)
             ));
@@ -205,10 +218,11 @@ export async function execute(interaction) {
     // I HATE JAVASCRIPT
     const { container, file } = buildContainer();
     const msg = await interaction.reply({ components: [container], files: [file], flags: MessageFlags.IsComponentsV2 });
+    if (xpLoss > 0) await interaction.followUp({ content: `Oh no! While you were away, your pet's hunger and affection dropped to 0 for too long, losing ${xpLoss} XP. Spend some time with your buddy!`, flags: MessageFlags.Ephemeral });
     const collectorFilter = i => i.user.id === interaction.user.id;
     const collector = msg.createMessageComponentCollector({
         filter: collectorFilter,
-        time: 120_000,
+        time: 240_000,
     });
     collector.on("collect", async i => {
         if (i.customId === "rename") {
@@ -219,7 +233,6 @@ export async function execute(interaction) {
             }
         } else if (i.customId === "avatar") {
             const fileName = await changeAvatar(i, collectorFilter);
-            console.log("tost");
             if (fileName) {
                 pet.picture = fileName;
                 await pet.save();
@@ -228,20 +241,21 @@ export async function execute(interaction) {
             await i.deferUpdate();
             await i.followUp({
                 content: `Level 1: Base Stats
-Level 2: +20% Slower Hunger/Affection Decay, +20% Move Power
-Level 3: +30% Slower Hunger/Affection Decay, +30% Move Power
-Level 4: +40% Slower Hunger/Affection Decay, +40% Move Power
-Level 5: +50% Slower Hunger/Affection Decay, +50% Move Power
-Level 6: +60% Slower Hunger/Affection Decay, +60% Move Power
-Level 7: +70% Slower Hunger/Affection Decay, +70% Move Power
-Level 8: +80% Slower Hunger/Affection Decay, +80% Move Power
-Level 9: +90% Slower Hunger/Affection Decay, +90% Move Power
-Level 10: +100% Slower Hunger/Affection Decay, +100% Move Power`, flags: MessageFlags.Ephemeral })
+Level 2: +25% Slower Hunger/Affection Decay, +100% Nom, Bubble, Spit Power
+Level 3: +50% Slower Hunger/Affection Decay, +200% Nom, Bubble, Spit Power
+Level 4: +75% Slower Hunger/Affection Decay, +300% Nom, Bubble, Spit Power
+Level 5: +100% Slower Hunger/Affection Decay, +400% Nom, Bubble, Spit Power
+Level 6: +125% Slower Hunger/Affection Decay, +500% Nom, Bubble, Spit Power
+Level 7: +150% Slower Hunger/Affection Decay, +600% Nom, Bubble, Spit Power
+Level 8: +175% Slower Hunger/Affection Decay, +700% Nom, Bubble, Spit Power
+Level 9: +200% Slower Hunger/Affection Decay, +800% Nom, Bubble, Spit Power
+Level 10: +300% Slower Hunger/Affection Decay, +1000% Nom, Bubble, Spit Power`, flags: MessageFlags.Ephemeral
+            })
         } else if (i.customId === "close") return collector.stop("close");
         const { container, file } = buildContainer();
         await i.editReply({ components: [container], files: [file], flags: MessageFlags.IsComponentsV2 });
     })
     collector.on("end", async (_collected, reason) => {
-        await msg.delete();
+        await msg.delete().catch(console.error); //pass, catch if message is already deleted or smth weird
     });
 }   

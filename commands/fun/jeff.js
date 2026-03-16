@@ -3,7 +3,7 @@ import { readdir } from 'fs/promises';
 import { join } from 'node:path';
 const assetsDir = join(process.cwd(), 'assets');
 
-let file = new AttachmentBuilder('assets/jeff.webp'); // placeholder
+let file = new AttachmentBuilder('assets/jeff1.webp'); // placeholder
 
 let gallery = new MediaGalleryBuilder()
     .addItems(mediaGalleryItem => mediaGalleryItem.setURL('attachment://jeff.webp')); // placeholder

@@ -2,7 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRo
 import { getUserAndUpdate } from '../../helpers/utils.js';
 import config from '../../helpers/config.json' with { type: "json" };
 const { ownerId } = config;
-
+// TODO: reminders about pets
 // constants for link buttons
 const dailyRemindersButton = new ButtonBuilder()
     .setCustomId('dailyReminders')

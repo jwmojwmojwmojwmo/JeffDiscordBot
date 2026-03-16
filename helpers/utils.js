@@ -101,22 +101,29 @@ export function getPetLevel(totalXp) {
     return level;
 }
 
+// TODO: lower xp if hunger + affection 0 for too long
 export async function updatePetStats(pet, currentLevel) {
     const currentTime = Date.now();
     // use minutes for accuracy
     const msPerMinute = 1000 * 60; 
 
     // Calculate time elapsed
-    const minutesSinceFed = (currentTime - pet.last_fed) / msPerMinute;
-    const minutesSincePlayed = (currentTime - pet.last_played) / msPerMinute;
+    const minutesSinceFed = (currentTime - pet.last_fed.getTime()) / msPerMinute;
+    const minutesSincePlayed = (currentTime - pet.last_played.getTime()) / msPerMinute;
 
-    const baseDecayPerMinute = 5 / 60;
-    const slowDownFactor = 1 + (0.1 * currentLevel);
+    const baseDecayPerMinute = 2 / 60;
+    const slowDownFactor = (currentLevel == 10) ? 4 : 1 + (0.25 * currentLevel); // increase by slowdown Factor - 1 from 1 (ex max level = 4-1=3x slower than level 1)
     // minutes per point lost
     const minsPerPoint = 1 / (baseDecayPerMinute / slowDownFactor);    
 
     const hungerDecay = Math.floor(minutesSinceFed / minsPerPoint);
     const affectionDecay = Math.floor(minutesSincePlayed / minsPerPoint);
+
+    // how much extra we're losing but not accounted for since we hit 0 (will be deducted as xp)
+    const overHungerDecay = (hungerDecay > pet.hunger) ? hungerDecay - pet.hunger : -1;
+    const overAffectionDecay = (affectionDecay > pet.affection) ? affectionDecay - pet.affection : -1;
+    // be nice and return xp loss based on avg of the two
+    let totalDecay = Math.ceil((overHungerDecay + overAffectionDecay) / 2);
     // essentially we calculate how many minutes its been since the player last interacted
     // then use that to find how many points to subtract
     // then use those minutes again to add to pet.last_fed
@@ -131,13 +138,21 @@ export async function updatePetStats(pet, currentLevel) {
     console.log(`Affection to subtract: ${affectionDecay}`);
     if (hungerDecay > 0) {
         pet.hunger = Math.max(0, pet.hunger - hungerDecay);
-        pet.last_fed = new Date(pet.last_fed.getTime() + (hungerDecay * minsPerPoint * msPerMinute));
+        // new date based on adding time
+        pet.last_fed = new Date(pet.last_fed.getTime() + (hungerDecay * minsPerPoint * msPerMinute)); 
     }
     if (affectionDecay > 0) {
         pet.affection = Math.max(0, pet.affection - affectionDecay);
         pet.last_played = new Date(pet.last_played.getTime() + (affectionDecay * minsPerPoint * msPerMinute));
     }
+    if (totalDecay !== -1) {
+        const oldXp = pet.xp;
+        pet.xp = Math.max(0, oldXp - totalDecay);
+        totalDecay = oldXp - pet.xp; // get actual amount lost
+    }
+    console.log(`Decay: ${totalDecay}`);
     await pet.save();
+    return totalDecay;
 }
 
 export class RivalsAPIError extends Error {

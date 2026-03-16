@@ -11,7 +11,7 @@ export default (sequelize, DataTypes) => {
         },
         picture: {
             type: DataTypes.STRING,
-            defaultValue: "jeff.webp"
+            defaultValue: "jeff1.webp"
         },
         xp: {
             type: DataTypes.INTEGER,
