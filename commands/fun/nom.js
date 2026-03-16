@@ -7,6 +7,10 @@ const killMsg = [
 	' was caught by Jeff in his jaws. Crunch crunch!',
 	' vanished... and Jeff’s tummy says thanks! NOMNOM!',
 	' got Jeff’ed. Nomfest initiated!',
+    ' was devoured by a very hungry Jeff. *burp*',
+    ' became Jeff’s midnight snack. Munch munch!',
+    ' is currently digesting in Jeff’s belly. Gurgle gurgle!',
+    ' made a delicious meal for Jeff. *lip smack*',
 ];
 
 export const cooldown = 7;
