@@ -49,7 +49,7 @@ export async function execute(interaction) {
             pet.affection += affection;
             pet.xp += 25;
             await pet.save();
-            victim.reputation += pet_spit;
+            victim.reputation -= pet_spit;
             await victim.save();
             await interaction.followUp(escapeMarkdown(`${culprit_name}'s pet, ${pet.name}, helped supercharge Jeff's spit! They made ${victim_name} lose an additional ${pet_spit} reputation! (${pet.name} got -10 hunger, +${affection} affection, +25 xp)`));
             console.log(`${victim.username}'s pet helped spit an additional ${pet_spit} times.`);

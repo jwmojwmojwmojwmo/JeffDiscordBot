@@ -13,9 +13,9 @@ const subcommands = Object.freeze({
     "disown": disownCommand
 })
 // TODO:!!!!
-// play
-// spit
-// bubble integration with pet  
+// play highlow -> jeff nudges you in right direction (maybe gives a nother number and tells you where it is relative to that one)
+// play blackjack -> peek at dealers card
+// for both: button to do so, costs xp
 export const data = new SlashCommandBuilder()
     .setName('pet')
     .setDescription('Interact with your pet!')
