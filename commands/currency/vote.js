@@ -31,7 +31,7 @@ export async function execute(interaction) {
     if (!voted) {
         await user.save();
         console.log(`${name} (${id}) ran /vote and has not voted yet.`);
-        await interaction.editReply({ content: `You haven't voted yet! Log in with the same Discord account and vote at top.gg to claim your reward! Rewards doubled on weekends!`, components: [buttonRow], flags: MessageFlags.Ephemeral });
+        await interaction.editReply({ content: `You haven't voted yet! Vote at top.gg to claim your reward! Rewards doubled on weekends!`, components: [buttonRow], flags: MessageFlags.Ephemeral });
 
     } else {
         await user.save();
