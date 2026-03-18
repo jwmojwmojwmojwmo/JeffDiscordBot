@@ -9,10 +9,11 @@ async function sendDailyReminders(client, tbl) {
         if (user.settings?.dailyReminders && user.last_daily && user.last_daily < now) {
             try {
                 const member = await client.users.fetch(user.userid);
-                await member.send("Jeffy wants to remind you to claim your daily! Woop Woop!\n\nYou can turn these reminders off by using /settings.\n\n" + msg);
+                await member.send("Jeffy wants to remind you to claim your daily! Woop Woop!\n\nYou can turn these reminders off by using /settings.\n\n");
+                //await member.send(msg);
                 console.log(`[DailyReminders] Sent reminder to ${user.userid}`);
             } catch (err) {
-                console.error(`Failed to DM user ${user.userid}`);
+                console.error(`[DailyReminders] Failed to DM user ${user.userid}`);
             }
         }
     }
