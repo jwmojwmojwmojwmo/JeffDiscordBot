@@ -9,7 +9,6 @@ import config from './helpers/config.json' with { type: "json" };
 const { token } = config;
 const { ownerId } = config;
 const { topggAPIKey } = config;
-const { voteChannelId } = config;
 import { scheduleDailyReminders } from './helpers/schedulers.js';
 import { Sequelize } from 'sequelize';
 import { AutoPoster } from "topgg-autoposter";
@@ -158,7 +157,6 @@ client.on(Events.InteractionCreate, async interaction => {
 // DM control and vote reading
 // !dm [userID] [y/n/e] [msg]
 // !info [userID] [info]
-// if you're running the bot locally you should change this
 client.on(Events.MessageCreate, async message => {
     if (message.channel.id == "1472856269059784848" && message.content.startsWith("BETATECHNO")) { // surely it's ok if this is public
         await handleVote(message);
@@ -176,11 +174,6 @@ client.on(Events.MessageCreate, async message => {
             await message.reply(JSON.stringify(user, null, 1));
         }
     }
-});
-
-
-AutoPoster(topggAPIKey, client).on("posted", (stats) => {
-    console.log(`[AutoPoster] Posted stats to Top.gg (${stats.serverCount} servers)!`);
 });
 
 (async () => {

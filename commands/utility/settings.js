@@ -75,16 +75,12 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     });
     collector.on('end', async (_collected, reason) => {
         if (reason === 'deleteInfo') return;
-        try { //TODO
-            await interaction.editReply({
-                content: 'This interaction timed out.',
-                components: [],
-                embeds: [],
-                flags: MessageFlags.Ephemeral,
-            });
-        } catch (error) {
-            console.log(error);
-        }
+        await interaction.editReply({
+            content: 'This interaction timed out.',
+            components: [],
+            embeds: [],
+            flags: MessageFlags.Ephemeral,
+        });
     })
 }
 
