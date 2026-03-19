@@ -10,7 +10,7 @@ const { token } = config;
 const { ownerId } = config;
 const { topggAPIKey } = config;
 import { scheduleDailyReminders } from './helpers/schedulers.js';
-import { Sequelize } from 'sequelize';
+import { Sequelize, Op } from 'sequelize';
 import { AutoPoster } from "topgg-autoposter";
 const sequelize = new Sequelize({
     host: 'localhost',
@@ -27,7 +27,7 @@ import itemsFactory from './models/items.js';
 import inventoryFactory from './models/inventory.js';
 import equipmentFactory from './models/equipment.js';
 import petsFactory from './models/pets.js';
-import { getUserAndUpdate, updateItemShop } from './helpers/utils.js';
+import { getUserAndUpdate, updateItemShop, getNapEnergy } from './helpers/utils.js';
 
 const jeff = jeffFactory(sequelize, Sequelize.DataTypes);
 const rivalsData = rivalsDataFactory(sequelize, Sequelize.DataTypes);
@@ -52,9 +52,13 @@ export default client;
 client.commands = new Collection();
 client.cooldowns = new Collection();
 client.itemCache = null; // when database synced this will become a local cache for the items db
+client.napping = new Collection();
 client.db = { jeff, rivalsData, items, inventory, equipment, pets };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
+
+// for napping
+const wakeUpCommands = ["bubble", "daily", "fish", "gift", "trader", "spit", "use", "nom", "play", "quiz"];
 
 // Runs on initialization, grabs all commands in commands folder
 for (const folder of commandFolders) {
@@ -134,9 +138,21 @@ client.on(Events.InteractionCreate, async interaction => {
 
         // runs command according to command file with error handling
         try {
-            //TODO: pass interaction into helpers and return replies through helper whenever possible
             await command.execute(interaction);
-            if (interaction.guild) {
+            // handle napping
+            if (wakeUpCommands.includes(interaction.commandName) && client.napping.has(interaction.user.id)) {
+                const now = Date.now();
+                const user = await getUserAndUpdate(client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
+                const time = now - interaction.client.napping.get(interaction.user.id);
+                const napEnergy = getNapEnergy(interaction.client.napping.get(interaction.user.id));
+                user.napping = null;
+                user.energy += napEnergy;
+                await user.save();
+                client.napping.delete(interaction.user.id);
+                await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${Math.round(time / (1000 * 3600), 2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!`: `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
+                console.log(`${interaction.user.username} (${interaction.user.id}) woke up Jeff after ${Math.round(time / (1000 * 3600), 2)} hours to get ${napEnergy} energy.`);
+            }
+            if (interaction.guild) { 
                 console.log(`Commands were run in ${interaction.guild.name}.`);
             } else {
                 console.log(`Commands were run in DMs.`);
@@ -180,8 +196,7 @@ client.on(Events.MessageCreate, async message => {
     // one user can be in many inventory rows, and one inventory row maps to one user
     jeff.hasMany(inventory, {
         foreignKey: 'userid',
-        sourceKey: 'userid',
-        onDelete: 'CASCADE'
+        sourceKey: 'userid'
     });
     inventory.belongsTo(jeff, {
         foreignKey: 'userid',
@@ -199,8 +214,7 @@ client.on(Events.MessageCreate, async message => {
     // one user can be in many equipment rows, and one equipment row maps to one user
     jeff.hasMany(equipment, {
         foreignKey: 'userid',
-        sourceKey: 'userid',
-        onDelete: 'CASCADE'
+        sourceKey: 'userid'
     });
     equipment.belongsTo(jeff, {
         foreignKey: 'userid',
@@ -218,17 +232,19 @@ client.on(Events.MessageCreate, async message => {
     // one user maps to one pet, and one pet maps to one user
     jeff.hasOne(pets, {
         foreignKey: 'userid',
-        sourceKey: 'userid',
-        onDelete: 'CASCADE'
+        sourceKey: 'userid'
     });
     pets.belongsTo(jeff, {
         foreignKey: 'userid',
         targetKey: 'userid'
     });
-    await items.sync({ force: true });
+    //await items.sync({ force: true }); // this breaks equipment table i think
     const allItems = await updateItemShop(items);
     client.itemCache = allItems;
     await sequelize.sync();
+    const nappingUsers = await client.db.jeff.findAll({ where: { napping: { [Op.ne]: null } } });
+    nappingUsers.forEach(u => client.napping.set(u.userid, u.napping.getTime()));
+    console.log(`Synced ${nappingUsers.length} napping users to cache.`);
     await client.login(token);
 })();
 

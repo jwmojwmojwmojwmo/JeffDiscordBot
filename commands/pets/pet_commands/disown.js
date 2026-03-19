@@ -8,8 +8,8 @@ const yesButton = new ButtonBuilder()
 const noButton = new ButtonBuilder()
     .setCustomId('no')
     .setLabel('No')
-    .setStyle(ButtonStyle.Success);
-const askRow = new ActionRowBuilder().addComponents(yesButton, noButton);
+    .setStyle(ButtonStyle.Primary);
+const askRow = new ActionRowBuilder().addComponents(noButton, yesButton);
 
 export const data = new SlashCommandSubcommandBuilder()
     .setName('disown')

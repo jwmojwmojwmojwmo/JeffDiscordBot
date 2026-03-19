@@ -38,6 +38,10 @@ export default (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: false
         },
+        napping: {
+            type: DataTypes.DATE,
+            defaultValue: null
+        },
         settings: { // user settings
             type: DataTypes.JSON,
             allowNull: false,

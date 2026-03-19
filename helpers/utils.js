@@ -29,6 +29,20 @@ export async function getUserAndUpdate(tbl, user_id, user_name, update) {
     return user;
 }
 
+// given a time, return how much energy the user gains from letting Jeff sleep, starting from that time.
+export function getNapEnergy(napStartTime) {
+    const minutesSlept = (Date.now() - napStartTime) / (1000 * 60);
+
+    // S-Curve: Max 150, Midpoint 300, Steepness 0.01
+    let energyGained = Math.floor(150 / (1 + Math.exp(-0.01 * (minutesSlept - 300))));
+    if (minutesSlept < 30) {
+        energyGained = 0;
+    }
+    // shouldn't need but just in case
+    energyGained = Math.min(150, Math.max(0, energyGained));
+    return energyGained;
+}
+
 // adds items to item database from itemlist.js
 export async function updateItemShop(items_tbl) {
     try {

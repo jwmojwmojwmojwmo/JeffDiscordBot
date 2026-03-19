@@ -72,11 +72,14 @@ async function consumeItem(interaction, item, itemRow) {
             case "03CO001": // seaweed
                 msg += `You ate the seaweed. It tasted horrible, but at least it was somewhat nutritious?`;
                 break;
+            case "01CO005": // shrimp
+                msg += `You ate the shrimp raw. Don't worry, the ocean water naturally sanitizes it... probably. Either way, it goes down smooth and packed a ton of nutrition.`;
+                break;
             default:
                 msg += `You consumed the item. Why did you do that?`;
         }
     }
-    return interaction.reply({ content: `${msg} (- 1 ${item.name}) (${item.effect.amount < 0 ? "-" : "+"}${item.effect.amount} ${item.effect.stat})`, flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: `${msg} (-1 ${item.name}) (${item.effect.amount < 0 ? "-" : "+"}${item.effect.amount} ${item.effect.stat})`, flags: MessageFlags.Ephemeral });
 }
 
 async function tameJeff(interaction, itemRow) {

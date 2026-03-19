@@ -57,7 +57,7 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     collector.on('collect', async i => {
         if (i.customId === 'deleteInfo') {
             collector.stop('deleteInfo');
-            await deleteInfo(user, i, collectorFilter);
+            await deleteInfo(user, i, interaction, collectorFilter);
             return;
         }
         if (i.customId === 'requestInfo') {
@@ -115,7 +115,7 @@ async function requestInfo(user, i, interaction, collector, collectorFilter) {
     }
 }
 
-async function deleteInfo(user, i, collectorFilter) {
+async function deleteInfo(user, i, interaction, collectorFilter) {
     await i.update({
         content: `Are you sure you want to permanently delete all data Jeff Bot has associated with your account? This includes reputation, settings, and all other stored information.\nThis action CANNOT be undone.`,
         embeds: [],
@@ -134,6 +134,15 @@ async function deleteInfo(user, i, collectorFilter) {
         const response = await i.message.awaitMessageComponent({ filter: collectorFilter, time: 30000 }); // give 30 sec for response
         if (response.customId === 'yes') {
             console.log(`${JSON.stringify(user.toJSON(), null, 2)} deleted their account.`);
+            await interaction.client.db.inventory.destroy({
+                where: { userid: user.userid }
+            })
+            await interaction.client.db.equipment.destroy({
+                where: { userid: user.userid }
+            })
+            await interaction.client.db.pets.destroy({
+                where: { userid: user.userid }
+            })
             await user.destroy();
             await response.update({ content: `All user information associated with your account has been deleted.`, components: [], flags: MessageFlags.Ephemeral });
         }
