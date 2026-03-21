@@ -149,8 +149,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 user.energy += napEnergy;
                 await user.save();
                 client.napping.delete(interaction.user.id);
-                await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${Math.round(time / (1000 * 3600), 2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!`: `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
-                console.log(`${interaction.user.username} (${interaction.user.id}) woke up Jeff after ${Math.round(time / (1000 * 3600), 2)} hours to get ${napEnergy} energy.`);
+                await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${(time / (1000 * 3600)).toFixed(2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!`: `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
+                console.log(`${interaction.user.username} (${interaction.user.id}) woke up Jeff after ${(time / (1000 * 3600)).toFixed(2)} hours to get ${napEnergy} energy.`);
             }
             if (interaction.guild) { 
                 console.log(`Commands were run in ${interaction.guild.name}.`);

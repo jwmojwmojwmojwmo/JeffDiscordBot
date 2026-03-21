@@ -74,7 +74,7 @@ export async function execute(interaction) {
     const collectorFilter = i => i.user.id === interaction.user.id;
     const collector = await reply.createMessageComponentCollector({
         filter: collectorFilter,
-        time: 120_000
+        idle: 180_000
     });
     collector.on('collect', async i => {
         if (i.customId === "prev") {
@@ -91,7 +91,7 @@ export async function execute(interaction) {
             // or maybe not i'm not reading all that documentation
             // but yeah make sure you let discord know you're responding to i
             await i.update({ components: [timeoutContainer], flags: MessageFlags.IsComponentsV2 });
-            collector.stop();
+            collector.stop("close");
             return;
         } else {
             const id = i.customId.split("_")[1];
@@ -114,6 +114,7 @@ export async function execute(interaction) {
         }
     });
     collector.on('end', async (_collected, reason) => {
-        await interaction.deleteReply().catch(console.error); // in case the message is deleted some other way
+        if (reason === "close") return interaction.deleteReply().catch(console.error());
+        await interaction.editReply({ components: [timeoutContainer], flags: MessageFlags.IsComponentsV2 });
     })
 }

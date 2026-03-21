@@ -93,13 +93,13 @@ async function tameJeff(interaction, itemRow) {
     await interaction.editReply(msg);
     await setTimeout(5000);
     const askMsg = await interaction.followUp({
-        content: "The shark is trying to attack you. Would you like to try to tame this mysterious shark?",
+        content: "The shark is trying to attack you. Would you like to try to tame this mysterious shark?\n\n**WARNING:** This is a boss fight! Your energy is your health bar: if it drops to 0, you pass out and the shark escapes. It is recommended to have **at least 600 energy** and **plenty of fish in your inventory** before attempting this.",
         components: [askRow],
         withResponse: true
     });
     const collectorFilter = i => i.user.id === interaction.user.id;
     try {
-        const response = await askMsg.awaitMessageComponent({ filter: collectorFilter, time: 30000 });
+        const response = await askMsg.awaitMessageComponent({ filter: collectorFilter, time: 60000 });
         if ((response.customId === 'yes')) {
             const pet = await interaction.client.db.pets.findOne({
                 where: { userid: interaction.user.id }
@@ -107,12 +107,12 @@ async function tameJeff(interaction, itemRow) {
             if (pet) {
                 return response.update({ content: "You already have a pet! You must disown your current pet to try to tame another one.", components: [] });
             }
-            await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1); 
+            await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
             await response.update({ content: "You try to tame the shark. But it seems angry, and wants a fight...", components: [] });
             await setTimeout(2000);
             await tameJeffGameplay(interaction, response);
         } else {
-            return response.update({ content: "You backed away from the strange shark, dodging its sharp teeth. It turns around, growls at you one last time, and runs away surprisingly quickly, fleeing back to the water. (-1 Unknown Fish)", components: [] });
+            return response.update({ content: "You decided to back out and stand down to the shark. The shark gives you a long, judgmental look before letting out a tiny huff and going back to sleep. It's still in your inventory, but it\'s definitely judging you now.", components: [] });
         }
     } catch (error) {
         console.log(error);
@@ -130,7 +130,7 @@ async function tameJeffGameplay(interaction, response) {
     let isGameOver = false;
     const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     const maxEnergy = user.energy;
-    let jeffWildness = 1;
+    let jeffWildness = 250;
     let jeffUlt = 0;
     let jeffResistance = 0;
     let decAmount = 0;
@@ -164,7 +164,10 @@ async function tameJeffGameplay(interaction, response) {
         return true;
     }
     let survived = await executeJeffTurn(response);
-    if (!survived) return response.editReply({ content: `Your energy dropped to 0 and you lost! The shark ran away while you were exhausted... (-1 Unknown Fish)`, components: [] });
+    if (!survived) {
+        await user.save();
+        return response.editReply({ content: `Your energy dropped to 0 and you lost! The shark ran away while you were exhausted... (-1 Unknown Fish)`, components: [] });
+    }
     await response.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [battleRow] });
     const collector = response.message.createMessageComponentCollector({
         filter: collectorFilter,
@@ -249,9 +252,13 @@ async function tameJeffGameplay(interaction, response) {
             const user = await interaction.client.db.jeff.findByPk(interaction.user.id);
             user.reputation += 10;
             await user.save();
+            console.log(`${interaction.user.username} (${interaction.user.id}) tamed a pet!`);
             return response.editReply({ content: `With its anger depleted, the fierce shark suddenly calms down. It lets out a soft, confused little growl, lowers its guard, and promptly trots over to nuzzle you. You've successfully tamed it! You decide to call him Jeff for now (you can always change this later!). Use /pet view to start interacting with him! (-1 Unknown Fish) (+10 reputation)`, components: [] });
         }
-        if (reason === "lost") return response.editReply({ content: `Your energy dropped to 0 and you lost! The shark ran away while you were exhausted... (-1 Unknown Fish)`, components: [] });
+        if (reason === "lost") {
+            console.log(`${interaction.user.username} (${interaction.user.id}) lost the Jeff fight...`);
+            return response.editReply({ content: `Your energy dropped to 0 and you lost! The shark ran away while you were exhausted... (-1 Unknown Fish)`, components: [] });
+        }
     })
 }
 
@@ -410,7 +417,6 @@ export async function execute(interaction) {
             break;
         case "JEFF_TAME_SCENE":
             await tameJeff(interaction, itemRow);
-            //await interaction.reply({ content: `tame scene goes here lol (u need enough energy and reputation)...ok bossfight idea: jeff has a "wildness level" and you have to do actions like wrestle (cost energy), intimidate(need certain amount of rep), and feed (need types of fish) on ur turn to reduce wildness. jeff will attack u on his turn and make u lose energy. if wildness to 0 then jeff gets tamed, if ur energy goes to 0 u lose. good idea or not gng`, flags: MessageFlags.Ephemeral });
             break;
         default:
             await interaction.reply({ content: `You entered an invalid item or you can't use this item! If you believe this is in error, please report it!`, flags: MessageFlags.Ephemeral });

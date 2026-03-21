@@ -38,17 +38,17 @@ const fishingLootTables = Object.freeze({
         { itemid: "01RA002", weight: 20 },    // Rare Fish
         { itemid: "02CO001", weight: 10 },    // Driftwood
         { itemid: "01EP003", weight: 12 },    // Epic Fish
-        { itemid: "01LE004", weight: 6 },     // Legendary Fish
-        { itemid: "09LE001", weight: 2 }      // Unknown Fish (Jeff)
+        { itemid: "01LE004", weight: 5 },     // Legendary Fish
+        { itemid: "09LE001", weight: 3 }      // Unknown Fish (Jeff)
     ],
     // 4. Deep Sea Harpoon
     "11EP004": [
-        { itemid: "nothing", weight: 15 },     // 15% fail rate (higher cuz idk why not)
+        { itemid: "nothing", weight: 13 },     // 13% fail rate (higher cuz idk why not)
         { itemid: "01RA002", weight: 25 },    // Rare Fish
         { itemid: "01EP003", weight: 25 },    // Epic Fish
         { itemid: "04EP003", weight: 20 },    // Giant Squid
         { itemid: "01LE004", weight: 10 },    // Legendary Fish
-        { itemid: "09LE001", weight: 5 }      // Unknown Fish (Jeff)
+        { itemid: "09LE001", weight: 7 }      // Unknown Fish (Jeff)
     ]
 });
 
