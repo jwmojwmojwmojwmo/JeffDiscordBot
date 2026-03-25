@@ -4,6 +4,18 @@ import { readdir } from 'fs/promises';
 import { join } from 'node:path';
 
 const assetsDir = join(process.cwd(), 'assets');
+const perksArray = [
+    "Level 1: Base Stats",
+    "Level 2: +25% Slower Hunger/Affection Decay, +100% Nom, Bubble, Spit Power",
+    "Level 3: +50% Slower Hunger/Affection Decay, +200% Nom, Bubble, Spit Power",
+    "Level 4: +75% Slower Hunger/Affection Decay, +300% Nom, Bubble, Spit Power",
+    "Level 5: +100% Slower Hunger/Affection Decay, +400% Nom, Bubble, Spit Power",
+    "Level 6: +125% Slower Hunger/Affection Decay, +500% Nom, Bubble, Spit Power",
+    "Level 7: +150% Slower Hunger/Affection Decay, +600% Nom, Bubble, Spit Power",
+    "Level 8: +175% Slower Hunger/Affection Decay, +700% Nom, Bubble, Spit Power",
+    "Level 9: +200% Slower Hunger/Affection Decay, +800% Nom, Bubble, Spit Power",
+    "Level 10: +300% Slower Hunger/Affection Decay, +1000% Nom, Bubble, Spit Power"
+];
 
 function calculateLevelInfo(totalXp) {
     const C = 100;
@@ -153,7 +165,7 @@ async function changeAvatar(otherI, collectorFilter) {
             });
         })
         collector.on("end", async (_collected, reason) => {
-            if (reason === "time") await msg.edit({content: `This interaction timed out.`, embeds: [], files: [], components: []});
+            if (reason === "time") await msg.edit({ content: `This interaction timed out.`, embeds: [], files: [], components: [] });
             await msg.delete().catch(console.error);
             resolve(null);
         });
@@ -239,23 +251,21 @@ export async function execute(interaction, pet) {
             }
         } else if (i.customId === "perks") {
             await i.deferUpdate();
-            await i.followUp({
-                content: `Level 1: Base Stats
-Level 2: +25% Slower Hunger/Affection Decay, +100% Nom, Bubble, Spit Power
-Level 3: +50% Slower Hunger/Affection Decay, +200% Nom, Bubble, Spit Power
-Level 4: +75% Slower Hunger/Affection Decay, +300% Nom, Bubble, Spit Power
-Level 5: +100% Slower Hunger/Affection Decay, +400% Nom, Bubble, Spit Power
-Level 6: +125% Slower Hunger/Affection Decay, +500% Nom, Bubble, Spit Power
-Level 7: +150% Slower Hunger/Affection Decay, +600% Nom, Bubble, Spit Power
-Level 8: +175% Slower Hunger/Affection Decay, +700% Nom, Bubble, Spit Power
-Level 9: +200% Slower Hunger/Affection Decay, +800% Nom, Bubble, Spit Power
-Level 10: +300% Slower Hunger/Affection Decay, +1000% Nom, Bubble, Spit Power`, flags: MessageFlags.Ephemeral
-            })
+            const formattedPerks = perksArray.map((perk, index) => {
+                const currentLineLevel = index + 1;
+                if (currentLineLevel === petLevel.level || (currentLineLevel === 10 && petLevel.level >= 10)) return `**${perk}**`;
+                return perk;
+            }).join('\n');
+            await i.followUp({ content: formattedPerks, flags: MessageFlags.Ephemeral });
         } else if (i.customId === "close") return collector.stop("close");
         const { container, file } = buildContainer();
         await i.editReply({ components: [container], files: [file], flags: MessageFlags.IsComponentsV2 });
     })
     collector.on("end", async (_collected, reason) => {
-        await msg.delete().catch(console.error); //pass, catch if message is already deleted or smth weird
+        if (reason === "time") {
+            await msg.edit({ components: [new ContainerBuilder().addTextDisplayComponents((text) => text.setContent("This interaction timed out."))], flags: MessageFlags.IsComponentsV2 });
+        } else {
+            await msg.delete().catch(console.error); //pass, catch if message is already deleted or smth weird
+        }
     });
 }   

@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
-import { getPetLevel, updatePetStats } from '../../helpers/utils.js';
+import { getPetLevel, updatePetStats, getUserAndUpdate } from '../../helpers/utils.js';
 const killMsg = [
 	' got gobbled by Jeff. Chomp chomp! NOM NOM!',
 	' was just swallowed by Jeff whole. Slurp slurp!',

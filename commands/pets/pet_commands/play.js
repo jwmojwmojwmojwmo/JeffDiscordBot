@@ -1,4 +1,5 @@
 import { SlashCommandSubcommandBuilder, EmbedBuilder } from 'discord.js';
+import { updatePetStats, getPetLevel } from '../../../helpers/utils.js';
 
 export const data = new SlashCommandSubcommandBuilder()
     .setName('play')
@@ -7,8 +8,7 @@ export async function execute(interaction, pet) {
     const playEmbed = new EmbedBuilder()
         .setTitle(`Playing with ${pet.name}`)
         .setDescription(
-            `${pet.name} is a social shark! They love watching you work (and occasionally trying to eat the bait). ` +
-            `You can bond with your pet by doing certain commands with them.`
+            `${pet.name} is a social shark! You can bond with your pet by doing certain commands with them.`
         )
         .addFields(
             { name: '`/pet pet`', value: 'Pet your pet for some low effort affection and xp! (Gains XP + Affection)', inline: true },

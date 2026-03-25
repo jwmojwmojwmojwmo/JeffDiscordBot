@@ -46,6 +46,8 @@ const client = new Client({
     ],
     partials: [Partials.Channel], // needed so DM channels work
 });
+// for napping
+const wakeUpCommands = ["bubble", "daily", "fish", "gift", "trader", "spit", "use", "nom", "play", "quiz"];
 
 export default client;
 
@@ -53,12 +55,12 @@ client.commands = new Collection();
 client.cooldowns = new Collection();
 client.itemCache = null; // when database synced this will become a local cache for the items db
 client.napping = new Collection();
+client.wakeCommands = wakeUpCommands;
 client.db = { jeff, rivalsData, items, inventory, equipment, pets };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
 
-// for napping
-const wakeUpCommands = ["bubble", "daily", "fish", "gift", "trader", "spit", "use", "nom", "play", "quiz"];
+
 
 // Runs on initialization, grabs all commands in commands folder
 for (const folder of commandFolders) {
@@ -81,8 +83,9 @@ for (const folder of commandFolders) {
 // Sets ready state for Jeff Bot
 client.once(Events.ClientReady, readyClient => {
     client.user.setActivity('Waiting for /jeff', { type: ActivityType.Custom });
-    console.log(`Ready! Logged in as ${readyClient.user.tag} at ${new Date().toLocaleTimeString()}`);
     scheduleDailyReminders(client, client.db.jeff);
+    // TODO: move all init before this log
+    console.log(`Ready! Logged in as ${readyClient.user.tag} at ${new Date().toLocaleTimeString()}`);
 });
 
 // Main command handling function

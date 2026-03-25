@@ -14,7 +14,9 @@ function getFormattedShopItem(allItems, shopItem, user) {
     for (const [itemId, amount] of Object.entries(shopItem.cost)) { // object.entries turns the json into key:value pairs that can be iterated through
         let itemName = allItems.find(i => i.itemid === itemId);
         itemName = itemName.name;
-        costsText += `${amount} ${itemName}${amount === 1 ? "" : "s"} + `;
+        let formattedItemName = `${amount} ${itemName}${amount === 1 ? "" : "s"} + `;
+        if (itemName === "Octopus") formattedItemName = `${amount} ${amount === 1 ? "Octopus" : "Octopi"} + `;
+        costsText += formattedItemName;
     }
     costsText = costsText.slice(0, -3);
     return `${bold(`${shopItem.name}  ${shopItem.emoji}`)}\n${italic(shopItem.description)}\n\nCost: ${costsText}`
@@ -52,7 +54,7 @@ function buildContainer(itemList, allItems, user, page) {
         .addActionRowComponents((row) => row.addComponents(
             new ButtonBuilder().setCustomId('prev').setLabel("Previous Page").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId('next').setLabel("Next Page").setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder().setCustomId('close_shop').setLabel('Close Shop').setStyle(ButtonStyle.Danger)));
+            new ButtonBuilder().setCustomId('close_shop').setLabel('Close Trader').setStyle(ButtonStyle.Danger)));
     return container;
 }
 

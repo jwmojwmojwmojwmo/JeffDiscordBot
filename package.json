@@ -19,6 +19,7 @@
     "gif-encoder-2": "^1.0.5",
     "lodash": "^4.17.23",
     "sequelize": "^6.37.7",
+    "sharp": "^0.34.5",
     "sqlite3": "^5.1.7",
     "topgg-autoposter": "^2.0.2"
   },

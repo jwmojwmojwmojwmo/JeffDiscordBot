@@ -5,6 +5,7 @@ import path from 'path';
 import _ from 'lodash';
 import GIFEncoder from 'gif-encoder-2'; 
 import Canvas from 'canvas';
+import sharp from 'sharp';
 
 
 const FRAMES = 10;
@@ -27,7 +28,8 @@ async function generatePetPet(avatarURL, options = {}) {
     encoder.setTransparent();
     const canvas = Canvas.createCanvas(options.resolution, options.resolution);
     const ctx = canvas.getContext('2d');
-    const avatar = await Canvas.loadImage(avatarURL);
+    const imageBuffer = await sharp(avatarURL).png().toBuffer();
+    const avatar = await Canvas.loadImage(imageBuffer);
     for (let i = 0; i < FRAMES; i++) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (options.backgroundColor) {

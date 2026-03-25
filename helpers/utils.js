@@ -125,12 +125,12 @@ export async function updatePetStats(pet, currentLevel) {
     const minutesSinceFed = (currentTime - pet.last_fed.getTime()) / msPerMinute;
     const minutesSincePlayed = (currentTime - pet.last_played.getTime()) / msPerMinute;
 
-    const baseDecayPerMinute = 2 / 60;
+    const baseDecayPerMinute = 4 / 60;
     const slowDownFactor = (currentLevel == 10) ? 4 : 1 + (0.25 * currentLevel); // increase by slowdown Factor - 1 from 1 (ex max level = 4-1=3x slower than level 1)
     // minutes per point lost
     const minsPerPoint = 1 / (baseDecayPerMinute / slowDownFactor);    
 
-    const hungerDecay = Math.floor(minutesSinceFed / minsPerPoint);
+    const hungerDecay = Math.floor(minutesSinceFed / minsPerPoint);     
     const affectionDecay = Math.floor(minutesSincePlayed / minsPerPoint);
 
     // how much extra we're losing but not accounted for since we hit 0 (will be deducted as xp)

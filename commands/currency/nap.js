@@ -5,12 +5,13 @@ export const data = new SlashCommandBuilder()
     .setName('nap')
     .setDescription('Put Jeff to sleep! Passively gain energy while sleeping. He wakes up once you run another command.')
 export async function execute(interaction) {
+    const wakeCommandsString = interaction.client.wakeCommands.map((c) => `/${c}`).join(", ");
     const now = Date.now();
     if (interaction.client.napping.has(interaction.user.id)) {
         const time = Math.round(interaction.client.napping.get(interaction.user.id) / 1000);
         const napEnergy = getNapEnergy(interaction.client.napping.get(interaction.user.id));
         return interaction.reply({
-            content: `Jeff is fast asleep! You put him to bed <t:${time}:R>. Using any of the following commands will wake him up: /bubble, /daily, /fish, /gift, /trader, /spit, /use, /nom, /play, /quiz. Currently, waking him up will award you ${napEnergy} energy.`,
+            content: `Jeff is fast asleep! You put him to bed <t:${time}:R>. Using any of the following commands will wake him up: ${wakeCommandsString}. Currently, waking him up will award you ${napEnergy} energy.`,
             flags: MessageFlags.Ephemeral
         });
     } else {
@@ -20,7 +21,7 @@ export async function execute(interaction) {
         interaction.client.napping.set(interaction.user.id, now);
         console.log(`${interaction.user.username} (${interaction.user.id}) put Jeff to sleep.`)
         return interaction.reply({
-            content: `You tucked Jeff in for a nap! Using any of the following commands will wake him up: /bubble, /daily, /fish, /gift, /trader, /spit, /use, /nom, /play, /quiz. When he wakes up, you'll get some energy based on how long he slept for.`,
+            content: `You tucked Jeff in for a nap! Using any of the following commands will wake him up: ${wakeCommandsString}. When he wakes up, you'll get some energy based on how long he slept for.`,
             flags: MessageFlags.Ephemeral
         });
         
