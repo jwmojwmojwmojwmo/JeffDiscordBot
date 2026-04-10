@@ -17,7 +17,7 @@ export default (sequelize, DataTypes) => {
         },
         description: {
             type: DataTypes.STRING,
-            defaultValue: "Just a random item bro"
+            defaultValue: "Just a random item blud"
         },
         cost: { // if you can buy this item in the shop, have a json with {item_to_buy_with: num_of_items}, else null
             type: DataTypes.JSON,

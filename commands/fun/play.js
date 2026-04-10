@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js';
 import { getUserAndUpdate } from '../../helpers/utils.js';
 
 // TODO: constants for highLow scoring
@@ -41,15 +41,17 @@ const split = new ButtonBuilder()
 
 const insure = new ButtonBuilder()
     .setCustomId('insure')
-    .setLabel('Insure')
+    .setLabel('Insurance')
     .setStyle(ButtonStyle.Secondary);
 
 const surrender = new ButtonBuilder()
     .setCustomId('surrender')
     .setLabel('Surrender')
-    .setStyle(ButtonStyle.Secondary);
+    .setStyle(ButtonStyle.Danger);
 
-const alwaysActions = new ActionRowBuilder().addComponents(hit, stand, double, surrender);
+const alwaysActions = new ActionRowBuilder().addComponents(hit, stand);
+const firstTimes = new ActionRowBuilder().addComponents(double, surrender);
+const insureTimes = new ActionRowBuilder().addComponents(insure);
 
 
 async function playHighLow(interaction, tbl, user_id, user_name) {
@@ -101,62 +103,585 @@ function getHighLowPenalty(diff) {
 }
 
 
-async function playBlackJack(interaction, tbl, user_id, user_name, bet) {
-    async function playBlackJack(interaction, user, bet) {
-        console.log(`${user.username} (${user.userid}) tried to play blackjack. Hi Jason im doin it okk`);
-        jeffCards;
 
-        const buildEmbed = () =>
-            new EmbedBuilder()
-                .setTitle(`${user.username}'s Blackjack Game`)
-                .addFields(
-                    {
-                        name: `Jeffy`,
-                        value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
-                    },
-                    {
-                        name: `${user_name}`,
-                        value: `Cards: ${userCards}\nSum: ${userSum}`
-                    },
-                    {
-                        name: '',
-                        value: `${result} won! You ${operation} ${amount} reputation!`
-                    }
-                );
-        
-        
-    
-        const reply = await interaction.reply({
-            embeds: [buildEmbed],
-            components: [alwaysActions],
-        }); // initial reply
-        const collectorFilter = i => i.user.id === interaction.user.id; // returns true if the user pressing the button is the user who started the interaction
-        const collector = reply.createMessageComponentCollector({ // creates a collector, lasting for two minutes, using the filter, that 'collects' every time an action is performed
-            filter: collectorFilter,
-            time: 120_000, // 2 minutes
+
+
+async function playBlackJack(interaction, user, bet) {
+    console.log('new game');
+    let jeffCards = [];
+    let userCards = [];
+    let deck = ["A♤", "2♤", "3♤", "4♤", "5♤", "6♤", "7♤", "8♤", "9♤", "J♤", "Q♤", "K♤", "10♤",
+                "A♢", "2♢", "3♢", "4♢", "5♢", "6♢", "7♢", "8♢", "9♢", "J♢", "Q♢", "K♢", "10♢",
+                "A♧", "2♧", "3♧", "4♧", "5♧", "6♧", "7♧", "8♧", "9♧", "J♧", "Q♧", "K♧", "10♧",
+                "A♡", "2♡", "3♡", "4♡", "5♡", "6♡", "7♡", "8♡", "9♡", "J♡", "Q♡", "K♡", "10♡"]; //emoticon
+    //let deck = ["A♤", "Q♤", "A♤", "A♤"]
+
+    let jeffySum = 0;
+    let userSum = 0;
+    // shuffles deck
+    deck = fisherYates(deck);
+
+
+    // give cards
+    let result = drawCard(deck, jeffCards);
+    deck = result.deck;
+    jeffCards = result.hand;
+
+    result = drawCard(deck, jeffCards);
+    deck = result.deck;
+    jeffCards = result.hand;
+
+    result = drawCard(deck, userCards);
+    deck = result.deck;
+    userCards = result.hand;
+
+    result = drawCard(deck, userCards);
+    deck = result.deck;
+    userCards = result.hand;
+
+    jeffySum = sum(jeffCards);
+    userSum = sum(userCards);
+
+    const winEmbed = () =>
+        new EmbedBuilder()
+            .setTitle(`${user.username}'s Blackjack Game`)
+            .addFields(
+                {
+                    name: `Jeffy`,
+                    value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
+                },
+                {
+                    name: `${user.username}`,
+                    value: `Cards: ${userCards}\nSum: ${userSum}`
+                },
+                {
+                    name: '',
+                    value: `You won! You gained ${bet} energy!`
+                }
+            );
+
+
+    const loseEmbed = () =>
+        new EmbedBuilder()
+            .setTitle(`${user.username}'s Blackjack Game`)
+            .addFields(
+                {
+                    name: `Jeffy`,
+                    value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
+                },
+                {
+                    name: `${user.username}`,
+                    value: `Cards: ${userCards}\nSum: ${userSum}`
+                },
+                {
+                    name: '',
+                    value: `You lost... You lost ${bet} energy!`
+                }
+            );
+
+    const pushEmbed = () =>
+        new EmbedBuilder()
+            .setTitle(`${user.username}'s Blackjack Game`)
+            .addFields(
+                {
+                    name: `Jeffy`,
+                    value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
+                },
+                {
+                    name: `${user.username}`,
+                    value: `Cards: ${userCards}\nSum: ${userSum}`
+                },
+                {
+                    name: '',
+                    value: `Push, you got your bet of ${bet} energy back.`
+                }
+            );
+
+    // if (sum(jeffCards[0])) {
+
+    // }
+    //for insurance
+
+    if (jeffySum == 21) {
+        if (userSum == 21) {
+            await interaction.reply({
+                embeds: [pushEmbed()],
+                components: []
+            });
+            return;
+        } else {
+            await interaction.reply({
+                embeds: [loseEmbed()],
+                components: []
+            });
+            user.energy -= bet;
+            await user.save();
+            return;
+        }
+    } else if (userSum == 21) {
+        await interaction.reply({
+            embeds: [winEmbed()],
+            components: []
         });
-        collector.on('collect', async i => {
+        user.energy += bet;
+        await user.save();
+        return;
+    }
     
-            if(i.customId === 'hit') {
+    //starting deck show
+    let startNum = sum(jeffCards.slice(0, 1))
+    const startEmbed = () =>
+        new EmbedBuilder()
+            .setTitle(`${user.username}'s Blackjack Game`)
+            .addFields(
+                {
+                    name: `Jeffy`,
+                    value: `Cards: ${jeffCards[0]}\nSum: ${startNum}`
+                },
+                {
+                    name: `${user.username}`,
+                    value: `Cards: ${userCards}\nSum: ${userSum}`
+                }
+            );
+
+
+    //show decks
+
+    const buildEmbed = () =>
+        new EmbedBuilder()
+            .setTitle(`${user.username}'s Blackjack Game`)
+            .addFields(
+                {
+                    name: `Jeffy`,
+                    value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
+                },
+                {
+                    name: `${user.username}`,
+                    value: `Cards: ${userCards}\nSum: ${userSum}`
+                }
+            );
+
     
-                //grab card and put in user's hand
+
+    // initial reply
+    const reply = await interaction.reply({
+        embeds: [startEmbed()],
+        components: [alwaysActions, firstTimes],
+    }); 
+    
+
+    // returns true if the user pressing the button is the user who started the interaction
+    const collectorFilter = i => i.user.id === interaction.user.id; 
+    
+    // creates a collector, lasting for two minutes, using the filter, that 'collects' every time an action is performed
+    const collector = reply.createMessageComponentCollector({ 
+        filter: collectorFilter,
+        time: 120_000, // 2 minutes
+    });
+
+    collector.on('collect', async i => {
+        console.log(i.customId);
+        if (i.customId === 'hit') {
+
+            //grab card and put in user's hand
+            result = drawCard(deck, userCards);
+            deck = result.deck;
+            userCards = result.hand;
+            userSum = sum(userCards);
+
+            if (userSum > 21) {
+                await i.update({
+                    embeds: [loseEmbed()],
+                    components: []
+                });
+                user.energy -= bet;
+                await user.save();
+                collector.stop('end');
+            } else if (userSum === 21) {
                 await i.update({
                     embeds: [buildEmbed()],
                     components: [alwaysActions]
+                    });
+                while (jeffySum <= 16) {
+                    result = drawCard(deck, jeffCards);
+                    deck = result.deck;
+                    jeffCards = result.hand;
+                    jeffySum = sum(jeffCards);
+                    await i.editReply({
+                        embeds: [buildEmbed()],
+                        components: [alwaysActions]
+                        });
+                }
+    
+                if (jeffySum > 21) {
+                    await i.editReply({
+                        embeds: [winEmbed()],
+                        components: []
+                    });
+                    user.energy += bet;
+                    await user.save();
+                    collector.stop('end');
+                } else if (jeffySum > userSum) {
+                    await i.editReply({
+                        embeds: [loseEmbed()],
+                        components: []
+                    });
+                    user.energy -= bet;
+                    await user.save();
+                    collector.stop('end');
+                } else if (jeffySum < userSum) {
+                    await i.editReply({
+                        embeds: [winEmbed()],
+                        components: []
+                    });
+                    user.energy += bet;
+                    await user.save();
+                    collector.stop('end');
+                } else {
+                    await i.editReply({
+                        embeds: [pushEmbed()],
+                        components: []
+                    });
+                }
+                return;
+            } else {
+                await i.update({
+                embeds: [startEmbed()],
+                components: [alwaysActions]
                 });
             }
-            // runs whenever a button is pressed
-            // perform some action: TODO main blackjack logic
-            await user.save(); // saves user information to db, try to reduce calls to this whenevere possible
-            await i.update('stub'); // updates the message panel from the initial reply
+            
+        }
+
+        if (i.customId === 'stand') {
+            await i.update({
+                embeds: [buildEmbed()],
+                components: [alwaysActions]
+            });
+            while (jeffySum <= 16) {
+                result = drawCard(deck, jeffCards);
+                deck = result.deck;
+                jeffCards = result.hand;
+                jeffySum = sum(jeffCards);
+                await i.editReply({
+                    embeds: [buildEmbed()],
+                    components: [alwaysActions]
+                    });
+            }
+
+            if (jeffySum > 21) {
+                await i.editReply({
+                    embeds: [winEmbed()],
+                    components: []
+                });
+                user.energy += bet;
+                console.log('yay');
+                await user.save();
+                collector.stop('end');
+            } else if (jeffySum > userSum) {
+                await i.editReply({
+                    embeds: [loseEmbed()],
+                    components: []
+                });
+                user.energy -= bet;
+                console.log('sad');
+                await user.save();
+                collector.stop('end');
+            } else if (jeffySum < userSum) {
+                await i.editReply({
+                    embeds: [winEmbed()],
+                    components: []
+                });
+                console.log('yays');
+                user.energy += bet;
+                await user.save();
+                collector.stop('end');
+            } else {
+                await i.editReply({
+                    embeds: [pushEmbed()],
+                    components: []
+                });
+            }
+
+            return;
+
+            
+        }
+
+        if (i.customId === 'double') {
+            bet = bet * 2;
+            result = drawCard(deck, userCards);
+            deck = result.deck;
+            userCards = result.hand;
+            userSum = sum(userCards);
+
+            if (userSum > 21) {
+                await i.update({
+                    embeds: [loseEmbed()],
+                    components: []
+                });
+                user.energy -= bet;
+                await user.save();
+                collector.stop('end');
+            } else {
+                await i.update({
+                    embeds: [buildEmbed()],
+                    components: [alwaysActions]
+                    });
+                while (jeffySum <= 16) {
+                    result = drawCard(deck, jeffCards);
+                    deck = result.deck;
+                    jeffCards = result.hand;
+                    jeffySum = sum(jeffCards);
+                    await i.editReply({
+                        embeds: [buildEmbed()],
+                        components: [alwaysActions]
+                        });
+                }
+    
+                if (jeffySum > 21) {
+                    await i.editReply({
+                        embeds: [winEmbed()],
+                        components: []
+                    });
+                    user.energy += bet;
+                    await user.save();
+                    collector.stop('end');
+                } else if (jeffySum > userSum) {
+                    await i.editReply({
+                        embeds: [loseEmbed()],
+                        components: []
+                    });
+                    user.energy -= bet;
+                    await user.save();
+                    collector.stop('end');
+                } else if (jeffySum < userSum) {
+                    await i.editReply({
+                        embeds: [winEmbed()],
+                        components: []
+                    });
+                    user.energy += bet;
+                    await user.save();
+                    collector.stop('end');
+                } else {
+                    await i.editReply({
+                        embeds: [pushEmbed()],
+                        components: []
+                    });
+                }
+                return;
+            }
+        }
+
+        if (i.customId === 'surrender') {
+            bet = Math.floor(bet / 2);
+            await i.update({
+                embeds: [loseEmbed()],
+                components: []
+            });
+            console.log('bleh');
+            user.energy -= bet;
+            await user.save();
+            collector.stop('end');
+        }
+
+        // if (i.customId === 'split') {
+        //     let userCards2 = userCards.slice(1, 2);
+        //     userCards = userCards.slice(0, 1);
+        //     // do the hit and stand stuff for each
+        // }
+
+        // if (i.customId === 'insure') {
+        //     //do insure stuff
+        //     if (jeffySum === 21) {
+        //         user.energy = (bet / 2) * 2;
+        //         return;
+        //         //do i lose og bet after i win?
+        //     } else {
+        //         user.energy -= bet / 2;
+
+        //         //hit stand stuff
+        //     }
+
+        //     await i.update({
+        //         embeds: [buildEmbed()],
+        //         components: [alwaysActions]
+        //     });
+        //     while (jeffySum <= 16) {
+        //         result = drawCard(deck, jeffCards);
+        //         deck = result.deck;
+        //         jeffCards = result.hand;
+        //         jeffySum = sum(jeffCards);
+        //         await i.editReply({
+        //             embeds: [buildEmbed()],
+        //             components: [alwaysActions]
+        //             });
+        //     }
+
+        //     if (jeffySum > 21) {
+        //         await i.editReply({
+        //             embeds: [winEmbed()],
+        //             components: []
+        //         });
+        //         user.energy += bet;
+        //         console.log('yay');
+        //         await user.save();
+        //     } else if (jeffySum > userSum) {
+        //         await i.editReply({
+        //             embeds: [loseEmbed()],
+        //             components: []
+        //         });
+        //         user.energy -= bet;
+        //         console.log('sad');
+        //         await user.save();
+        //     } else if (jeffySum < userSum) {
+        //         await i.editReply({
+        //             embeds: [winEmbed()],
+        //             components: []
+        //         });
+        //         console.log('yay');
+        //         user.energy += bet;
+        //         await user.save();
+        //     } else {
+        //         await i.editReply({
+        //             embeds: [pushEmbed()],
+        //             components: []
+        //         });
+        //     }
+
+        //     return;
+        // }
+
+
+
+
+    });
+    
+
+
+
+    
+
+
+    
+
+
+
+    
+
+    
+
+    
+
+    collector.on('end', async (_collected, reason) => { // pass reason for ending collector with collector.stop(reason)
+        if (reason === 'end')
+            return;
+        await interaction.editReply({
+            content: 'This interaction timed out.',
+            components: [],
+            embeds: [],
+            flags: MessageFlags.Ephemeral,
         });
-        collector.on('end', async (_collected, reason) => { // pass reason for ending collector with collector.stop(reason)
-            // perform some action: TODO blackjack ending logic
-            await interaction.editReply('This interaction timed out.'); // use interaction.editreply for final edit, use i.update otherwise
-        })
-        // TODO: implement blackjack, see settings.js for help with collectors
+        // use interaction.editreply for final edit, use i.update otherwise
+    })
+}
+
+function fisherYates(deck) {
+    for (let i = 0; i < deck.length - 1; i++) {
+      const j = Math.floor(Math.random() * (deck.length - i)) + i;
+      let temp = deck[i];
+      deck[i] = deck[j];
+      deck[j] = temp;
+    }
+    return deck;
+  };
+
+function drawCard(deck, hand) {
+    let randomNum = Math.floor(Math.random() * deck.length);
+    let card = deck[randomNum];
+    deck.splice(randomNum, 1)
+    hand.push(card);
+    console.log(hand);
+    return {
+        hand: hand,
+        deck: deck
     }
 }
+
+function sum(deck) {
+    let sum = 0;
+    let tens = ['J', 'Q', 'K'];
+    let aces = 0;
+    for (let i = 0; i < deck.length; i++) {
+
+        if (tens.includes(deck[i].substring(0, deck[i].length - 1))) {
+            sum = sum + 10;
+        } else if (deck[i].substring(0, deck[i].length - 1) === 'A') {
+            aces++;
+            sum = sum + 11;
+        } else {
+            sum = sum + Number(deck[i].substring(0, deck[i].length - 1));
+        }
+        
+    }
+
+    while (sum > 21 && aces > 0) {
+        sum = sum - 10;
+    }
+    console.log(sum);
+    return sum;
+}
+
+// function standing(??) {
+//     await i.update({
+//         embeds: [buildEmbed()],
+//         components: [alwaysActions]
+//     });
+//     while (jeffySum <= 16) {
+//         result = drawCard(deck, jeffCards);
+//         deck = result.deck;
+//         jeffCards = result.hand;
+//         jeffySum = sum(jeffCards);
+//         await i.editReply({
+//             embeds: [buildEmbed()],
+//             components: [alwaysActions]
+//             });
+//     }
+
+//     if (jeffySum > 21) {
+//         await i.editReply({
+//             embeds: [winEmbed()],
+//             components: []
+//         });
+//         user.energy += bet;
+//         console.log('yay');
+//         await user.save();
+//     } else if (jeffySum > userSum) {
+//         await i.editReply({
+//             embeds: [loseEmbed()],
+//             components: []
+//         });
+//         user.energy -= bet;
+//         console.log('sad');
+//         await user.save();
+//     } else if (jeffySum < userSum) {
+//         await i.editReply({
+//             embeds: [winEmbed()],
+//             components: []
+//         });
+//         console.log('yay');
+//         user.energy += bet;
+//         await user.save();
+//     } else {
+//         await i.editReply({
+//             embeds: [pushEmbed()],
+//             components: []
+//         });
+//     }
+
+//     return;
+// }
+
 
 
 export const cooldown = 7;
@@ -180,7 +705,8 @@ export async function execute(interaction) {
         await playHighLow(interaction, tbl, id, name);
     }
     else {
-        // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current reputation
-        await playBlackJack(interaction, tbl, id, name, interaction.options.getInteger('bet'));
+        const user = await getUserAndUpdate(tbl, id, name, false);
+        // TODO: ensure getInteger('bet') returns a positive integer that is not higher than user's current energy
+        await playBlackJack(interaction, user, interaction.options.getInteger('bet'));
     }
 }
