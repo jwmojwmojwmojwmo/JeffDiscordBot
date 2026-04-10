@@ -226,7 +226,7 @@ async function tameJeffGameplay(interaction, response) {
                         decAmount = Math.round(75 * (1 - jeffResistance));
                         jeffWildness -= decAmount;
                         user.reputation += 3;
-                        await i.editReply({ content: generateMessage("Your Turn:", `You threw a Legendary Fish to the shark! The shark looks at you in admiration before gratefully munching on it. (-${decAmount} anger) (+2 reputation)`, jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
+                        await i.editReply({ content: generateMessage("Your Turn:", `You threw a Legendary Fish to the shark! The shark looks at you in admiration before gratefully munching on it. (-${decAmount} anger) (+3 reputation)`, jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
                         break;
                 }
                 await setTimeout(2000);
