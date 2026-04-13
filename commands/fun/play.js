@@ -267,12 +267,16 @@ async function playBlackJack(interaction, user, bet) {
     });
 
     collector.on('collect', async i => {
-        
+        await i.deferUpdate();
         console.log(i.customId);
         if (bool === true) {
-            i.deferUpdate();
+
+            return;
+            
         }
         bool = true;
+
+        console.log(i.customId);
         if (i.customId === 'hit') {
 
             //grab card and put in user's hand
@@ -280,10 +284,10 @@ async function playBlackJack(interaction, user, bet) {
             deck = result.deck;
             userCards = result.hand;
             userSum = sum(userCards);
-
+            console.log('ow');
             if (userSum > 21) {
                 message = 'You lost... You lost';
-                await i.update({
+                await i.editReply({
                     embeds: [Embeds()],
                     components: []
                 });
@@ -291,9 +295,9 @@ async function playBlackJack(interaction, user, bet) {
                 await user.save();
                 collector.stop('end');
             } else if (userSum === 21) {
-                await i.update({
+                await i.editReply({
                     embeds: [buildEmbed()],
-                    components: [alwaysActions]
+                    components: []
                     });
                 while (jeffySum <= 16) {
                     result = drawCard(deck, jeffCards);
@@ -341,9 +345,10 @@ async function playBlackJack(interaction, user, bet) {
                         components: []
                     });
                 }
+                bool = false;
                 return;
             } else {
-                await i.update({
+                await i.editReply({
                 embeds: [startEmbed()],
                 components: [alwaysActions]
                 });
@@ -353,9 +358,9 @@ async function playBlackJack(interaction, user, bet) {
 
         if (i.customId === 'stand') {
             console.log('build');
-            await i.update({
+            await i.editReply({
                 embeds: [buildEmbed()],
-                components: [alwaysActions]
+                components: []
             });
             while (jeffySum <= 16) {
                 result = drawCard(deck, jeffCards);
@@ -409,6 +414,7 @@ async function playBlackJack(interaction, user, bet) {
                 collector.stop('end');
             }
             console.log('got here');
+            bool = false;
             return;
             
         }
@@ -423,7 +429,7 @@ async function playBlackJack(interaction, user, bet) {
 
             if (userSum > 21) {
                 message = 'You lost... You lost';
-                await i.update({
+                await i.editReply({
                     embeds: [Embeds()],
                     components: []
                 });
@@ -431,7 +437,7 @@ async function playBlackJack(interaction, user, bet) {
                 await user.save();
                 collector.stop('end');
             } else {
-                await i.update({
+                await i.editReply({
                     embeds: [buildEmbed()],
                     components: [alwaysActions]
                     });
@@ -481,6 +487,7 @@ async function playBlackJack(interaction, user, bet) {
                         components: []
                     });
                 }
+                bool = false;
                 return;
             }
         }
@@ -488,7 +495,7 @@ async function playBlackJack(interaction, user, bet) {
         if (i.customId === 'surrender') {
             bet = Math.floor(bet / 2);
             message = 'You surrendered. You lost';
-            await i.update({
+            await i.editReply({
                 embeds: [Embeds()],
                 components: []
             });
@@ -567,7 +574,7 @@ async function playBlackJack(interaction, user, bet) {
 
 
 
-
+        bool = false;
     });
     
 
@@ -583,14 +590,13 @@ async function playBlackJack(interaction, user, bet) {
     
 
     
-
+    bool = false;
     
     console.log('how');
 
     
     collector.on('end', async (_collected, reason) => { // pass reason for ending collector with collector.stop(reason)
         try {
-            bool = false;
             if (reason === 'end')
                 return;
             console.log('huh');
