@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js';
 import { getUserAndUpdate } from '../../helpers/utils.js';
+import { setTimeout } from 'node:timers/promises';
 
 // TODO: constants for highLow scoring
 
@@ -105,8 +106,9 @@ function getHighLowPenalty(diff) {
 
 
 
-
 async function playBlackJack(interaction, user, bet) {
+    let bool = false;
+    let time = 120;
     console.log('new game');
     let jeffCards = [];
     let userCards = [];
@@ -126,7 +128,7 @@ async function playBlackJack(interaction, user, bet) {
     let result = drawCard(deck, jeffCards);
     deck = result.deck;
     jeffCards = result.hand;
-
+    
     result = drawCard(deck, jeffCards);
     deck = result.deck;
     jeffCards = result.hand;
@@ -142,10 +144,15 @@ async function playBlackJack(interaction, user, bet) {
     jeffySum = sum(jeffCards);
     userSum = sum(userCards);
 
-    const winEmbed = () =>
+    let message = '';
+    const Embeds = () =>
         new EmbedBuilder()
             .setTitle(`${user.username}'s Blackjack Game`)
             .addFields(
+                {
+                    name: `Bet Amount ${bet}`,
+                    value: ``
+                },
                 {
                     name: `Jeffy`,
                     value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
@@ -155,47 +162,16 @@ async function playBlackJack(interaction, user, bet) {
                     value: `Cards: ${userCards}\nSum: ${userSum}`
                 },
                 {
-                    name: '',
-                    value: `You won! You gained ${bet} energy!`
+                    name: ``,
+                    value: `${message} ${bet} energy!`
                 }
             );
 
 
-    const loseEmbed = () =>
-        new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
-            .addFields(
-                {
-                    name: `Jeffy`,
-                    value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
-                },
-                {
-                    name: `${user.username}`,
-                    value: `Cards: ${userCards}\nSum: ${userSum}`
-                },
-                {
-                    name: '',
-                    value: `You lost... You lost ${bet} energy!`
-                }
-            );
 
-    const pushEmbed = () =>
-        new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
-            .addFields(
-                {
-                    name: `Jeffy`,
-                    value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
-                },
-                {
-                    name: `${user.username}`,
-                    value: `Cards: ${userCards}\nSum: ${userSum}`
-                },
-                {
-                    name: '',
-                    value: `Push, you got your bet of ${bet} energy back.`
-                }
-            );
+
+
+
 
     // if (sum(jeffCards[0])) {
 
@@ -204,14 +180,16 @@ async function playBlackJack(interaction, user, bet) {
 
     if (jeffySum == 21) {
         if (userSum == 21) {
+            message = 'Push, you got your bet of';
             await interaction.reply({
-                embeds: [pushEmbed()],
+                embeds: [Embeds()],
                 components: []
             });
             return;
         } else {
+            message = 'You lost... Jeff had a blackjack. You lost';
             await interaction.reply({
-                embeds: [loseEmbed()],
+                embeds: [Embeds()],
                 components: []
             });
             user.energy -= bet;
@@ -219,8 +197,9 @@ async function playBlackJack(interaction, user, bet) {
             return;
         }
     } else if (userSum == 21) {
+        message = 'You got a blackjack and won! You gained';
         await interaction.reply({
-            embeds: [winEmbed()],
+            embeds: [Embeds()],
             components: []
         });
         user.energy += bet;
@@ -235,8 +214,12 @@ async function playBlackJack(interaction, user, bet) {
             .setTitle(`${user.username}'s Blackjack Game`)
             .addFields(
                 {
+                    name: `Bet Amount ${bet}`,
+                    value: ``
+                },
+                {
                     name: `Jeffy`,
-                    value: `Cards: ${jeffCards[0]}\nSum: ${startNum}`
+                    value: `Cards: ${jeffCards[0]},??\nSum: ${startNum}`
                 },
                 {
                     name: `${user.username}`,
@@ -251,6 +234,10 @@ async function playBlackJack(interaction, user, bet) {
         new EmbedBuilder()
             .setTitle(`${user.username}'s Blackjack Game`)
             .addFields(
+                {
+                    name: `Bet Amount ${bet}`,
+                    value: ``
+                },
                 {
                     name: `Jeffy`,
                     value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
@@ -280,7 +267,12 @@ async function playBlackJack(interaction, user, bet) {
     });
 
     collector.on('collect', async i => {
+        
         console.log(i.customId);
+        if (bool === true) {
+            i.deferUpdate();
+        }
+        bool = true;
         if (i.customId === 'hit') {
 
             //grab card and put in user's hand
@@ -290,8 +282,9 @@ async function playBlackJack(interaction, user, bet) {
             userSum = sum(userCards);
 
             if (userSum > 21) {
+                message = 'You lost... You lost';
                 await i.update({
-                    embeds: [loseEmbed()],
+                    embeds: [Embeds()],
                     components: []
                 });
                 user.energy -= bet;
@@ -311,35 +304,40 @@ async function playBlackJack(interaction, user, bet) {
                         embeds: [buildEmbed()],
                         components: [alwaysActions]
                         });
+                    await setTimeout(time);
                 }
     
                 if (jeffySum > 21) {
+                    message = 'You won! You gained';
                     await i.editReply({
-                        embeds: [winEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                     user.energy += bet;
                     await user.save();
                     collector.stop('end');
                 } else if (jeffySum > userSum) {
+                    message = 'You lost... You lost';
                     await i.editReply({
-                        embeds: [loseEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                     user.energy -= bet;
                     await user.save();
                     collector.stop('end');
                 } else if (jeffySum < userSum) {
+                    message = 'You won! You gained';
                     await i.editReply({
-                        embeds: [winEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                     user.energy += bet;
                     await user.save();
                     collector.stop('end');
                 } else {
+                    message = 'Push, you got your bet of';
                     await i.editReply({
-                        embeds: [pushEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                 }
@@ -354,6 +352,7 @@ async function playBlackJack(interaction, user, bet) {
         }
 
         if (i.customId === 'stand') {
+            console.log('build');
             await i.update({
                 embeds: [buildEmbed()],
                 components: [alwaysActions]
@@ -367,20 +366,24 @@ async function playBlackJack(interaction, user, bet) {
                     embeds: [buildEmbed()],
                     components: [alwaysActions]
                     });
+                await setTimeout(time);
             }
 
             if (jeffySum > 21) {
+                message = 'You won! You gained';
                 await i.editReply({
-                    embeds: [winEmbed()],
+                    embeds: [Embeds()],
                     components: []
                 });
                 user.energy += bet;
                 console.log('yay');
                 await user.save();
                 collector.stop('end');
+                console.log('stopped');
             } else if (jeffySum > userSum) {
+                message = 'You lost... You lost';
                 await i.editReply({
-                    embeds: [loseEmbed()],
+                    embeds: [Embeds()],
                     components: []
                 });
                 user.energy -= bet;
@@ -388,8 +391,9 @@ async function playBlackJack(interaction, user, bet) {
                 await user.save();
                 collector.stop('end');
             } else if (jeffySum < userSum) {
+                message = 'You won! You gained';
                 await i.editReply({
-                    embeds: [winEmbed()],
+                    embeds: [Embeds()],
                     components: []
                 });
                 console.log('yays');
@@ -397,16 +401,18 @@ async function playBlackJack(interaction, user, bet) {
                 await user.save();
                 collector.stop('end');
             } else {
+                message = 'Push, you got your bet of';
                 await i.editReply({
-                    embeds: [pushEmbed()],
+                    embeds: [Embeds()],
                     components: []
                 });
+                collector.stop('end');
             }
-
+            console.log('got here');
             return;
-
             
         }
+        console.log('hm?');
 
         if (i.customId === 'double') {
             bet = bet * 2;
@@ -416,8 +422,9 @@ async function playBlackJack(interaction, user, bet) {
             userSum = sum(userCards);
 
             if (userSum > 21) {
+                message = 'You lost... You lost';
                 await i.update({
-                    embeds: [loseEmbed()],
+                    embeds: [Embeds()],
                     components: []
                 });
                 user.energy -= bet;
@@ -437,35 +444,40 @@ async function playBlackJack(interaction, user, bet) {
                         embeds: [buildEmbed()],
                         components: [alwaysActions]
                         });
+                    await setTimeout(time);
                 }
     
                 if (jeffySum > 21) {
+                    message = 'You won! You gained';
                     await i.editReply({
-                        embeds: [winEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                     user.energy += bet;
                     await user.save();
                     collector.stop('end');
                 } else if (jeffySum > userSum) {
+                    message = 'You lost... You lost';
                     await i.editReply({
-                        embeds: [loseEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                     user.energy -= bet;
                     await user.save();
                     collector.stop('end');
                 } else if (jeffySum < userSum) {
+                    message = 'You won! You gained';
                     await i.editReply({
-                        embeds: [winEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                     user.energy += bet;
                     await user.save();
                     collector.stop('end');
                 } else {
+                    message = 'Push, you got your bet of';
                     await i.editReply({
-                        embeds: [pushEmbed()],
+                        embeds: [Embeds()],
                         components: []
                     });
                 }
@@ -475,8 +487,9 @@ async function playBlackJack(interaction, user, bet) {
 
         if (i.customId === 'surrender') {
             bet = Math.floor(bet / 2);
+            message = 'You surrendered. You lost';
             await i.update({
-                embeds: [loseEmbed()],
+                embeds: [Embeds()],
                 components: []
             });
             console.log('bleh');
@@ -572,16 +585,25 @@ async function playBlackJack(interaction, user, bet) {
     
 
     
+    console.log('how');
 
+    
     collector.on('end', async (_collected, reason) => { // pass reason for ending collector with collector.stop(reason)
-        if (reason === 'end')
-            return;
-        await interaction.editReply({
-            content: 'This interaction timed out.',
-            components: [],
-            embeds: [],
-            flags: MessageFlags.Ephemeral,
-        });
+        try {
+            bool = false;
+            if (reason === 'end')
+                return;
+            console.log('huh');
+            await interaction.editReply({
+                content: 'This interaction timed out.',
+                components: [],
+                embeds: [],
+                flags: MessageFlags.Ephemeral,
+            });
+            console.log('what');
+        } catch (exceptioncuzimfancy) {
+            console.error(exceptioncuzimfancy);
+        }
         // use interaction.editreply for final edit, use i.update otherwise
     })
 }
@@ -627,6 +649,7 @@ function sum(deck) {
 
     while (sum > 21 && aces > 0) {
         sum = sum - 10;
+        aces = aces - 1;
     }
     console.log(sum);
     return sum;
@@ -684,7 +707,7 @@ function sum(deck) {
 
 
 
-export const cooldown = 7;
+export const cooldown = 0;
 export const data = new SlashCommandBuilder()
     .setName('play')
     .setDescription('Play a game with Jeff!')
