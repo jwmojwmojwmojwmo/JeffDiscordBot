@@ -8,7 +8,7 @@ import item_list from "./itemlist.js";
  * @param {import('discord.js').Snowflake} user_id - userid
  * @param {String} user_name - username
  * @param {boolean} update - if update === false, the callee must manually do user.save(), or the updated username will not persist. There are NO CHECKS for this. Note that if update === true and an unneccesary .save() occurs, it is a performance loss
- * @returns {object} - user object with updated username. The username has not been saved to the database unless update === true
+ * @returns {Promise<object>} - user object with updated username. The username has not been saved to the database unless update === true
  */
 export async function getUserAndUpdate(tbl, user_id, user_name, update) {
     let user = await tbl.findByPk(user_id);
