@@ -229,6 +229,7 @@ async function playBlackJack(interaction, user, bet) {
 
 
     //show decks
+    //hi jason
 
     const buildEmbed = () =>
         new EmbedBuilder()
