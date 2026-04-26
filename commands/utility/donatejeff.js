@@ -27,9 +27,9 @@ export const data = new SlashCommandBuilder()
         .setDescription('Picture of Jeff to donate')
         .setRequired(true));
 export async function execute(interaction) {
+    await interaction.reply({ content: 'Thank you for your donation! It will be reviewed and approved if deemed appropriate!', flags: MessageFlags.Ephemeral });
     const jwmo = await interaction.client.users.fetch(ownerId);
     const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.user.username, false);
     await addDonation(user, interaction.options.getAttachment('picture'));
     await jwmo.send('A Jeff was donated');
-    await interaction.reply({ content: 'Thank you for your donation! It will be reviewed and approved if deemed appropriate!', flags: MessageFlags.Ephemeral });
 }

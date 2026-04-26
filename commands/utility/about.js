@@ -35,7 +35,7 @@ const aboutEmbed = new EmbedBuilder()
         { name: 'Credits', value: 'Created with love by jwmo.\nDeveloped in partnership with Woofie.\nSpecial thanks to CrabKevin for his contributions!\nAnd a big thanks to everyone who donates Jeff pictures!' },
     )
     // .setImage("https://i.imgur.com/ntg31Zx.jpeg")    
-    .setFooter({ text: 'Jeff Bot by jwmo, all rights reserved. By using the bot you agree to our Terms of Service & Privacy Policy', iconURL: 'https://i.imgur.com/e0xvSJ9.png' });
+    .setFooter({ text: 'Jeff Bot by jwmo. Jeff the Landshark is the property of Marvel Comics. This bot is an unofficial fan project and is not affiliated with Marvel. By using the bot you agree to our Terms of Service & Privacy Policy', iconURL: 'https://i.imgur.com/e0xvSJ9.png' });
 
 export const data = new SlashCommandBuilder()
     .setName('about')
