@@ -2,7 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRo
 import { getUserAndUpdate } from '../../helpers/utils.js';
 import config from '../../helpers/config.json' with { type: "json" };
 const { ownerId } = config;
-
+// TODO: reminders about pets
 // constants for link buttons
 const dailyRemindersButton = new ButtonBuilder()
     .setCustomId('dailyReminders')
@@ -52,12 +52,12 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     const collector = reply.createMessageComponentCollector({
         filter: collectorFilter,
-        time: 120_000, // 2 minutes
+        time: 60_000, // 1 minute
     });
     collector.on('collect', async i => {
         if (i.customId === 'deleteInfo') {
             collector.stop('deleteInfo');
-            await deleteInfo(user, i, collectorFilter);
+            await deleteInfo(user, i, interaction, collectorFilter);
             return;
         }
         if (i.customId === 'requestInfo') {
@@ -75,16 +75,12 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
     });
     collector.on('end', async (_collected, reason) => {
         if (reason === 'deleteInfo') return;
-        try { //TODO
-            await interaction.editReply({
-                content: 'This interaction timed out.',
-                components: [],
-                embeds: [],
-                flags: MessageFlags.Ephemeral,
-            });
-        } catch (error) {
-            console.log(error);
-        }
+        await interaction.editReply({
+            content: 'This interaction timed out.',
+            components: [],
+            embeds: [],
+            flags: MessageFlags.Ephemeral,
+        });
     })
 }
 
@@ -119,7 +115,7 @@ async function requestInfo(user, i, interaction, collector, collectorFilter) {
     }
 }
 
-async function deleteInfo(user, i, collectorFilter) {
+async function deleteInfo(user, i, interaction, collectorFilter) {
     await i.update({
         content: `Are you sure you want to permanently delete all data Jeff Bot has associated with your account? This includes reputation, settings, and all other stored information.\nThis action CANNOT be undone.`,
         embeds: [],
@@ -138,6 +134,16 @@ async function deleteInfo(user, i, collectorFilter) {
         const response = await i.message.awaitMessageComponent({ filter: collectorFilter, time: 30000 }); // give 30 sec for response
         if (response.customId === 'yes') {
             console.log(`${JSON.stringify(user.toJSON(), null, 2)} deleted their account.`);
+            interaction.client.napping.delete(interaction.user.id);
+            await interaction.client.db.inventory.destroy({
+                where: { userid: user.userid }
+            })
+            await interaction.client.db.equipment.destroy({
+                where: { userid: user.userid }
+            })
+            await interaction.client.db.pets.destroy({
+                where: { userid: user.userid }
+            })
             await user.destroy();
             await response.update({ content: `All user information associated with your account has been deleted.`, components: [], flags: MessageFlags.Ephemeral });
         }
@@ -145,7 +151,8 @@ async function deleteInfo(user, i, collectorFilter) {
             await response.update({ content: `Account deletion cancelled by user.`, components: [], flags: MessageFlags.Ephemeral });
         }
     }
-    catch {
+    catch (error) {
+        console.log(error);
         return i.editReply({ content: 'This interaction has timed out.', components: [], flags: MessageFlags.Ephemeral });
     }
 }
@@ -154,6 +161,6 @@ export const data = new SlashCommandBuilder()
     .setName('settings')
     .setDescription('Look at and change your user-specific settings');
 export async function execute(interaction) {
-    const name = interaction.member?.displayName || interaction.user.username;
+    const name = interaction.member?.displayName || interaction.user.displayName;
     await settingsFunction(interaction.client.db.jeff, interaction, interaction.user.id, name);
 }

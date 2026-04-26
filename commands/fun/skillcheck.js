@@ -90,7 +90,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Checks your skill level at Jeff (This command is currently experimental)')
     .addStringOption(option => option
         .setName('player')
-        .setDescription('Marvel Rivals in-game name or in-game uid of player to check.')
+        .setDescription('Marvel Rivals in-game name or uid of player to check.')
         .setRequired(true));
 export async function execute(interaction) {
     let name = interaction.options.getString('player');
@@ -155,7 +155,7 @@ export async function execute(interaction) {
     try {
         scoreScale = 25 * Math.pow((rank_history[0].score_progression.total_score - 3000) / 2200, 2.1);
     } catch (err) {
-        return interaction.editReply({ content: 'Cannot calculate skill level without Jeff games played in ranked this season. (Placement matches do not count)\nIf this is not right, it is because this user was not queried for a while. Please wait a couple minutes for Jeff to refresh stats, then run the command again.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'Cannot calculate skill level without Jeff games played in ranked this season. (Placement matches do not count)', flags: MessageFlags.Ephemeral });
     }
     console.log(score, scoreScale);
     score += scoreScale;
@@ -178,7 +178,7 @@ PlayTime: ${rankedPlayTime.toFixed(2)} hours
 Average Damage / 10 min: ${Math.round(damageTenMinutes)}
 Average Healing / 10 min: ${Math.round(healingTenMinutes)}
                         
-Tip: If these stats are outdated, it is because this user was not queried for a while. Please wait a couple minutes for Jeff to refresh stats, then run the command again.
+Tip: If these stats are outdated, it is because this user was not queried for a while. Please wait for Jeff to refresh stats before running the command again. This should only take a couple of minutes, but could take up to 30 minutes.
         
 This command is in development! Please /donatesuggestions if you think the scoring is unfair or unclear in any way!`;
     console.log(reply);

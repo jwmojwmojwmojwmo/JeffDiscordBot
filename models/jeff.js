@@ -14,14 +14,6 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             defaultValue: 0
         },
-        num_namnamnam: { // num of times user has nommed someone
-            type: DataTypes.INTEGER,
-            defaultValue: 0
-        },
-        num_queries: { // num of times user has been fetched from database
-            type: DataTypes.INTEGER,
-            defaultValue: 0
-        },
         reputation: { // total num of reputation (lose by getting spit on, gain by getting bubbled)
             type: DataTypes.INTEGER,
             defaultValue: 10
@@ -37,6 +29,10 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false
+        },
+        napping: {
+            type: DataTypes.DATE,
+            defaultValue: null
         },
         settings: { // user settings
             type: DataTypes.JSON,
