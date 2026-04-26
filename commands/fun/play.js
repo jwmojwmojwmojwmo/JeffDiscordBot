@@ -145,12 +145,13 @@ async function playBlackJack(interaction, user, bet) {
     userSum = sum(userCards);
 
     let message = '';
+    let startNum = sum(jeffCards.slice(0, 1))
     const Embeds = () =>
         new EmbedBuilder()
             .setTitle(`${user.username}'s Blackjack Game`)
             .addFields(
                 {
-                    name: `Bet Amount ${bet}`,
+                    name: `Bet Amount: ${bet}`,
                     value: ``
                 },
                 {
@@ -170,7 +171,7 @@ async function playBlackJack(interaction, user, bet) {
         embeds: [new EmbedBuilder()
             .setTitle(`${user.username}'s Blackjack Game`)
             .addFields(
-                { name: `Bet Amount ${bet}`, value: `` },
+                { name: `Bet Amount: ${bet}`, value: `` },
                 { name: ``, value: `Drawing...` })],
         components: []
     });
@@ -179,8 +180,8 @@ async function playBlackJack(interaction, user, bet) {
         embeds: [new EmbedBuilder()
             .setTitle(`${user.username}'s Blackjack Game`)
             .addFields(
-                { name: `Bet Amount ${bet}`, value: `` },
-                { name: `Jeffy`, value: `Cards: ${jeffCards}\nSum: ${jeffySum}` },
+                { name: `Bet Amount: ${bet}`, value: `` },
+                { name: `Jeffy`, value: `Cards: ${jeffCards[0]},??\nSum: ${startNum}` },
                 { name: `${user.username}`, value: `Cards: ${userCards}\nSum: ${userSum}` })],
         components: []
     });
@@ -215,7 +216,6 @@ async function playBlackJack(interaction, user, bet) {
     }
 
     //starting deck show
-    let startNum = sum(jeffCards.slice(0, 1))
     const startEmbed = () =>
         new EmbedBuilder()
             .setTitle(`${user.username}'s Blackjack Game`)
@@ -333,6 +333,7 @@ async function playBlackJack(interaction, user, bet) {
                         embeds: [Embeds()],
                         components: []
                     });
+                    collector.stop('end');
                 }
                 bool = false;
                 return;
@@ -403,6 +404,10 @@ async function playBlackJack(interaction, user, bet) {
         }
 
         if (i.customId === 'double') {
+            if (user.energy < bet * 2) {
+                bool = false;
+                return i.followUp({ content: 'You do not have enough energy to double down.', flags: MessageFlags.Ephemeral });
+            }
             bet = bet * 2;
             result = drawCard(deck, userCards);
             deck = result.deck;
@@ -468,6 +473,7 @@ async function playBlackJack(interaction, user, bet) {
                         embeds: [Embeds()],
                         components: []
                     });
+                    collector.stop('end');
                 }
                 bool = false;
                 return;
@@ -572,8 +578,8 @@ export async function execute(interaction) {
     }
     else {
         const user = await getUserAndUpdate(tbl, id, name, false);
-        if (interaction.options.getInteger('bet') < 10) return interaction.reply({ content: 'You must bet at least 10 energy.', MessageFlags: MessageFlags.Ephemeral });
-        if (interaction.options.getInteger('bet') > user.energy) return interaction.reply({ content: 'You cannot bet more energy than you have.', MessageFlags: MessageFlags.Ephemeral });
+        if (interaction.options.getInteger('bet') < 10) return interaction.reply({ content: 'You must bet at least 10 energy.', flags: MessageFlags.Ephemeral });
+        if (interaction.options.getInteger('bet') > user.energy) return interaction.reply({ content: 'You cannot bet more energy than you have.', flags: MessageFlags.Ephemeral });
         console.log(`${user.username} (${user.userid}) played blackjack with a bet of ${interaction.options.getInteger('bet')} energy.`);
         await playBlackJack(interaction, user, interaction.options.getInteger('bet'));
     }

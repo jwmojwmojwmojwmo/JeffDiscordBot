@@ -134,7 +134,7 @@ async function deleteInfo(user, i, interaction, collectorFilter) {
         const response = await i.message.awaitMessageComponent({ filter: collectorFilter, time: 30000 }); // give 30 sec for response
         if (response.customId === 'yes') {
             console.log(`${JSON.stringify(user.toJSON(), null, 2)} deleted their account.`);
-            client.napping.delete(interaction.user.id);
+            interaction.client.napping.delete(interaction.user.id);
             await interaction.client.db.inventory.destroy({
                 where: { userid: user.userid }
             })
@@ -151,7 +151,8 @@ async function deleteInfo(user, i, interaction, collectorFilter) {
             await response.update({ content: `Account deletion cancelled by user.`, components: [], flags: MessageFlags.Ephemeral });
         }
     }
-    catch {
+    catch (error) {
+        console.log(error);
         return i.editReply({ content: 'This interaction has timed out.', components: [], flags: MessageFlags.Ephemeral });
     }
 }

@@ -175,7 +175,7 @@ async function tameJeffGameplay(interaction, response) {
     });
     collector.on('collect', async i => {
         if (isGameOver) return;
-        await i.deferUpdate();
+        await i.update({ components: [disabledBattleRow] });
         if (i.customId === 'wrestle') {
             if (user.energy < 50) return i.followUp({ content: `You don't have enough energy for this! (Required: 50 energy)`, flags: MessageFlags.Ephemeral });
             decAmount = Math.round(15 * (1 - jeffResistance));
@@ -232,8 +232,16 @@ async function tameJeffGameplay(interaction, response) {
                 await setTimeout(2000);
             }
         }
+        if (i.customId === 'flee') {
+            await i.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [disabledBattleRow] });
+            const fleed = await fleeConfirm(i, interaction);
+            if (fleed) {
+                return collector.stop("flee");
+            } else {
+                return i.editReply({ content: generateMessage("Your Turn:", "...", jeffWildness, user.energy, maxEnergy, user.reputation), components: [battleRow] });
+            }
+        }
         await setTimeout(2000);
-        if (i.customId === 'flee') return collector.stop("flee");
         if (jeffWildness <= 0) return collector.stop("tame");
         await user.save();
         survived = await executeJeffTurn(i);
@@ -342,7 +350,7 @@ async function jeffFightInventory(i, interaction) {
     const invMsg = await i.followUp({ components: [container], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral, withResponse: true });
     const collectorFilter = i => i.user.id === interaction.user.id;
     try {
-        const response = await invMsg.awaitMessageComponent({ filter: collectorFilter, time: 30000 });
+        const response = await invMsg.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
         if (response.customId.startsWith("use_")) {
             const item_id = response.customId.split("_")[1];
             const itemRow = await interaction.client.db.inventory.findOne({
@@ -369,6 +377,25 @@ async function jeffFightInventory(i, interaction) {
         //await i.webhook.editMessage(invMsg.id, { components: [new ContainerBuilder().addTextDisplayComponents((text) => text.setContent("You took too long! The shark got impatient and attacked you!"))], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral });
         await i.webhook.deleteMessage(invMsg.id).catch(console.error);
         return "CHEVY";
+    }
+}
+
+// helper function for flee confirmation
+async function fleeConfirm(i, interaction) {
+    const response = await i.followUp({
+        content: "Are you sure you want to flee? This will end the fight immediately and the shark will get away.",
+        components: [askRow],
+        flags: MessageFlags.Ephemeral
+    });
+    const collectorFilter = i => i.user.id === interaction.user.id;
+    try {
+        const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 30_000 });
+        await confirmation.deferUpdate();
+        await i.webhook.deleteMessage(response.id).catch(console.error);
+        return (confirmation.customId === 'yes');
+    } catch (error) {
+        await i.webhook.deleteMessage(response.id).catch(console.error);
+        return false;
     }
 }
 
