@@ -13,13 +13,22 @@ const BuyMeACoffeeButton = new ButtonBuilder()
     .setURL('https://buymeacoffee.com/jwmo')
     .setLabel('Buy Me A Coffee')
     .setStyle(ButtonStyle.Link);
-const linkRow = new ActionRowBuilder().addComponents(GitHubButton, TopGGButton, BuyMeACoffeeButton); // the row of buttons below the text
+const PatreonButton = new ButtonBuilder()
+    .setURL('https://www.patreon.com/cw/jwmojwmojwmojwmo')
+    .setLabel('Patreon')
+    .setStyle(ButtonStyle.Link);
+const termsOfServiceButton = new ButtonBuilder()
+    .setURL('https://jwmo-website.vercel.app/jefftos')
+    .setLabel('Terms of Service & Privacy Policy')
+    .setStyle(ButtonStyle.Link);
+const linkRow = new ActionRowBuilder().addComponents(GitHubButton, TopGGButton, PatreonButton, BuyMeACoffeeButton, termsOfServiceButton); // the row of buttons below the text
 
 const aboutEmbed = new EmbedBuilder()
-    .setTitle('Jeff Discord Bot v0.9 BETA')
+    .setTitle('Jeff Discord Bot v0.90')
     .setURL('https://luwu.pythonanywhere.com/')
     .setAuthor({ name: 'jwmo', iconURL: 'https://i.imgur.com/e0xvSJ9.png', url: 'https://luwu.pythonanywhere.com/' })
-    .setDescription('Welcome to Jeff Bot Beta! Anything may break at any time, use with caution! Any concerns should be submitted with /donatesuggestions. Ensure DMs are open in case we need to follow up with you.')
+    .setDescription('Best Jeff bot ever! Jeff\'s the cutest and he deserves all the bots yes yes nom nom. Use the Wiki on the linked GitHub page for any questions, or just play around with Jeff hehe. ' +
+        'Please use the linked GitHub for issue reporting, feature suggestions, and contact information too! \n Please note the bot is in beta and I\'m a broke college student, so the bot being up all the time is not guaranteed. Consider donating or voting for the bot on Top.gg so that I can be more motivated to find an actual way to host the bot and actually fix my code and figure out why Top.gg api hates me. (jk I\'m too addicted to Marvel Rivals either way)')
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
     .addFields(
         // { name: '\u200B', value: '\u200B', inline: true }, //empty field

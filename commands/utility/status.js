@@ -10,15 +10,16 @@ const Status = Object.freeze({
 });
 
 const now = Math.floor(Date.now() / 1000);
-const timea = "<t:1777186400:f>"; 
+const timea = "<t:1777617900:f>";
 const statusEmbed = new EmbedBuilder()
-    .setTitle('Jeff Discord Bot Status')    
+    .setTitle('Jeff Discord Bot Status')
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
     .addFields(
         { name: `Status: ${Status.ONLINEUPDATE}`, value: `\nPlanned to go offline for 12 hours starting at ${timea}` },
-        { name: `Known issues:`, value: `Voting was recently changed, and /skillcheck is new and experimental! Please report any issues.` },
-        { name: 'Latest update: v0.85', value: 'Changes: HI GUYS I\'M BACK! Sorry for the break. Anyways the recent update was pretty small, but I learned a lot about webhooks and stuff. Basically the voting system should work a lot better. Stay tuned for actual big updates in the near future! \nAdded /quiz! Earn energy by answering trivia questions about Jeff with various difficulties. If you have any suggestions for new quiz questions, feel free to send it using /donatesuggestions!' },
-        { name: 'Comments:', value: '\nWe recently reached 75 servers added! Thank you for all the support and sorry for the update delays (but I promise the next update is huge)\n\nBy the way, I can now officially say the new update is 95% complete, and will release in the next 2 weeks!' },
+        { name: `Known issues:`, value: `Many new commands were recently added! Please /donatesuggestions to report any issues or give feedback.` },
+        { name: 'Latest update: v0.90', value: 'We are so back GUYS! Welcome to v0.9, the biggest update yet. We have fishing, pets, and more! Also blackjack is finally here yayy!!' },
+        { name: 'New commands:', value: '/fish, /inventory, /item, /nap, /rank, /trader, /play blackjack, /pet view, /pet feed, /pet pet, /pet play, /pet disown, /use, /help' },
+        { name: 'Comments:', value: '\nJeff bot is now verified! Thank you for all the support. Again, any and all feedback is appreciated through /donatesuggestions.' },
         { name: '\u200B', value: `Updated at <t:${now}:f>` },
     );
 

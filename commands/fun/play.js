@@ -435,7 +435,7 @@ async function playBlackJack(interaction, user, bet) {
                     jeffySum = sum(jeffCards);
                     await i.editReply({
                         embeds: [buildEmbed()],
-                        components: [alwaysActions]
+                        components: []
                     });
                     await setTimeout(time);
                 }

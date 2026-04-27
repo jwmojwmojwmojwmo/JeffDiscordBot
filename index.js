@@ -114,8 +114,8 @@ client.on(Events.InteractionCreate, async interaction => {
 
         const now = Date.now();
         const timestamps = cooldowns.get(command.data.name);
-        // const defaultCooldownDuration = 3;
-        const cooldownAmount = (command.cooldown) * 1000;
+        const defaultCooldownDuration = 1;
+        const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
 
         if (timestamps.has(interaction.user.id)) {
             const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
@@ -152,10 +152,10 @@ client.on(Events.InteractionCreate, async interaction => {
                 user.energy += napEnergy;
                 await user.save();
                 client.napping.delete(interaction.user.id);
-                await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${(time / (1000 * 3600)).toFixed(2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!`: `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
+                await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${(time / (1000 * 3600)).toFixed(2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!` : `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
                 console.log(`${interaction.user.username} (${interaction.user.id}) woke up Jeff after ${(time / (1000 * 3600)).toFixed(2)} hours to get ${napEnergy} energy.`);
             }
-            if (interaction.guild) { 
+            if (interaction.guild) {
                 console.log(`Commands were run in ${interaction.guild.name}.`);
             } else {
                 console.log(`Commands were run in DMs.`);
@@ -177,7 +177,7 @@ client.on(Events.InteractionCreate, async interaction => {
 // !dm [userID] [y/n/e] [msg]
 // !info [userID] [info]
 client.on(Events.MessageCreate, async message => {
-    if (message.channel.id == "1472856269059784848" && message.content.startsWith("BETATECHNO")) { // surely it's ok if this is public
+    if (message.channel.id == "1472856269059784848" && message.content.startsWith("TECHNO")) { // surely it's ok if this is public
         await handleVote(message);
     } else if (message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
         // !dm control
@@ -193,6 +193,10 @@ client.on(Events.MessageCreate, async message => {
             await message.reply(JSON.stringify(user, null, 1));
         }
     }
+});
+
+AutoPoster(topggAPIKey, client).on("posted", (stats) => {
+    console.log(`[AutoPoster] Posted stats to Top.gg (${stats.serverCount} servers)!`);
 });
 
 (async () => {
@@ -255,16 +259,20 @@ async function handleVote(message) {
     const user_id = message.content.split(': ')[1].split(';')[0];
     const user_name = message.content.split('UNBELIEVABLE: ')[1].split(';')[0]; // random ahh "obfuscation" so now no one knows how the voting system works ha
     const user = await jeff.findByPk(user_id);
-    if (user) {
-        let reward = 25;
-        if (await TopggAPI.isWeekend()) {
-            reward = reward * 2;
+    try {
+        if (user) {
+            let reward = 25;
+            if (await TopggAPI.isWeekend()) {
+                reward = reward * 2;
+            }
+            user.energy += reward;
+            await user.save();
+            const user_discord = await client.users.fetch(user_id);
+            await user_discord.send(`Thanks for voting! +${reward} energy! ${reward === 25 ? '' : ' (Rewards doubled because it is a weekend!)'}`);
+            console.log(`${user_name} (${user_id}) voted and claimed rewards.`);
         }
-        user.energy += reward;
-        await user.save();
-        const user_discord = await client.users.fetch(user_id);
-        await user_discord.send(`Thanks for voting! +${reward} energy! ${reward === 25 ? '' : ' (Rewards doubled because it is a weekend!)'}`);
-        console.log(`${user_name} (${user_id}) voted and claimed rewards.`);
+    } catch (err) {
+        console.error("Handle Vote Error:", err);
     }
 }
 
