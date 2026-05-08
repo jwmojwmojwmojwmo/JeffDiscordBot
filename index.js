@@ -41,10 +41,8 @@ const pets = petsFactory(sequelize, Sequelize.DataTypes);
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.DirectMessages, // allow DMs
-        GatewayIntentBits.MessageContent, // allow reading DM content
     ],
     partials: [Partials.Channel], // needed so DM channels work
 });
