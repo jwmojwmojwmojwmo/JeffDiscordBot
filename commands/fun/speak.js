@@ -189,7 +189,7 @@ export async function execute(interaction) {
     let jeffReply;
     do {
         try {
-            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(6000)]); // awaits AI message, times out and throws err after 6s
+            jeffReply = await Promise.race([fullAIMsg(interaction.options.getString('phrase')), timeout(8000)]); // awaits AI message, times out and throws err after 6s
         }
         catch (err) {
             jeffReply = fullMsg(); // fallback to non-ai method of getting reply

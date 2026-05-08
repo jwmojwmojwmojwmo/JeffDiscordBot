@@ -23,10 +23,10 @@ const fishingLootTables = Object.freeze({
     ],
     // Beginner Fishing Rod
     "11CO002": [
-        { itemid: "01CO001", weight: 35 },    // Common Fish
+        { itemid: "01CO001", weight: 30 },    // Common Fish
         { itemid: "01RA002", weight: 30 },     // Rare Fish
         { itemid: "02CO001", weight: 15 },    // Driftwood
-        { itemid: "02RA002", weight: 14 },     // Scrap Metal
+        { itemid: "02RA002", weight: 19 },     // Scrap Metal
         { itemid: "03CO001", weight: 5 },    // seaweed
         { itemid: "09LE001", weight: 1 }      // Unknown Fish (Jeff)
     ],
@@ -87,7 +87,6 @@ export async function execute(interaction) {
     }
     await interaction.reply(`You spent 5 energy and started fishing with your ${rod.name}...\n\n(Tip: Run /use to equip another fishing rod in your inventory!)`);
     let roll = Math.random() * 100;
-    console.log("Roll:", roll, "Rod:", rod.itemid);
     const lootTable = fishingLootTables[rod.itemid];
     let caughtItem = lootTable[lootTable.length - 1].itemid;
     for (const drop of lootTable) {

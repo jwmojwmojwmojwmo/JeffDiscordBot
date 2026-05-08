@@ -1,10 +1,12 @@
 import { readdirSync } from 'node:fs';
+import fs from 'node:fs';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-import { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType } from 'discord.js';
+import { Client, Collection, Events, GatewayIntentBits, MessageFlags, Partials, ActivityType, ChannelType } from 'discord.js';
 import config from './helpers/config.json' with { type: "json" };
 const { token } = config;
 const { ownerId } = config;
@@ -51,6 +53,7 @@ const wakeUpCommands = ["bubble", "daily", "fish", "gift", "trader", "spit", "us
 
 export default client;
 
+client.version = "0.90";
 client.commands = new Collection();
 client.cooldowns = new Collection();
 client.itemCache = null; // when database synced this will become a local cache for the items db
@@ -59,7 +62,14 @@ client.wakeCommands = wakeUpCommands;
 client.db = { jeff, rivalsData, items, inventory, equipment, pets };
 const foldersPath = join(__dirname, 'commands');
 const commandFolders = readdirSync(foldersPath);
-
+const trackerPath = `./logs/seen_update${client.version}.json`;
+let seenUpdateMsg = new Set();
+if (fs.existsSync(trackerPath)) {
+    seenUpdateMsg = new Set(JSON.parse(fs.readFileSync(trackerPath, 'utf8')));
+} else {
+    fs.writeFileSync(trackerPath, JSON.stringify([]));
+}
+console.log(`Loaded update message tracker with ${seenUpdateMsg.size} entries.`);
 
 
 // Runs on initialization, grabs all commands in commands folder
@@ -82,7 +92,7 @@ for (const folder of commandFolders) {
 
 // Sets ready state for Jeff Bot
 client.once(Events.ClientReady, readyClient => {
-    client.user.setActivity('Waiting for /jeff', { type: ActivityType.Custom });
+    client.user.setActivity(`Now updated to v${client.version}! Check /status for more info.`, { type: ActivityType.Custom });
     scheduleDailyReminders(client, client.db.jeff);
     // TODO: move all init before this log
     console.log(`Ready! Logged in as ${readyClient.user.tag} at ${new Date().toLocaleTimeString()}`);
@@ -155,6 +165,15 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${(time / (1000 * 3600)).toFixed(2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!` : `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
                 console.log(`${interaction.user.username} (${interaction.user.id}) woke up Jeff after ${(time / (1000 * 3600)).toFixed(2)} hours to get ${napEnergy} energy.`);
             }
+            if (!seenUpdateMsg.has(interaction.user.id)) {
+                try {
+                    await interaction.followUp({ content: `Hey there! Just a heads up that Jeff Bot was recently updated to v${interaction.client.version}, our biggest update yet! This update includes fishing, pets, and more! Check out /status for more info on the update and new features. (You will only see this message once)`, flags: MessageFlags.Ephemeral });
+                    seenUpdateMsg.add(interaction.user.id);
+                    writeFile(trackerPath, JSON.stringify(Array.from(seenUpdateMsg)));
+                } catch (err) {
+                    console.error(`Failed to send update message/write file: ${interaction.user.id}`);
+                }
+            }
             if (interaction.guild) {
                 console.log(`Commands were run in ${interaction.guild.name}.`);
             } else {
@@ -179,7 +198,7 @@ client.on(Events.InteractionCreate, async interaction => {
 client.on(Events.MessageCreate, async message => {
     if (message.channel.id == "1472856269059784848" && message.content.startsWith("TECHNO")) { // surely it's ok if this is public
         await handleVote(message);
-    } else if (message.author.id === ownerId && message.channel.type === 1) { // channel type 1 = DM channel
+    } else if (message.author.id === ownerId && message.channel.type === ChannelType.DM) {
         // !dm control
         if (message.content.startsWith('!dm')) {
             await handleJeffDonation(message);
