@@ -163,19 +163,19 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.followUp({ content: `You woke Jeff up from his nap! He slept for around ${(time / (1000 * 3600)).toFixed(2)} hours. ${(napEnergy === 0) ? `You didn't earn any energy...let Jeff sleep longer!` : `You earned ${napEnergy} energy for letting him rest!`}`, flags: MessageFlags.Ephemeral });
                 console.log(`${interaction.user.username} (${interaction.user.id}) woke up Jeff after ${(time / (1000 * 3600)).toFixed(2)} hours to get ${napEnergy} energy.`);
             }
-            if (!seenUpdateMsg.has(interaction.user.id)) {
-                try {
-                    await interaction.followUp({ content: `Hey there! Just a heads up that Jeff Bot was recently updated to v${interaction.client.version}, our biggest update yet! This update includes fishing, pets, and more! Check out /status for more info on the update and new features. (You will only see this message once)`, flags: MessageFlags.Ephemeral });
-                    seenUpdateMsg.add(interaction.user.id);
-                    writeFile(trackerPath, JSON.stringify(Array.from(seenUpdateMsg)));
-                } catch (err) {
-                    console.error(`Failed to send update message/write file: ${interaction.user.id}`);
-                }
-            }
+            // if (!seenUpdateMsg.has(interaction.user.id)) {
+            //     try {
+            //         await interaction.followUp({ content: `Hey there! Just a heads up that Jeff Bot was recently updated to v${interaction.client.version}, our biggest update yet! This update includes fishing, pets, and more! Check out /status for more info on the update and new features. (You will only see this message once)`, flags: MessageFlags.Ephemeral });
+            //         seenUpdateMsg.add(interaction.user.id);
+            //         writeFile(trackerPath, JSON.stringify(Array.from(seenUpdateMsg)));
+            //     } catch (err) {
+            //         console.error(`Failed to send update message/write file: ${interaction.user.id}`);
+            //     }
+            // }
             if (interaction.guild) {
-                console.log(`Commands were run in ${interaction.guild.name}.`);
+                console.log(`/${interaction.commandName} was run in ${interaction.guild.name}.`);
             } else {
-                console.log(`Commands were run in DMs.`);
+                console.log(`/${interaction.commandName} was run in DMs.`);
             }
         }
         catch (error) {

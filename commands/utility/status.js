@@ -10,7 +10,7 @@ const Status = Object.freeze({
 });
 
 const now = Math.floor(Date.now() / 1000);
-const timea = "<t:1778309100:f>";
+const timea = "<t:1780728300:f>";
 const statusEmbed = new EmbedBuilder()
     .setTitle('Jeff Discord Bot Status')
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')

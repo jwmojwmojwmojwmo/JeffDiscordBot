@@ -88,6 +88,7 @@ export async function execute(interaction) {
     await interaction.reply(`You spent 5 energy and started fishing with your ${rod.name}...\n\n(Tip: Run /use to equip another fishing rod in your inventory!)`);
     let roll = Math.random() * 100;
     const lootTable = fishingLootTables[rod.itemid];
+    console.log(`Roll: ${roll}, Rod: ${rod.name}`);
     let caughtItem = lootTable[lootTable.length - 1].itemid;
     for (const drop of lootTable) {
         if (roll <= drop.weight) {
