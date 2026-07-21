@@ -3,6 +3,7 @@ import { setTimeout } from 'node:timers/promises';
 import { addAmountToInventory, updatePetStats, getUserAndUpdate, removeAmountFromInventory, getPetLevel } from '../../helpers/utils.js';
 
 const energyToFish = 5;
+// WORST THINGS MUST BE FIRST
 const fishingLootTables = Object.freeze({
     "HAND": [
         { itemid: "nothing", weight: 15 },    // 1chance to catch nothing
@@ -68,8 +69,8 @@ export const data = new SlashCommandBuilder()
     .setName('fish')
     .setDescription(`Go fishing for some goodies (costs ${energyToFish} energy)!`)
 export async function execute(interaction) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
-    const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false, true);
+    const pet = user.pet;
     if (user.energy < energyToFish) {
         await user.save();
         interaction.client.cooldowns.get('fish').delete(interaction.user.id); //reset cooldown
@@ -87,6 +88,7 @@ export async function execute(interaction) {
     }
     await interaction.reply(`You spent 5 energy and started fishing with your ${rod.name}...\n\n(Tip: Run /use to equip another fishing rod in your inventory!)`);
     let roll = Math.random() * 100;
+    const sendTip = roll < 10 ? true : false;
     const lootTable = fishingLootTables[rod.itemid];
     console.log(`Roll: ${roll}, Rod: ${rod.name}`);
     let caughtItem = lootTable[lootTable.length - 1].itemid;
@@ -141,5 +143,8 @@ export async function execute(interaction) {
         await addAmountToInventory(interaction.client.db.inventory, interaction.user.id, jeffCaughtItem, 1);
         await interaction.followUp(`Your pet followed you and went fishing with you! They caught 1 ${jeffCaughtItem.name} ${jeffCaughtItem.emoji}! (-10 hunger) (+25 xp)`);
         console.log(`${interaction.user.displayName} (${interaction.user.id})'s pet got ${jeffCaughtItem.name}.`);
+    }
+    if (!pet && sendTip && Math.random() < 0.5) {
+        await interaction.followUp({content: `Unhappy with your catches? Rumor has it that if you manage to catch and tame a mysterious companion, they'll join you and fish up extra, exclusive loot!`, flags: MessageFlags.Ephemeral});
     }
 }

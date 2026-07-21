@@ -10,6 +10,7 @@ let gallery = new MediaGalleryBuilder()
 
 getFile(); // randomise before first call
 
+// consider using private channel with images instead of uploading entire file
 async function getFile() {
     let fileName = '';
     const files = await readdir(assetsDir);

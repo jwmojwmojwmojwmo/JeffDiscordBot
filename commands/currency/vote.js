@@ -19,7 +19,7 @@ export async function execute(interaction) {
     const name = interaction.member?.displayName || interaction.user.displayName;
     const id = interaction.user.id;
     await interaction.reply({ content: `Fetching vote information...`, flags: MessageFlags.Ephemeral });
-    const user = await getUserAndUpdate(interaction.client.db.jeff, id, name, false);
+    const user = await getUserAndUpdate(interaction.client.db, id, name, false);
     let voted = false;
     try {
         voted = await TopggAPI.hasVoted(id);

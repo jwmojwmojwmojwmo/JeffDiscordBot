@@ -24,7 +24,7 @@ export async function execute(interaction, pet) {
     try {
         const response = await msg.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 30000 });
         if ((response.customId === 'yes')) {
-            const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
+            const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
             await pet.destroy();
             user.reputation -= 15;
             await user.save();

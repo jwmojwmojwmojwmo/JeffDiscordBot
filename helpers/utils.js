@@ -4,14 +4,26 @@ import item_list from "./itemlist.js";
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
 /**
  * Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
- * @param {import('sequelize').ModelStatic} tbl - database
+ * @param {Object} db - database
  * @param {import('discord.js').Snowflake} user_id - userid
  * @param {String} user_name - username
  * @param {boolean} update - if update === false, the callee must manually do user.save(), or the updated username will not persist. There are NO CHECKS for this. Note that if update === true and an unneccesary .save() occurs, it is a performance loss
+ * @param {boolean} getPet - if true, also fetch the user's pet and include it in the returned object
  * @returns {Promise<object>} - user object with updated username. The username has not been saved to the database unless update === true
  */
-export async function getUserAndUpdate(tbl, user_id, user_name, update) {
-    let user = await tbl.findByPk(user_id);
+export async function getUserAndUpdate(db, user_id, user_name, update = true, getPet = false) {
+    let user;
+    if (getPet) {
+        user = await db.jeff.findOne({
+            where: { userid: user_id },
+            include: [{
+                model: db.pets,
+                required: false
+            }]
+        });
+    } else {
+        user = await db.jeff.findByPk(user_id);
+    }
     if (user) {
         user.username = user_name;
         if (update) {
@@ -19,7 +31,7 @@ export async function getUserAndUpdate(tbl, user_id, user_name, update) {
         }
     }
     else {
-        user = await tbl.create({
+        user = await db.jeff.create({
             userid: user_id,
             username: user_name,
         });
@@ -32,14 +44,19 @@ export async function getUserAndUpdate(tbl, user_id, user_name, update) {
 // given a time, return how much energy the user gains from letting Jeff sleep, starting from that time.
 export function getNapEnergy(napStartTime) {
     const minutesSlept = (Date.now() - napStartTime) / (1000 * 60);
+    if (minutesSlept < 30) return 0;
 
     // S-Curve: Max 150, Midpoint 300, Steepness 0.01
     let energyGained = Math.floor(150 / (1 + Math.exp(-0.01 * (minutesSlept - 300))));
-    if (minutesSlept < 30) {
-        energyGained = 0;
-    }
-    // shouldn't need but just in case
     energyGained = Math.min(150, Math.max(0, energyGained));
+
+    // additional compensation past 24 hours
+    if (minutesSlept > 1440) {
+        const extraMinutes = minutesSlept - 1440;
+        // Square root curve
+        const extraEnergy = Math.floor(2.5 * Math.sqrt(extraMinutes)); 
+        energyGained += extraEnergy;
+    }
     return energyGained;
 }
 
@@ -115,7 +132,6 @@ export function getPetLevel(totalXp) {
     return level;
 }
 
-// TODO: lower xp if hunger + affection 0 for too long
 export async function updatePetStats(pet, currentLevel) {
     const currentTime = Date.now();
     // use minutes for accuracy

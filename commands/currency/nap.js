@@ -15,7 +15,7 @@ export async function execute(interaction) {
             flags: MessageFlags.Ephemeral
         });
     } else {
-        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
+        const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
         user.napping = now;
         await user.save();
         interaction.client.napping.set(interaction.user.id, now);

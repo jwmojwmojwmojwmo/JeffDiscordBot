@@ -6,7 +6,7 @@ export const data = new SlashCommandBuilder()
     .setName('rank')
     .setDescription("Check your rank")
 export async function execute(interaction) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
     //Calculate their rank number by counting how many people have MORE reputation than them
     let rank = await interaction.client.db.jeff.count({
         where: {

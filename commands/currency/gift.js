@@ -56,7 +56,7 @@ export async function execute(interaction) {
     }
     const victim_name = interaction.options.getMember('user').displayName;
     const culprit_name = interaction.member.displayName;
-    const db = interaction.client.db.jeff;
+    const db = interaction.client.db;
     const victim = await getUserAndUpdate(db, victim_id, victim_name, false);
     const culprit = await getUserAndUpdate(db, interaction.user.id, culprit_name, false);
     await gift(interaction, victim, culprit, amount);

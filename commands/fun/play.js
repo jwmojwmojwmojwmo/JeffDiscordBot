@@ -570,7 +570,7 @@ export const data = new SlashCommandBuilder()
             .setDescription('Energy you would like to bet')
             .setRequired(true)));
 export async function execute(interaction) {
-    const tbl = interaction.client.db.jeff;
+    const tbl = interaction.client.db;
     const name = interaction.member?.displayName || interaction.user.username;
     const id = interaction.user.id;
     if (interaction.options.getSubcommand() === 'highlow') {

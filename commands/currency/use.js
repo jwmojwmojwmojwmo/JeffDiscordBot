@@ -60,7 +60,7 @@ async function equipItem(tbl, item, user_id) {
 }
 
 async function consumeItem(interaction, item, itemRow) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     user[item.effect.stat] += item.effect.amount;
     await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
     await user.save();
@@ -117,7 +117,7 @@ async function tameJeff(interaction, itemRow) {
     } catch (error) {
         console.log(error);
         await removeAmountFromInventory(interaction.client.db.equipment, itemRow, 1);
-        const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
+        const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
         const lostEnergy = Math.min(user.energy, Math.max(70, Math.round(Math.random() * 100)));
         user.energy -= lostEnergy;
         await user.save();
@@ -128,7 +128,7 @@ async function tameJeff(interaction, itemRow) {
 // i'm gonna shoot myself ts pmoo
 async function tameJeffGameplay(interaction, response) {
     let isGameOver = false;
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
     const maxEnergy = user.energy;
     let jeffWildness = 250;
     let jeffUlt = 0;

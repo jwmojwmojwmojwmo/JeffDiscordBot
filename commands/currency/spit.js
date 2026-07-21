@@ -18,7 +18,7 @@ export async function execute(interaction) {
     if (interaction.options.getUser('user').id === interaction.user.id) {
         return interaction.reply({ content: 'You can\'t spit on yourself!', flags: MessageFlags.Ephemeral });
     }
-    const db = interaction.client.db.jeff;
+    const db = interaction.client.db;
     const victim_name = interaction.options.getMember('user').displayName;
     const culprit_name = interaction.member.displayName;
     const victim = await getUserAndUpdate(db, interaction.options.getUser('user').id, victim_name, false);
@@ -33,7 +33,7 @@ export async function execute(interaction) {
         victim.reputation -= 1;
         await victim.save();
         await culprit.save();
-        const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
+        const pet = culprit.pet;
         let pet_spit = 0;
         await interaction.reply(escapeMarkdown(`${culprit_name} spit on ${victim_name}! ${culprit_name} has used ${energyToSpit} energy, and ${victim_name} lost 1 reputation!`));
         console.log(`${victim.username} (${victim.userid}) was spit on by ${culprit.username} (${culprit.userid})`);
@@ -54,6 +54,8 @@ export async function execute(interaction) {
             await interaction.followUp(escapeMarkdown(`${culprit_name}'s pet, ${pet.name}, helped supercharge Jeff's spit! They made ${victim_name} lose an additional ${pet_spit} reputation! (${pet.name} got -10 hunger, +${affection} affection, +25 xp)`));
             console.log(`${victim.username}'s pet helped spit an additional ${pet_spit} times.`);
         }
-
+        if (!pet && Math.random() < 0.1) {
+            await interaction.followUp({content: `Tip: Want to ruin someone's reputation even faster? Rumor has it a tamed pet will supercharge your spits to drain extra rep!`, flags: MessageFlags.Ephemeral});
+        }
     }
 }

@@ -18,11 +18,11 @@ export async function execute(interaction) {
     if (interaction.options.getUser('user').id === interaction.user.id) {
         return interaction.reply({ content: 'You can\'t bubble yourself!', flags: MessageFlags.Ephemeral });
     }
-    const db = interaction.client.db.jeff;
+    const db = interaction.client.db;
     const victim_name = interaction.options.getMember('user').displayName;
     const culprit_name = interaction.member.displayName;
     const victim = await getUserAndUpdate(db, interaction.options.getUser('user').id, victim_name, false);
-    const culprit = await getUserAndUpdate(db, interaction.user.id, culprit_name, false);
+    const culprit = await getUserAndUpdate(db, interaction.user.id, culprit_name, false, true);
     // bubbling logic
     if (culprit.energy < energytoBubble) {
         await victim.save();
@@ -35,8 +35,8 @@ export async function execute(interaction) {
         await culprit.save();
         console.log(`${victim.username} (${victim.userid}) was bubbled by ${culprit.username} (${culprit.userid})`);
         await interaction.reply(escapeMarkdown(`${culprit_name} bubbled ${victim_name}! ${culprit_name} has used ${energytoBubble} energy, and ${victim_name} has gained 1 reputation!`));
-        const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
         let pet_bubble = 0;
+        const pet = culprit.pet;
         if (pet) {
             const level = getPetLevel(pet.xp);
             await updatePetStats(pet, level);

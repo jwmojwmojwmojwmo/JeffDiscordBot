@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags, escapeMarkdown, bold, italic, ContainerBuilder, ButtonStyle, heading } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, escapeMarkdown, bold, italic, ContainerBuilder, ButtonStyle, heading, subtext } from 'discord.js';
 import { getUserAndUpdate } from '../../helpers/utils.js';
 
 const timeoutContainer = new ContainerBuilder()
@@ -25,7 +25,7 @@ export async function execute(interaction) {
     } else {
         user_name = interaction.options.getMember('user')?.displayName || interaction.member.displayName;
     }
-    const user = await getUserAndUpdate(interaction.client.db.jeff, user_id, user_name, true);
+    const user = await getUserAndUpdate(interaction.client.db, user_id, user_name, true);
     const userinv = await interaction.client.db.inventory.findAll({
         where: { userid: user_id }
     });
@@ -39,6 +39,8 @@ export async function execute(interaction) {
     for (const item of userinv) {
         container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(interaction.client.itemCache, item, user)));
     }
+    container.addSeparatorComponents((separator) => separator);
+    container.addTextDisplayComponents((text) => text.setContent(subtext(`Tip: Use /item to get detailed information about any item!`)));
     await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     console.log(`${user_name}'s inventory was checked.`)
 }

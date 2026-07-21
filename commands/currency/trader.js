@@ -62,7 +62,7 @@ export const data = new SlashCommandBuilder()
     .setName('trader')
     .setDescription(`Check the trader to trade items with!`);
 export async function execute(interaction) {
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
     let page = 1;
     const allItems = interaction.client.itemCache;
     const shopItems = allItems.filter(i => i.cost !== null);

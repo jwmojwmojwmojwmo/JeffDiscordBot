@@ -1,12 +1,12 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
 import { getPetLevel, updatePetStats, getUserAndUpdate } from '../../helpers/utils.js';
 const killMsg = [
-	' got gobbled by Jeff. Chomp chomp! NOM NOM!',
-	' was just swallowed by Jeff whole. Slurp slurp!',
-	' is now Jeff’s snack. *nomnomnom*',
-	' was caught by Jeff in his jaws. Crunch crunch!',
-	' vanished... and Jeff’s tummy says thanks! NOMNOM!',
-	' got Jeff’ed. Nomfest initiated!',
+    ' got gobbled by Jeff. Chomp chomp! NOM NOM!',
+    ' was just swallowed by Jeff whole. Slurp slurp!',
+    ' is now Jeff’s snack. *nomnomnom*',
+    ' was caught by Jeff in his jaws. Crunch crunch!',
+    ' vanished... and Jeff’s tummy says thanks! NOMNOM!',
+    ' got Jeff’ed. Nomfest initiated!',
     ' was devoured by a very hungry Jeff. *burp*',
     ' became Jeff’s midnight snack. Munch munch!',
     ' is currently digesting in Jeff’s belly. Gurgle gurgle!',
@@ -30,7 +30,7 @@ export async function execute(interaction) {
     if (victim_id === interaction.user.id) {
         return interaction.reply({ content: 'You can\'t nom yourself!', flags: MessageFlags.Ephemeral });
     }
-    const victim = await getUserAndUpdate(interaction.client.db.jeff, victim_id, victim_name, false);
+    const victim = await getUserAndUpdate(interaction.client.db, victim_id, victim_name, false);
     victim.num_nommed += 1;
     await victim.save();
     console.log(`${victim.username} (${victim.userid}) was nommed.`);
@@ -52,5 +52,8 @@ export async function execute(interaction) {
         victim.num_nommed += nom_pet;
         await victim.save();
         if (nom_pet > 0) await interaction.followUp(escapeMarkdown(`Jeff called over someone's pet, ${pet.name}, who was also hungry! They nommed ${victim_name} an additional ${nom_pet} ${nom_pet > 1 ? 'times' : 'time'}! (${pet.name} got +${hunger} hunger, +${affection} affection)`));
+    }
+    if (!pet && Math.random() < 0.05) {
+        await interaction.followUp({ content: `Tip: A single nom is nice, but a tamed pet will join in and chomp your target multiple times at once! Try fishing for a new friend...`, flags: MessageFlags.Ephemeral });
     }
 }

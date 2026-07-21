@@ -212,9 +212,9 @@ client.on(Events.MessageCreate, async message => {
     }
 });
 
-AutoPoster(topggAPIKey, client).on("posted", (stats) => {
-    console.log(`[AutoPoster] Posted stats to Top.gg (${stats.serverCount} servers)!`);
-});
+// AutoPoster(topggAPIKey, client).on("posted", (stats) => {
+//     console.log(`[AutoPoster] Posted stats to Top.gg (${stats.serverCount} servers)!`);
+// });
 
 (async () => {
     // one user can be in many inventory rows, and one inventory row maps to one user

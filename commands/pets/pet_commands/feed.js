@@ -57,7 +57,7 @@ export async function execute(interaction, pet) {
     const currentTime = Date.now();
     pet.last_fed = currentTime;
     await pet.save();
-    await interaction.reply(`You fed ${escapeMarkdown(pet.name)} a ${item.name}! (+${hunger} hunger) (+${xp} xp) ${(affection > 0) ? `(+${affection} affection)` : ""}`);
+    await interaction.reply({content: `You fed ${escapeMarkdown(pet.name)} a ${item.name}! (+${hunger} hunger) (+${xp} xp) ${(affection > 0) ? `(+${affection} affection)` : ""}`, flags: MessageFlags.Ephemeral });
     if (xpLoss > 0) await interaction.followUp({ content: `Oh no! While you were away, your pet's hunger and affection dropped to 0 for too long, losing ${xpLoss} XP. Spend some time with your buddy!`, flags: MessageFlags.Ephemeral });
     console.log(`${interaction.user.displayName} (${interaction.user.id}) fed their pet with ${item.name}.`);
 }   

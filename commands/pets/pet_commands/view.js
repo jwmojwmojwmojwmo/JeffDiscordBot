@@ -122,14 +122,14 @@ async function changeAvatar(otherI, collectorFilter) {
         });
         const collector = msg.createMessageComponentCollector({
             filter: collectorFilter,
-            time: 240_000,
+            idle: 120_000,
         });
         // simple collector
         collector.on("collect", async i => {
             if (i.customId !== "choose") await i.update({ content: "Loading....", }); // cuz modals SUCK they have to be first greedy bastards
             if (i.customId === "first") {
                 index = 0;
-                currentPage = Math.floor(index / 5) + 1;
+                currentPage = Math.floor(index / 5) + 1; //TODO check if all these currentPages are necessary, might be able to just do it once at the end
             } else if (i.customId === "previous") {
                 index = Math.max(0, index - 5);
             } else if (i.customId === "choose") {
@@ -234,7 +234,7 @@ export async function execute(interaction, pet) {
     const collectorFilter = i => i.user.id === interaction.user.id;
     const collector = msg.createMessageComponentCollector({
         filter: collectorFilter,
-        time: 240_000,
+        idle: 120_000,
     });
     collector.on("collect", async i => {
         if (i.customId === "rename") {

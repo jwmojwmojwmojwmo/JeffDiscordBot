@@ -10,7 +10,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Get your daily!');
 export async function execute(interaction) {
     const name = interaction.member?.displayName || interaction.user.displayName;
-    const user = await getUserAndUpdate(interaction.client.db.jeff, interaction.user.id, name, false);
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, name, false);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (user.last_daily >= today) {
