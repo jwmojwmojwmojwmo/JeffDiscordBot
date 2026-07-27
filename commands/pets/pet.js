@@ -32,7 +32,8 @@ export async function autocomplete(interaction) {
 }
 export async function execute(interaction) {
     const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
-    if (!pet) return interaction.reply({ content: `You don't have a pet yet! But rumor has it if you fish up something unknown and use it, you might just find a feisty companion.`, flags: MessageFlags.Ephemeral });
+    if (!pet) 
+        return interaction.reply({ content: `You don't have a pet yet! But rumor has it if you fish up something unknown and use it, you might just find a feisty companion. They may be able to lend a hand with fishing, strengthen your abilities, and have other secret abilities...`, flags: MessageFlags.Ephemeral });
     const subcommand = interaction.options.getSubcommand();
     await subcommands[subcommand].execute(interaction, pet);
 }

@@ -177,7 +177,10 @@ async function tameJeffGameplay(interaction, response) {
         if (isGameOver) return;
         await i.update({ components: [disabledBattleRow] });
         if (i.customId === 'wrestle') {
-            if (user.energy < 50) return i.followUp({ content: `You don't have enough energy for this! (Required: 50 energy)`, flags: MessageFlags.Ephemeral });
+            if (user.energy < 50) {
+                await i.editReply({ components: [battleRow] });
+                return i.followUp({ content: `You don't have enough energy for this! (Required: 50 energy)`, flags: MessageFlags.Ephemeral });
+            }
             decAmount = Math.round(15 * (1 - jeffResistance));
             user.energy -= 50;
             jeffWildness -= decAmount;
