@@ -35,12 +35,11 @@ async function getRankText(db, user) {
         embedColor = 0x00ff00; // Green
         text = "Trusted to sniff out the good stuff.";
     } else {
-        rankTitle = "🪣 Chum";
         embedColor = 0x808080; // Gray
         text = "Jeff thinks you're alright.";
     }
     return {
-        rankText: `Global Rank: #${rank}\nTitle: ${rankTitle}\n${italic(text)}`,
+        rankText: `Global Rank: #${rank}\nTitle: ${user.title}\n${italic(text)}`,
         embedColour: embedColor
     };
 }

@@ -1,4 +1,5 @@
 import item_list from "./itemlist.js";
+import { escapeMarkdown } from 'discord.js';
 // Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
 // Note that if update === false, the callee must manually do user.save(), or the updated username will not persist. There ane NO CHECKS for this
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
@@ -54,7 +55,7 @@ export function getNapEnergy(napStartTime) {
     if (minutesSlept > 1440) {
         const extraMinutes = minutesSlept - 1440;
         // Square root curve
-        const extraEnergy = Math.floor(2.5 * Math.sqrt(extraMinutes)); 
+        const extraEnergy = Math.floor(2.5 * Math.sqrt(extraMinutes));
         energyGained += extraEnergy;
     }
     return energyGained;
@@ -115,7 +116,7 @@ export async function addAmountToInventory(tbl, user_id, item, amount) {
         await itemRow.save();
     } else {
         await tbl.create({
-            userid: user_id,    
+            userid: user_id,
             itemid: item.itemid,
             amount: amount
         });
@@ -135,7 +136,7 @@ export function getPetLevel(totalXp) {
 export async function updatePetStats(pet, currentLevel) {
     const currentTime = Date.now();
     // use minutes for accuracy
-    const msPerMinute = 1000 * 60; 
+    const msPerMinute = 1000 * 60;
 
     // Calculate time elapsed
     const minutesSinceFed = (currentTime - pet.last_fed.getTime()) / msPerMinute;
@@ -144,9 +145,9 @@ export async function updatePetStats(pet, currentLevel) {
     const baseDecayPerMinute = 4 / 60;
     const slowDownFactor = (currentLevel == 10) ? 4 : 1 + (0.25 * currentLevel); // increase by slowdown Factor - 1 from 1 (ex max level = 4-1=3x slower than level 1)
     // minutes per point lost
-    const minsPerPoint = 1 / (baseDecayPerMinute / slowDownFactor);    
+    const minsPerPoint = 1 / (baseDecayPerMinute / slowDownFactor);
 
-    const hungerDecay = Math.floor(minutesSinceFed / minsPerPoint);     
+    const hungerDecay = Math.floor(minutesSinceFed / minsPerPoint);
     const affectionDecay = Math.floor(minutesSincePlayed / minsPerPoint);
 
     // how much extra we're losing but not accounted for since we hit 0 (will be deducted as xp)
@@ -169,7 +170,7 @@ export async function updatePetStats(pet, currentLevel) {
     if (hungerDecay > 0) {
         pet.hunger = Math.max(0, pet.hunger - hungerDecay);
         // new date based on adding time
-        pet.last_fed = new Date(pet.last_fed.getTime() + (hungerDecay * minsPerPoint * msPerMinute)); 
+        pet.last_fed = new Date(pet.last_fed.getTime() + (hungerDecay * minsPerPoint * msPerMinute));
     }
     if (affectionDecay > 0) {
         pet.affection = Math.max(0, pet.affection - affectionDecay);
@@ -183,6 +184,18 @@ export async function updatePetStats(pet, currentLevel) {
     console.log(`Decay: ${totalDecay}`);
     await pet.save();
     return totalDecay;
+}
+
+// TODO: USE TIHS EVERYWHERE
+export function renderUsername(user, name) {
+    let user_name;
+    if (user.settings.showTitleInName) {
+        user_name = `[${user.title}] ${name}`;
+    } else {
+        user_name = name;
+    }
+    return escapeMarkdown(user_name);
+
 }
 
 export class RivalsAPIError extends Error {

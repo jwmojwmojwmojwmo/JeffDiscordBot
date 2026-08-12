@@ -16,6 +16,10 @@ const DonateJeffDMButton = new ButtonBuilder()
     .setCustomId('donateJeffDM')
     .setLabel('Toggle Jeff DMs')
     .setStyle(ButtonStyle.Primary);
+const showTitleInNameButton = new ButtonBuilder()
+    .setCustomId('showTitleInName')
+    .setLabel('Toggle Show Title in Username')
+    .setStyle(ButtonStyle.Primary);
 const requestInfoButton = new ButtonBuilder()
     .setCustomId('requestInfo')
     .setLabel('Request User Information')
@@ -25,7 +29,7 @@ const deleteInfoButton = new ButtonBuilder()
     .setLabel('Delete User Information')
     .setStyle(ButtonStyle.Danger);
 
-const settingsRow = new ActionRowBuilder().addComponents(dailyRemindersButton, voteReminders, DonateJeffDMButton); // the row of buttons below the text
+const settingsRow = new ActionRowBuilder().addComponents(dailyRemindersButton, voteReminders, DonateJeffDMButton, showTitleInNameButton); // the row of buttons below the text
 const utilSettingsRow = new ActionRowBuilder().addComponents(requestInfoButton, deleteInfoButton); // the row of buttons below the text
 
 async function settingsFunction(tbl, interaction, user_id, user_name) {
@@ -44,10 +48,13 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
                 {
                     name: `Jeff DMs - **${user.settings.donateJeffDM}**`,
                     value: `Get DMs from Jeff bot about any donation submissions!`,
+                },
+                {
+                    name: `Show Title in Username - **${user.settings.showTitleInName}**`,
+                    value: `Show your title in your username! (If this setting is not synced properly, try running /settings again)`,
                 }
             );
     let user = await getUserAndUpdate(tbl, user_id, user_name, false);
-
     const reply = await interaction.reply({ embeds: [buildEmbed()], components: [settingsRow, utilSettingsRow], flags: MessageFlags.Ephemeral });
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     const collector = reply.createMessageComponentCollector({

@@ -10,6 +10,11 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+        title: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: "🪣 Chum"
+        },
         num_nommed: { // num of times user has been nommed
             type: DataTypes.INTEGER,
             defaultValue: 0
@@ -24,6 +29,11 @@ export default (sequelize, DataTypes) => {
         },
         last_daily: { // date of last time user claimed daily
             type: DataTypes.DATE
+        },
+        daily_streak: { // number of days daily was claimed in a row
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
         },
         claimedVote: { // true if user has voted in the current 12 hour period, false otherwise
             type: DataTypes.BOOLEAN,
@@ -40,7 +50,8 @@ export default (sequelize, DataTypes) => {
             defaultValue: {
                 dailyReminders: true,
                 voteReminders: true,
-                donateJeffDM: true
+                donateJeffDM: true,
+                showTitleInName: false
             }
         }
     }, {

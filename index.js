@@ -266,6 +266,7 @@ client.on(Events.MessageCreate, async message => {
     const allItems = await updateItemShop(items);
     client.itemCache = allItems;
     await sequelize.sync();
+    //await SQLMIGRATION();
     const nappingUsers = await client.db.jeff.findAll({ where: { napping: { [Op.ne]: null } } });
     nappingUsers.forEach(u => client.napping.set(u.userid, u.napping.getTime()));
     console.log(`Synced ${nappingUsers.length} napping users to cache.`);
@@ -326,5 +327,26 @@ async function handleInfo(message) {
     catch (err) {
         console.error(err);
         await message.reply('Failed to DM.');
+    }
+}
+
+async function SQLMIGRATION() {
+    const users = await client.db.jeff.findAll();
+    for (const user of users) {
+        // Parse existing settings or default to an empty object
+        console.log(user.settings);
+        const currentSettings = typeof user.settings === 'string'
+            ? JSON.parse(user.settings || '{}')
+            : (user.settings || {});
+
+        // Add the new field
+        currentSettings.showTitleInName = false;
+
+        // Save it back to the database
+        user.settings = currentSettings;
+        user.changed('settings', true);
+        await user.save();
+        
+        console.log(user.settings);
     }
 }
