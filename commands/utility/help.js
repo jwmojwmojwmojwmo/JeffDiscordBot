@@ -26,8 +26,7 @@ export async function execute(interaction) {
             },
             {
                 name: ' Stats & Leaderboards',
-                value: `\`/stats [user] [stat_type]\` - See a user's stats (nom count, energy, reputation)
-\`/rank\` - Check your reputation title and global rank
+                value: `\`/profile [user]\` - View a user's profile, including their stats (nom count, energy, reputation), reputation title, global rank, and pet information
 \`/leaderboard <stat_type> [scope]\` - View the global or server leaderboards for specific stats`
             },
             {
@@ -36,7 +35,7 @@ export async function execute(interaction) {
 \`/nom <user>\` - Have Jeff nom somebody
 \`/speak <phrase>\` - Talk to Jeff and see how he reacts
 \`/play highlow\` - Guess if the number Jeff is thinking of is higher or lower
-\`/play blackjack <bet>\` - Bet reputation to play blackjack against Jeff
+\`/play blackjack <bet>\` - Bet energy to play blackjack against Jeff
 \`/quiz\` - Answer Jeff trivia to earn energy
 \`/skillcheck <player>\` - Check a player's Marvel Rivals Jeff skill score`
             },

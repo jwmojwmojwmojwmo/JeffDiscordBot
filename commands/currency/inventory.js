@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown, bold, italic, ContainerBuilder, ButtonStyle, heading, subtext } from 'discord.js';
-import { getUserAndUpdate } from '../../helpers/utils.js';
+import { getUserAndUpdate, renderUsername } from '../../helpers/utils.js';
 
 const timeoutContainer = new ContainerBuilder()
     .addTextDisplayComponents((text) => text.setContent(`This interaction timed out.`));
@@ -26,21 +26,24 @@ export async function execute(interaction) {
         user_name = interaction.options.getMember('user')?.displayName || interaction.member.displayName;
     }
     const user = await getUserAndUpdate(interaction.client.db, user_id, user_name, true);
+    const rendered_user_name = renderUsername(user, user_name);
     const userinv = await interaction.client.db.inventory.findAll({
         where: { userid: user_id }
     });
     const container = new ContainerBuilder()
         .setAccentColor(0x80aaff)
-        .addTextDisplayComponents((text) => text.setContent(`${heading(`${escapeMarkdown(user_name)}'s Inventory`, 2)}\n`))
+        .addTextDisplayComponents((text) => text.setContent(`${heading(`${rendered_user_name}'s Inventory`, 2)}\n`))
         .addSeparatorComponents((separator) => separator);
     if (userinv.length === 0) {
         container.addTextDisplayComponents((text) => text.setContent("You don't have anything in your inventory yet!"));
     }
     for (const item of userinv) {
-        container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(interaction.client.itemCache, item, user)));
+        if (item.itemid[1] !== "0") {
+            container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(interaction.client.itemCache, item, user)));
+        }
     }
     container.addSeparatorComponents((separator) => separator);
     container.addTextDisplayComponents((text) => text.setContent(subtext(`Tip: Use /item to get detailed information about any item!`)));
     await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
-    console.log(`${user_name}'s inventory was checked.`)
+    console.log(`${user.username}'s inventory was checked.`)
 }

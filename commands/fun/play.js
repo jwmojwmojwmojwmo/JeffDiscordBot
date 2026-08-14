@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js';
-import { getUserAndUpdate } from '../../helpers/utils.js';
+import { getUserAndUpdate, renderUsername } from '../../helpers/utils.js';
 import { setTimeout } from 'node:timers/promises';
 
 // TODO: constants for highLow scoring
@@ -56,7 +56,7 @@ const firstTimes = new ActionRowBuilder().addComponents(double, surrender);
 const insureTimes = new ActionRowBuilder().addComponents(insure);
 
 
-async function playHighLow(interaction, tbl, user_id, user_name) {
+async function playHighLow(interaction, tbl, user_id, name) {
     const thinkingNum = Math.floor(Math.random() * 101); // the num jeffy is thinking of, 0-100
     const givenNum = Math.floor(Math.random() * 101); // the num the user sees, 0-100
     const highLowReply = await interaction.reply({
@@ -64,7 +64,7 @@ async function playHighLow(interaction, tbl, user_id, user_name) {
         components: [highLowRow],
         withResponse: true,
     });
-    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
+    let user = await getUserAndUpdate(tbl, user_id, name, false);
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     try {
         const response = await highLowReply.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 20000 }); // give 20 sec for response before erroring
@@ -107,7 +107,8 @@ function getHighLowPenalty(diff) {
 
 
 
-async function playBlackJack(interaction, user, bet) {
+async function playBlackJack(interaction, user, bet, name) {
+    const user_name = renderUsername(user, name);
     let bool = false;
     let time = 1000;
     let jeffCards = [];
@@ -148,7 +149,7 @@ async function playBlackJack(interaction, user, bet) {
     let startNum = sum(jeffCards.slice(0, 1))
     const Embeds = () =>
         new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
+            .setTitle(`${user_name}'s Blackjack Game`)
             .addFields(
                 {
                     name: `Bet Amount: ${bet}`,
@@ -159,7 +160,7 @@ async function playBlackJack(interaction, user, bet) {
                     value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
                 },
                 {
-                    name: `${user.username}`,
+                    name: `${user_name}`,
                     value: `Cards: ${userCards}\nSum: ${userSum}`
                 },
                 {
@@ -169,7 +170,7 @@ async function playBlackJack(interaction, user, bet) {
             );
     await interaction.reply({
         embeds: [new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
+            .setTitle(`${user_name}'s Blackjack Game`)
             .addFields(
                 { name: `Bet Amount: ${bet}`, value: `` },
                 { name: ``, value: `Drawing...` })],
@@ -178,11 +179,11 @@ async function playBlackJack(interaction, user, bet) {
     await setTimeout(2000);
     await interaction.editReply({
         embeds: [new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
+            .setTitle(`${user_name}'s Blackjack Game`)
             .addFields(
                 { name: `Bet Amount: ${bet}`, value: `` },
                 { name: `Jeffy`, value: `Cards: ${jeffCards[0]},??\nSum: ${startNum}` },
-                { name: `${user.username}`, value: `Cards: ${userCards}\nSum: ${userSum}` })],
+                { name: `${user_name}`, value: `Cards: ${userCards}\nSum: ${userSum}` })],
         components: []
     });
     await setTimeout(1000);
@@ -218,7 +219,7 @@ async function playBlackJack(interaction, user, bet) {
     //starting deck show
     const startEmbed = () =>
         new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
+            .setTitle(`${user_name}'s Blackjack Game`)
             .addFields(
                 {
                     name: `Bet Amount: ${bet} energy`,
@@ -229,14 +230,14 @@ async function playBlackJack(interaction, user, bet) {
                     value: `Cards: ${jeffCards[0]},??\nSum: ${startNum}`
                 },
                 {
-                    name: `${user.username}`,
+                    name: `${user_name}`,
                     value: `Cards: ${userCards}\nSum: ${userSum}`
                 }
             );
 
     const buildEmbed = () =>
         new EmbedBuilder()
-            .setTitle(`${user.username}'s Blackjack Game`)
+            .setTitle(`${user_name}'s Blackjack Game`)
             .addFields(
                 {
                     name: `Bet Amount: ${bet} energy`,
@@ -247,7 +248,7 @@ async function playBlackJack(interaction, user, bet) {
                     value: `Cards: ${jeffCards}\nSum: ${jeffySum}`
                 },
                 {
-                    name: `${user.username}`,
+                    name: `${user_name}`,
                     value: `Cards: ${userCards}\nSum: ${userSum}`
                 }
             );
@@ -571,7 +572,7 @@ export const data = new SlashCommandBuilder()
             .setRequired(true)));
 export async function execute(interaction) {
     const tbl = interaction.client.db;
-    const name = interaction.member?.displayName || interaction.user.username;
+    const name = interaction.member?.displayName || interaction.user.displayName;
     const id = interaction.user.id;
     if (interaction.options.getSubcommand() === 'highlow') {
         await playHighLow(interaction, tbl, id, name);
@@ -581,6 +582,6 @@ export async function execute(interaction) {
         if (interaction.options.getInteger('bet') < 10) return interaction.reply({ content: 'You must bet at least 10 energy.', flags: MessageFlags.Ephemeral });
         if (interaction.options.getInteger('bet') > user.energy) return interaction.reply({ content: 'You cannot bet more energy than you have.', flags: MessageFlags.Ephemeral });
         console.log(`${user.username} (${user.userid}) played blackjack with a bet of ${interaction.options.getInteger('bet')} energy.`);
-        await playBlackJack(interaction, user, interaction.options.getInteger('bet'));
+        await playBlackJack(interaction, user, interaction.options.getInteger('bet'), name);
     }
 }

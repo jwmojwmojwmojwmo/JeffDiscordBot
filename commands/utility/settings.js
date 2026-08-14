@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
-import { getUserAndUpdate } from '../../helpers/utils.js';
+import { getUserAndUpdate, renderUsername } from '../../helpers/utils.js';
 import config from '../../helpers/config.json' with { type: "json" };
 const { ownerId } = config;
 // TODO: reminders about pets
@@ -33,9 +33,11 @@ const settingsRow = new ActionRowBuilder().addComponents(dailyRemindersButton, v
 const utilSettingsRow = new ActionRowBuilder().addComponents(requestInfoButton, deleteInfoButton); // the row of buttons below the text
 
 async function settingsFunction(tbl, interaction, user_id, user_name) {
+    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
+    const rendered_user_name = renderUsername(user, user_name);
     const buildEmbed = () =>
         new EmbedBuilder()
-            .setTitle(`${escapeMarkdown(user_name)}'s Settings`)
+            .setTitle(`${rendered_user_name}'s Settings`)
             .addFields(
                 {
                     name: `Daily Reminders - **${user.settings.dailyReminders}**`,
@@ -54,7 +56,6 @@ async function settingsFunction(tbl, interaction, user_id, user_name) {
                     value: `Show your title in your username! (If this setting is not synced properly, try running /settings again)`,
                 }
             );
-    let user = await getUserAndUpdate(tbl, user_id, user_name, false);
     const reply = await interaction.reply({ embeds: [buildEmbed()], components: [settingsRow, utilSettingsRow], flags: MessageFlags.Ephemeral });
     const collectorFilter = i => i.user.id === interaction.user.id; // check the person who pressed the button is the person who started the interaction
     const collector = reply.createMessageComponentCollector({

@@ -1,5 +1,5 @@
 import item_list from "./itemlist.js";
-import { escapeMarkdown } from 'discord.js';
+import { escapeMarkdown, bold } from 'discord.js';
 // Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
 // Note that if update === false, the callee must manually do user.save(), or the updated username will not persist. There ane NO CHECKS for this
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
@@ -186,16 +186,17 @@ export async function updatePetStats(pet, currentLevel) {
     return totalDecay;
 }
 
-// TODO: USE TIHS EVERYWHERE
 export function renderUsername(user, name) {
     let user_name;
-    if (user.settings.showTitleInName) {
+    const currentSettings = typeof user.settings === 'string'
+        ? JSON.parse(user.settings || '{}')
+        : (user.settings || {});
+    if (currentSettings.showTitleInName) {
         user_name = `[${user.title}] ${name}`;
     } else {
         user_name = name;
     }
-    return escapeMarkdown(user_name);
-
+    return bold(escapeMarkdown(user_name));
 }
 
 export class RivalsAPIError extends Error {

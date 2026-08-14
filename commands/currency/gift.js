@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
-import { getUserAndUpdate } from '../../helpers/utils.js';
+import { getUserAndUpdate, renderUsername } from '../../helpers/utils.js';
 
-async function gift(interaction, victim, culprit, amount) {
+async function gift(interaction, victim, victim_name, culprit, culprit_name, amount) {
     const baseTax = 0.2;
     const k = 100; // controls scaling, k = num_nommed at which the taxRate is exactly half of baseTax
     const taxRate = baseTax * (k / (k + culprit.num_nommed));
@@ -25,10 +25,10 @@ async function gift(interaction, victim, culprit, amount) {
     await victim.save();
     await culprit.save();
     console.log(`${victim.username} (${victim.userid}) was given ${amount} energy by ${culprit.username} (${culprit.userid}), but spent ${amountWithTax} and gained ${reputationGained} reputation.`);
-    return interaction.reply(escapeMarkdown(
-        `${culprit.username} gave ${amount} energy to ${victim.username}!\n\n` +
-        `Jeff saw everything. Jeff is proud.${amountTaxed === 0 ? '' : ` Jeff may have sneakily munched ${amountTaxed} energy as a tax snack.`} ${reputationGained > 0 ? `Impressed with ${culprit.username}'s generosity, Jeff burped out ${reputationGained} reputation for ${culprit.username}!` : `Jeff nods approvingly.`}`
-    ));
+    return interaction.reply(
+        `${culprit_name} gave ${amount} energy to ${victim_name}!\n\n` +
+        `Jeff saw everything. Jeff is proud.${amountTaxed === 0 ? '' : ` Jeff may have sneakily munched ${amountTaxed} energy as a tax snack.`} ${reputationGained > 0 ? `Impressed with ${culprit_name}'s generosity, Jeff burped out ${reputationGained} reputation for ${culprit_name}!` : `Jeff nods approvingly.`}`
+    );
 }
 
 export const data = new SlashCommandBuilder()
@@ -54,10 +54,12 @@ export async function execute(interaction) {
     if (victim_id === interaction.user.id) {
         return interaction.reply({ content: 'You can\'t gift to yourself!', flags: MessageFlags.Ephemeral });
     }
-    const victim_name = interaction.options.getMember('user').displayName;
-    const culprit_name = interaction.member.displayName;
+    const victim_display_name = interaction.options.getMember('user').displayName;
+    const culprit_display_name = interaction.member.displayName;
     const db = interaction.client.db;
-    const victim = await getUserAndUpdate(db, victim_id, victim_name, false);
-    const culprit = await getUserAndUpdate(db, interaction.user.id, culprit_name, false);
-    await gift(interaction, victim, culprit, amount);
+    const victim = await getUserAndUpdate(db, victim_id, victim_display_name, false);
+    const culprit = await getUserAndUpdate(db, interaction.user.id, culprit_display_name, false);
+    const victim_name = renderUsername(victim, victim_display_name);
+    const culprit_name = renderUsername(culprit, culprit_display_name);
+    await gift(interaction, victim, victim_name, culprit, culprit_name, amount);
 }

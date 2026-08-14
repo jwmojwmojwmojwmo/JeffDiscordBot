@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, bold, escapeMarkdown } from 'discord.js';
 import { GoogleGenAI } from '@google/genai';
+import { getUserAndUpdate, renderUsername } from '../../helpers/utils.js';
 import config from '../../helpers/config.json' with { type: "json" };
 const { geminiAPIKey } = config;
 
@@ -169,10 +170,11 @@ export const data = new SlashCommandBuilder()
         .setDescription('What you want to say to Jeff')
         .setRequired(true));
 export async function execute(interaction) {
-    let msg = interaction.member?.displayName || interaction.user.displayName;
+    const name = interaction.member?.displayName || interaction.user.displayName;
+    const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, name, false);
+    const user_name = renderUsername(user, name);
+    let msg = `${user_name} says: ${escapeMarkdown(interaction.options.getString('phrase'))}\n\nJeff says:`;
     await interaction.deferReply();
-    msg += ` says: ${interaction.options.getString('phrase')}\n\nJeff says:`;
-    msg = escapeMarkdown(msg);
     let jeffReply;
     do {
         try {

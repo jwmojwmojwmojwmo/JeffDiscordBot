@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
-import { getPetLevel, updatePetStats, getUserAndUpdate } from '../../helpers/utils.js';
+import { getPetLevel, updatePetStats, getUserAndUpdate, renderUsername } from '../../helpers/utils.js';
 const killMsg = [
     ' got gobbled by Jeff. Chomp chomp! NOM NOM!',
     ' was just swallowed by Jeff whole. Slurp slurp!',
@@ -31,10 +31,11 @@ export async function execute(interaction) {
         return interaction.reply({ content: 'You can\'t nom yourself!', flags: MessageFlags.Ephemeral });
     }
     const victim = await getUserAndUpdate(interaction.client.db, victim_id, victim_name, false);
+    const rendered_victim_name = renderUsername(victim, victim_name);
     victim.num_nommed += 1;
     await victim.save();
     console.log(`${victim.username} (${victim.userid}) was nommed.`);
-    await interaction.reply(escapeMarkdown(victim_name + killMsg[Math.floor(Math.random() * killMsg.length)])); // random kill msg
+    await interaction.reply(rendered_victim_name + killMsg[Math.floor(Math.random() * killMsg.length)]); // random kill msg
     const pet = await interaction.client.db.pets.findByPk(interaction.user.id);
     let nom_pet = 0;
     if (pet) {
@@ -51,7 +52,7 @@ export async function execute(interaction) {
         await pet.save();
         victim.num_nommed += nom_pet;
         await victim.save();
-        if (nom_pet > 0) await interaction.followUp(escapeMarkdown(`Jeff called over someone's pet, ${pet.name}, who was also hungry! They nommed ${victim_name} an additional ${nom_pet} ${nom_pet > 1 ? 'times' : 'time'}! (${pet.name} got +${hunger} hunger, +${affection} affection)`));
+        if (nom_pet > 0) await interaction.followUp(`Jeff called over someone's pet, ${escapeMarkdown(pet.name)}, who was also hungry! They nommed ${rendered_victim_name} an additional ${nom_pet} ${nom_pet > 1 ? 'times' : 'time'}! (${escapeMarkdown(pet.name)} got +${hunger} hunger, +${affection} affection)`);
     }
     if (!pet && Math.random() < 0.05) {
         await interaction.followUp({ content: `Tip: A single nom is nice, but a tamed pet will join in and chomp your target multiple times at once! Try fishing for a new friend...`, flags: MessageFlags.Ephemeral });

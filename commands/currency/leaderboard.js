@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, bold, MessageFlags, escapeMarkdown } from 'discord.js';
+import { renderUsername } from '../../helpers/utils.js';
 const statLabels = {
     num_nommed: 'Nom Count',
     energy: 'Energy',
@@ -7,10 +8,11 @@ const statLabels = {
 
 async function getTopFive(tbl, guild, stat_type) {
     const entries = await tbl.findAll({
-        attributes: ['userid', 'username', stat_type],
+        attributes: ['userid', 'username', 'title', 'settings', stat_type],
+        order: [[stat_type, 'DESC']],
         raw: true, // map database to JSON
     });
-    entries.sort((a, b) => b[stat_type] - a[stat_type]); // sort JSON by stat_type, high to low
+    //entries.sort((a, b) => b[stat_type] - a[stat_type]); // sort JSON by stat_type, high to low
     let topFive = [];
     let leaderboard = `Top ${guild === 0 ? 'Global' : 'Server'} Users — ${statLabels[stat_type] || 'unnamed_stat_type -- please report this error --'}:\n`;
     if (guild === 0) { // global scope
@@ -18,7 +20,7 @@ async function getTopFive(tbl, guild, stat_type) {
     }
     else { // server scope
         guild.members.cache.forEach(member => {
-            console.log(member.user.username, member.id);
+            console.log(member.displayName, member.id);
         });
         for (const entry of entries) {
             if (topFive.length === 5) break;
@@ -39,11 +41,12 @@ async function getTopFive(tbl, guild, stat_type) {
     }
     let rank = 1;
     for (const user of topFive) {
+        const user_name = renderUsername(user, user.username);
         if (stat_type === 'num_nommed') {
-            leaderboard += `\n#${bold(rank)} ${escapeMarkdown(user.username)}: ${user[stat_type]} time${user[stat_type] === 1 ? '' : 's'} nommed!`;
+            leaderboard += `\n#${bold(rank)} ${user_name}: ${user[stat_type]} time${user[stat_type] === 1 ? '' : 's'} nommed!`;
         }
         else {
-            leaderboard += `\n#${bold(rank)} ${escapeMarkdown(user.username)}: ${user[stat_type]} ${stat_type}!`;
+            leaderboard += `\n#${bold(rank)} ${user_name}: ${user[stat_type]} ${stat_type}!`;
         }
         rank++;
     }
