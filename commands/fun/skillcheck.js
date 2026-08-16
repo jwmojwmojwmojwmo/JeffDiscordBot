@@ -6,7 +6,7 @@ import axios from 'axios';
 const { get } = axios;
 
 const rivalsBaseURL = 'https://marvelrivalsapi.com';
-const season = 8.5;
+const season = 9.5;
 
 //const disclaimer = `\n\nNote this command currently uses data from Season ${season}. It will be updated to use data from the current season in a few days, when enough ranked Jeff gameplay data is gathered.`;
 const disclaimer = ``;
@@ -61,7 +61,7 @@ async function getPlayer(db, interaction, uid) {
             throw new RivalsAPIError('RATE_LIMIT_REACHED', err.response.headers['x-ratelimit-reset'], '');
         } else {
             console.error(err);
-            throw new RivalsAPIError('API_ERROR', '', err.response?.data?.message || 'unknown error');
+            throw new RivalsAPIError('API_ERROR', '', err.response?.data?.message || err.response?.data?.detail || 'unknown error');
         }
     }
     return data;

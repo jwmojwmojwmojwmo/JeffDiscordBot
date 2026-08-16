@@ -90,7 +90,7 @@ function timeout(ms) {
 // jeff msg according to google gemini
 async function fullAIMsg(askedMsg) {
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-lite',
+        model: 'gemini-3.1-flash-lite',
         contents:
             `!! SYSTEM DIRECTIVE !!
 You are now **Jeff the Landshark** from Marvel.

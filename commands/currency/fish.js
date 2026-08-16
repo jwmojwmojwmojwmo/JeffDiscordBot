@@ -13,13 +13,13 @@ const fishingLootTables = Object.freeze({
     ],
     // Old Fishing Rod
     "11CO001": [
-        { itemid: "nothing", weight: 5 },
+        { itemid: "nothing", weight: 4 },
         { itemid: "02CO001", weight: 30 },    // Driftwood
         { itemid: "01CO005", weight: 10 },    // Shrimp
         { itemid: "01CO001", weight: 42.5 },  // Common Fish
         { itemid: "03CO001", weight: 10 },    // seaweed
-        { itemid: "02RA002", weight: 2.4 },     // Scrap Metal
-        { itemid: "09LE001", weight: 0.1 }    // Unknown Fish (Jeff)
+        { itemid: "02RA002", weight: 2.5 },     // Scrap Metal
+        { itemid: "09LE001", weight: 1 }    // Unknown Fish (Jeff)
     ],
     // Beginner Fishing Rod
     "11CO002": [
@@ -27,28 +27,27 @@ const fishingLootTables = Object.freeze({
         { itemid: "01RA002", weight: 30 },     // Rare Fish
         { itemid: "02CO001", weight: 15 },    // Driftwood
         { itemid: "02RA002", weight: 19 },     // Scrap Metal
-        { itemid: "03CO001", weight: 5 },    // seaweed
-        { itemid: "09LE001", weight: 1 }      // Unknown Fish (Jeff)
+        { itemid: "03CO001", weight: 4 },    // seaweed
+        { itemid: "09LE001", weight: 2 }      // Unknown Fish (Jeff)
     ],
     // Reinforced Fishing Rod 
     "11RA003": [
-        { itemid: "nothing", weight: 5 },     // 5% fail rate
         { itemid: "01CO001", weight: 25 },    // Common Fish
         { itemid: "02RA002", weight: 20 },    // Scrap Metal
         { itemid: "01RA002", weight: 20 },    // Rare Fish
         { itemid: "02CO001", weight: 10 },    // Driftwood
         { itemid: "01EP003", weight: 12 },    // Epic Fish
-        { itemid: "01LE004", weight: 5 },     // Legendary Fish
-        { itemid: "09LE001", weight: 3 }      // Unknown Fish (Jeff)
+        { itemid: "01LE004", weight: 9 },     // Legendary Fish
+        { itemid: "09LE001", weight: 4 }      // Unknown Fish (Jeff)
     ],
     // 4. Deep Sea Harpoon
     "11EP004": [
-        { itemid: "nothing", weight: 13 },     // 13% fail rate (higher cuz idk why not)
-        { itemid: "01RA002", weight: 25 },    // Rare Fish
-        { itemid: "01EP003", weight: 25 },    // Epic Fish
+        { itemid: "nothing", weight: 10 },     // 13% fail rate (higher cuz idk why not)
+        { itemid: "01RA002", weight: 26 },    // Rare Fish
+        { itemid: "01EP003", weight: 26 },    // Epic Fish
         { itemid: "04EP003", weight: 20 },    // Giant Squid
         { itemid: "01LE004", weight: 10 },    // Legendary Fish
-        { itemid: "09LE001", weight: 7 }      // Unknown Fish (Jeff)
+        { itemid: "09LE001", weight: 8 }      // Unknown Fish (Jeff)
     ]
 });
 

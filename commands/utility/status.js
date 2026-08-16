@@ -10,12 +10,12 @@ const Status = Object.freeze({
 });
 
 const now = Math.floor(Date.now() / 1000);
-const timea = "<t:1780728300:f>";
+const timea = "<t:1787035500:f>"; //8/17/2026
 const statusEmbed = new EmbedBuilder()
     .setTitle('Jeff Discord Bot Status')
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
     .addFields(
-        { name: `Status: ${Status.ONLINEISSUE}`, value: `\nPlanned to go offline for 12 hours starting at ${timea}` },
+        { name: `Status: ${Status.ONLINE}`, value: `\nPlanned to go offline for 12 hours starting at ${timea}` },
         { name: `Known issues:`, value: `Unfortunately I had to change some things to make my bot more in line with Discord Developer Policies. I cannot test everything, so some things may be broken until you guys discover the bugs LOL. \n\nMany new commands were recently added! Please /donatesuggestions to report any issues or give feedback.` },
         { name: 'Latest update: v0.90', value: 'We are so back GUYS! Welcome to v0.9, the biggest update yet. We have fishing, pets, and more! Also blackjack is finally here yayy!!' },
         { name: 'New commands:', value: '/fish, /inventory, /item, /nap, /rank, /trader, /play blackjack, /pet view, /pet feed, /pet pet, /pet play, /pet disown, /use, /help' },
