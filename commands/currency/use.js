@@ -445,6 +445,9 @@ export async function execute(interaction) {
         case "CONSUME":
             await consumeItem(interaction, item, itemRow); // custom msg for each consumable so just let the helper handle it all
             break;
+        case "TITLE":
+            await interaction.reply({ content: `Use /profile to equip a title!`, flags: MessageFlags.Ephemeral });
+            break;
         case "JEFF_TAME_SCENE":
             await tameJeff(interaction, itemRow);
             break;

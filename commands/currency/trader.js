@@ -2,8 +2,6 @@ import { SlashCommandBuilder, MessageFlags, escapeMarkdown, bold, italic, Contai
 import { getUserAndUpdate, removeAmountFromInventory, addAmountToInventory } from '../../helpers/utils.js';
 import { Op } from 'sequelize';
 
-const maxPage = 2;
-
 const timeoutContainer = new ContainerBuilder()
     .addTextDisplayComponents((text) => text.setContent(`This interaction timed out.`));
 
@@ -37,10 +35,13 @@ async function attemptToPurchase(item, userinv, id, tbl, eq_tbl) {
     return 1;
 }
 
-function buildContainer(itemList, allItems, user, page) {
+
+function buildContainer(itemList, allItems, itemType, user, page, maxPage) {
     const container = new ContainerBuilder()
         .setAccentColor(0x80aaff)
         .addTextDisplayComponents((text) => text.setContent(`${heading("🏝️ Jeff's Trading Post", 1)}\nMRRR!! MRR! (Translation: All sales are final. No refunds.)`))
+        .addSeparatorComponents((separator) => separator)
+        .addTextDisplayComponents((text) => text.setContent(`${heading(`Category: ${itemType}`, 3)}`))
         .addSeparatorComponents((separator) => separator);
     for (const item of itemList) {
         container
@@ -67,9 +68,12 @@ export async function execute(interaction) {
     const allItems = interaction.client.itemCache;
     const shopItems = allItems.filter(i => i.cost !== null);
     const rodItems = shopItems.filter(i => i.itemid.startsWith("11"));
+    const titleItems = shopItems.filter(i => i.itemid.startsWith("81"));
     const repItems = shopItems.filter(i => i.itemid.startsWith("91"));
-    const itemType = [rodItems, repItems];
-    let container = buildContainer(itemType[page - 1], allItems, user, page);
+    const itemType = [rodItems, titleItems, repItems];
+    const itemTypeNames = ["Fishing Rods", "Titles", "Reputation Boosters"];
+    const maxPage = itemType.length;
+    let container = buildContainer(itemType[page - 1], allItems, itemTypeNames[page - 1], user, page, maxPage);
     const reply = await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     console.log("Trader was checked.");
     // interaction collector
@@ -81,12 +85,12 @@ export async function execute(interaction) {
     collector.on('collect', async i => {
         if (i.customId === "prev") {
             page--;
-            if (page < 1) page = 1;
-            return i.update({ components: [buildContainer(itemType[page - 1], allItems, user, page)], flags: MessageFlags.IsComponentsV2 });
+            if (page < 1) page = maxPage;
+            return i.update({ components: [buildContainer(itemType[page - 1], allItems, itemTypeNames[page - 1],user, page, maxPage)], flags: MessageFlags.IsComponentsV2 });
         } else if (i.customId === 'next') {
             page++;
-            if (page > maxPage) page = maxPage;
-            return i.update({ components: [buildContainer(itemType[page - 1], allItems, user, page)], flags: MessageFlags.IsComponentsV2 });
+            if (page > maxPage) page = 1;
+            return i.update({ components: [buildContainer(itemType[page - 1], allItems, itemTypeNames[page - 1],user, page, maxPage)], flags: MessageFlags.IsComponentsV2 });
         } else if (i.customId === 'close_shop') {
             // must explicitly update i with .update or .reply, etc... to respond to the i even if you're just deleting the message afterwards otherwise discord throws a hissy fit
             // discord really needs that i to be responded to

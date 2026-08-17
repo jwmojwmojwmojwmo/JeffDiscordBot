@@ -4,8 +4,9 @@ import { getUserAndUpdate, getPetLevel, renderUsername, updatePetStats } from '.
 
 const timeoutContainer = new ContainerBuilder()
     .addTextDisplayComponents((text) => text.setContent(`This interaction timed out.`));
-async function buildContainer(db, pfp, user_name, user, userId) {
-    const titles = await getAvailableTitles(db, user);
+
+async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
+    const titles = await getAvailableTitles(db, user, itemCache);
     const title = titles.find(i => i.title === user.title);
     const rankText = `${user.title}\n${italic(title.description)}`;
     let container = new ContainerBuilder()
@@ -64,10 +65,22 @@ async function buildContainer(db, pfp, user_name, user, userId) {
 // ADD TO itemlist.js:
 // 8x - titles
 //      81 - trader given
-async function getAvailableTitles(db, user) {
+async function getAvailableTitles(db, user, itemCache) {
     // a title consists of a string (title), flavour text, and requirements 
     const titles = [];
-    titles.push({ title: "🪣 Chum", description: "Jeff thinks you're alright.", required: "No requirements!" })
+    titles.push({ title: "🪣 Chum", description: "Jeff thinks you're alright.", required: "No requirements!" });
+    const titlesInventory = await db.inventory.findAll({
+        where: {
+            userid: user.userid,
+            itemid: {
+                [Op.startsWith]: "81"
+            }
+        }
+    });
+    for (const title of titlesInventory) {
+        const item = itemCache.find(i => i.itemid === title.itemid);
+        titles.push({ title: item.name, description: item.description, required: "Purchased from trader" });
+    }
     let rank = await db.jeff.count({
         where: {
             reputation: {
@@ -106,7 +119,7 @@ export async function execute(interaction) {
     const name = interaction.options.getMember('user')?.displayName || interaction.options.getUser('user')?.username || interaction.member?.displayName || interaction.user.displayName;
     const user = await getUserAndUpdate(tbl, interaction.options.getUser('user')?.id || interaction.user.id, name, true, true);
     const user_name = renderUsername(user, name);
-    const container = await buildContainer(tbl, pfp, user_name, user, interaction.user.id);
+    const container = await buildContainer(tbl, pfp, user_name, user, interaction.user.id, interaction.client.itemCache);
     let response;
     if (user.pet) {
         const file = new AttachmentBuilder(`assets/${user.pet.picture}`, { name: user.pet.picture });
