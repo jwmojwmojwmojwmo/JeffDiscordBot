@@ -6,9 +6,17 @@ const timeoutContainer = new ContainerBuilder()
     .addTextDisplayComponents((text) => text.setContent(`This interaction timed out.`));
 
 async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
-    const titles = await getAvailableTitles(db, user, itemCache);
+    let rank = await db.jeff.count({
+        where: {
+            reputation: {
+                [Op.gt]: user.reputation
+            }
+        }
+    });
+    rank++;
+    const titles = await getAvailableTitles(db, user, itemCache, rank);
     const title = titles.find(i => i.title === user.title);
-    const rankText = `${user.title}\n${italic(title.description)}`;
+    const rankText = `${user.title || "No Title"}\n${italic(title.description || "This user does not have a title equipped!")}`; // only happen if they lose reputation / rank  
     let container = new ContainerBuilder()
         .addSectionComponents((section) => section
             .setThumbnailAccessory((thumbnail) => thumbnail.setURL(pfp))
@@ -16,7 +24,7 @@ async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
                 .setContent(`${heading(`${user_name}'s Profile`, 2)}\nTimes nommed: ${user.num_nommed}\nEnergy: ${user.energy}\nReputation: ${user.reputation}`)))
         .addSeparatorComponents((separator) => separator)
         .addTextDisplayComponents((text) => text
-            .setContent(`${heading(`${user_name}'s Title`, 3)}\n${rankText}`))
+            .setContent(`${heading(`${user_name}'s Title`, 3)}\n${rankText}\n${heading(`${user_name}'s Rank`, 3)}\n#${rank} in the world!`))
         .addSeparatorComponents((separator) => separator);
     if (user.pet) {
         const fileName = user.pet.picture;
@@ -61,11 +69,7 @@ async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
     return container;
 }
 
-// TODO: ADD TRADABLE TITLES AND FIGURE OUT HOW TO SHOVE THEM IN HERE
-// ADD TO itemlist.js:
-// 8x - titles
-//      81 - trader given
-async function getAvailableTitles(db, user, itemCache) {
+async function getAvailableTitles(db, user, itemCache, rank) {
     // a title consists of a string (title), flavour text, and requirements 
     const titles = [];
     titles.push({ title: "🪣 Chum", description: "Jeff thinks you're alright.", required: "No requirements!" });
@@ -73,7 +77,7 @@ async function getAvailableTitles(db, user, itemCache) {
         where: {
             userid: user.userid,
             itemid: {
-                [Op.startsWith]: "81"
+                [Op.startsWith]: "8"
             }
         }
     });
@@ -81,19 +85,11 @@ async function getAvailableTitles(db, user, itemCache) {
         const item = itemCache.find(i => i.itemid === title.itemid);
         titles.push({ title: item.name, description: item.description, required: "Purchased from trader" });
     }
-    let rank = await db.jeff.count({
-        where: {
-            reputation: {
-                [Op.gt]: user.reputation
-            }
-        }
-    });
-    rank++;
     if (rank === 1 && user.reputation > 250) {
         titles.push({ title: "👑 Landshark Prime", description: "The closest anyone gets to becoming Jeff's favorite.", required: "Top 1 Global" });
     }
     if (user.reputation >= 250) {
-        titles.push({ title: "🌊 Leviathan", description: "A legend even Jeff would stop to admire.", required: "250+ Reputation" });
+        titles.push({ title: "🌊 Leviathan", description: "A legend even Jeff would stop to admire.", required: "250+ Reputation" });   
     }
     if (user.reputation >= 150) {
         titles.push({ title: "🏔️ Apex", description: "The kind of teammate Jeff would follow.", required: "150+ Reputation" });

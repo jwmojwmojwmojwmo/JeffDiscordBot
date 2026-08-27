@@ -34,14 +34,16 @@ export async function execute(interaction) {
         .setAccentColor(0x80aaff)
         .addTextDisplayComponents((text) => text.setContent(`${heading(`${rendered_user_name}'s Inventory`, 2)}\n`))
         .addSeparatorComponents((separator) => separator);
-    if (userinv.length === 0) {
-        container.addTextDisplayComponents((text) => text.setContent("You don't have anything in your inventory yet!"));
-    }
+    let items = userinv.length;
     for (const item of userinv) {
         if (item.itemid[1] !== "0") {
             container.addTextDisplayComponents((text) => text.setContent(getFormattedInventoryItem(interaction.client.itemCache, item, user)));
+        } else {
+            items--;
         }
     }
+    if (items === 0) container.addTextDisplayComponents((text) => text.setContent("You don't have anything in your inventory yet!"));
+
     container.addSeparatorComponents((separator) => separator);
     container.addTextDisplayComponents((text) => text.setContent(subtext(`Tip: Use /item to get detailed information about any item!`)));
     await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });

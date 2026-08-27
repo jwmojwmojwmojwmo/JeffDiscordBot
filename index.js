@@ -51,7 +51,7 @@ const wakeUpCommands = ["bubble", "daily", "fish", "gift", "trader", "spit", "us
 
 export default client;
 
-client.version = "0.90";
+client.version = "0.91";
 client.commands = new Collection();
 client.cooldowns = new Collection();
 client.itemCache = null; // when database synced this will become a local cache for the items db
