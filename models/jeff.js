@@ -28,7 +28,8 @@ export default (sequelize, DataTypes) => {
             defaultValue: 100
         },
         last_daily: { // date of last time user claimed daily
-            type: DataTypes.DATE
+            type: DataTypes.DATE,
+            defaultValue: null
         },
         daily_streak: { // number of days daily was claimed in a row
             type: DataTypes.INTEGER,

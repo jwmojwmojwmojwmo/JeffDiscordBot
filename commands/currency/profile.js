@@ -16,7 +16,7 @@ async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
     rank++;
     const titles = await getAvailableTitles(db, user, itemCache, rank);
     const title = titles.find(i => i.title === user.title);
-    const rankText = `${user.title || "No Title"}\n${italic(title.description || "This user does not have a title equipped!")}`; // only happen if they lose reputation / rank  
+    const rankText = `${user.title || "No Title"}\n${italic(title?.description || "This user does not have a title equipped!")}`; // only happen if they lose reputation / rank  
     let container = new ContainerBuilder()
         .addSectionComponents((section) => section
             .setThumbnailAccessory((thumbnail) => thumbnail.setURL(pfp))
@@ -60,7 +60,7 @@ async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
                     titles.map(title => new StringSelectMenuOptionBuilder()
                         .setLabel(title.title)
                         .setValue(title.title)
-                        .setDescription(title.description + "\n" + `Requirement: ${title.required}`))
+                        .setDescription(`${title.description}\nUnlocked with: ${title.required}`.slice(0, 100)))
                 )));
     }
     container
@@ -86,10 +86,10 @@ async function getAvailableTitles(db, user, itemCache, rank) {
         titles.push({ title: item.name, description: item.description, required: "Purchased from trader" });
     }
     if (rank === 1 && user.reputation > 250) {
-        titles.push({ title: "👑 Landshark Prime", description: "The closest anyone gets to becoming Jeff's favorite.", required: "Top 1 Global" });
+        titles.push({ title: "👑 Landshark Prime", description: "Jeff T Landshark's favorite hooman.", required: "Top 1 Global" });
     }
     if (user.reputation >= 250) {
-        titles.push({ title: "🌊 Leviathan", description: "A legend even Jeff would stop to admire.", required: "250+ Reputation" });   
+        titles.push({ title: "🌊 Leviathan", description: "A legend even Jeff would cuddle with.", required: "250+ Reputation" });   
     }
     if (user.reputation >= 150) {
         titles.push({ title: "🏔️ Apex", description: "The kind of teammate Jeff would follow.", required: "150+ Reputation" });

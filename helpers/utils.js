@@ -186,6 +186,9 @@ export async function updatePetStats(pet, currentLevel) {
     return totalDecay;
 }
 
+// TODO add helper function to verify availble titles, call everywhere when something happens that can make them lose tittle
+
+// TODO fix if they lose title/add nullable titles
 export function renderUsername(user, name) {
     let user_name;
     const currentSettings = typeof user.settings === 'string'
