@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, MessageFlags, escapeMarkdown } from 'discord.js';
-import { getUserAndUpdate, getPetLevel, renderUsername, updatePetStats } from '../../helpers/utils.js';
+import { getUserAndUpdate, getPetLevel, renderUsername, updatePetStats, verifyUserTitle } from '../../helpers/utils.js';
 
 const energyToSpit = 25;
 
@@ -52,6 +52,7 @@ export async function execute(interaction) {
             pet.xp += 25;
             await pet.save();
             victim.reputation -= pet_spit;
+            await verifyUserTitle(db, victim, interaction.client.itemCache);
             await victim.save();
             await interaction.followUp(`${culprit_name}'s pet, ${escapeMarkdown(pet.name)}, helped supercharge Jeff's spit! They made ${victim_name} lose an additional ${pet_spit} reputation! (${escapeMarkdown(pet.name)} got -10 hunger, +${affection} affection, +25 xp)`);
             console.log(`${victim.username}'s pet helped spit an additional ${pet_spit} times.`);

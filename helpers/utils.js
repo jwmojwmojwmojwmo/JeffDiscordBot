@@ -1,5 +1,6 @@
 import item_list from "./itemlist.js";
 import { escapeMarkdown, bold } from 'discord.js';
+import { Op } from "sequelize";
 // Given a table, userid, and username, return the user associated with the information, updating their info, immediately updating only if update === true
 // Note that if update === false, the callee must manually do user.save(), or the updated username will not persist. There ane NO CHECKS for this
 // Note that if update === true and an unneccesary .save() occurs, it is a performance loss
@@ -186,15 +187,64 @@ export async function updatePetStats(pet, currentLevel) {
     return totalDecay;
 }
 
-// TODO add helper function to verify availble titles, call everywhere when something happens that can make them lose tittle
+export async function getAvailableTitles(db, user, itemCache, rank) {
+    const titles = [];
+    titles.push({ title: "🪣 Chum", description: "Jeff thinks you're alright.", required: "No requirements!" });
 
-// TODO fix if they lose title/add nullable titles
+    const titlesInventory = await db.inventory.findAll({
+        where: {
+            userid: user.userid,
+            itemid: { [Op.startsWith]: "8" }
+        }
+    });
+
+    for (const title of titlesInventory) {
+        const item = itemCache.find(i => i.itemid === title.itemid);
+        if (item) titles.push({ title: item.name, description: item.description, required: "Purchased from trader" });
+    }
+
+    if (rank === 1 && user.reputation > 250) {
+        titles.push({ title: "👑 Landshark Prime", description: "The closest anyone gets to becoming Jeff's favorite.", required: "Top 1 Global" });
+    }
+    if (user.reputation >= 250) {
+        titles.push({ title: "🌊 Leviathan", description: "A legend even Jeff would stop to admire.", required: "250+ Reputation" });
+    }
+    if (user.reputation >= 150) {
+        titles.push({ title: "🏔️ Apex", description: "The kind of teammate Jeff would follow.", required: "150+ Reputation" });
+    }
+    if (user.reputation >= 50) {
+        titles.push({ title: "🦈 Predator", description: "Consistently ahead of the pack.", required: "50+ Reputation" });
+    }
+    if (user.reputation >= 15) {
+        titles.push({ title: "🦴 Scavenger", description: "Trusted to sniff out the good stuff.", required: "15+ Reputation" });
+    }
+    return titles;
+}
+
+export async function verifyUserTitle(db, user, itemCache) {
+    if (!user.title || user.title == "🪣 Chum") return; // Skip if they have no title equipped or default title
+    let rank = -1;
+    if (user.title === "👑 Landshark Prime") {
+        rank = await db.jeff.count({
+            where: { reputation: { [Op.gt]: user.reputation } }
+        });
+        rank++;
+    }
+    const titles = await getAvailableTitles(db, user, itemCache, rank);
+    const isValid = titles.some(t => t.title === user.title);
+
+    if (!isValid) {
+        user.title = null;
+        await user.save();
+    }
+}
+
 export function renderUsername(user, name) {
     let user_name;
     const currentSettings = typeof user.settings === 'string'
         ? JSON.parse(user.settings || '{}')
         : (user.settings || {});
-    if (currentSettings.showTitleInName) {
+    if (currentSettings.showTitleInName && user.title) {
         user_name = `[${user.title}] ${name}`;
     } else {
         user_name = name;

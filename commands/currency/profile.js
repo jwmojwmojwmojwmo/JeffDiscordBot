@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle, SlashCommandBuilder, escapeMarkdown, ContainerBuilder, AttachmentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags, heading, italic } from 'discord.js';
 import { Op } from 'sequelize';
-import { getUserAndUpdate, getPetLevel, renderUsername, updatePetStats } from '../../helpers/utils.js';
+import { getUserAndUpdate, getPetLevel, renderUsername, updatePetStats, getAvailableTitles } from '../../helpers/utils.js';
 
 const timeoutContainer = new ContainerBuilder()
     .addTextDisplayComponents((text) => text.setContent(`This interaction timed out.`));
@@ -16,6 +16,10 @@ async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
     rank++;
     const titles = await getAvailableTitles(db, user, itemCache, rank);
     const title = titles.find(i => i.title === user.title);
+    if (!title) {
+        user.title = null;
+        await user.save();
+    }
     const rankText = `${user.title || "No Title"}\n${italic(title?.description || "This user does not have a title equipped!")}`; // only happen if they lose reputation / rank  
     let container = new ContainerBuilder()
         .addSectionComponents((section) => section
@@ -67,40 +71,6 @@ async function buildContainer(db, pfp, user_name, user, userId, itemCache) {
         .addActionRowComponents((row) => row.addComponents(
             new ButtonBuilder().setCustomId('close').setLabel('Close Profile').setStyle(ButtonStyle.Danger)));
     return container;
-}
-
-async function getAvailableTitles(db, user, itemCache, rank) {
-    // a title consists of a string (title), flavour text, and requirements 
-    const titles = [];
-    titles.push({ title: "🪣 Chum", description: "Jeff thinks you're alright.", required: "No requirements!" });
-    const titlesInventory = await db.inventory.findAll({
-        where: {
-            userid: user.userid,
-            itemid: {
-                [Op.startsWith]: "8"
-            }
-        }
-    });
-    for (const title of titlesInventory) {
-        const item = itemCache.find(i => i.itemid === title.itemid);
-        titles.push({ title: item.name, description: item.description, required: "Purchased from trader" });
-    }
-    if (rank === 1 && user.reputation > 250) {
-        titles.push({ title: "👑 Landshark Prime", description: "Jeff T Landshark's favorite hooman.", required: "Top 1 Global" });
-    }
-    if (user.reputation >= 250) {
-        titles.push({ title: "🌊 Leviathan", description: "A legend even Jeff would cuddle with.", required: "250+ Reputation" });   
-    }
-    if (user.reputation >= 150) {
-        titles.push({ title: "🏔️ Apex", description: "The kind of teammate Jeff would follow.", required: "150+ Reputation" });
-    }
-    if (user.reputation >= 50) {
-        titles.push({ title: "🦈 Predator", description: "Consistently ahead of the pack.", required: "50+ Reputation" });
-    }
-    if (user.reputation >= 15) {
-        titles.push({ title: "🦴 Scavenger", description: "Trusted to sniff out the good stuff.", required: "15+ Reputation" });
-    }
-    return titles;
 }
 
 export const data = new SlashCommandBuilder()

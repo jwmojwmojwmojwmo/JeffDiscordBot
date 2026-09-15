@@ -1,5 +1,5 @@
 import { SlashCommandSubcommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
-import { getUserAndUpdate } from '../../../helpers/utils.js';
+import { getUserAndUpdate, verifyUserTitle } from '../../../helpers/utils.js';
 
 const yesButton = new ButtonBuilder()
     .setCustomId('yes')
@@ -27,6 +27,7 @@ export async function execute(interaction, pet) {
             const user = await getUserAndUpdate(interaction.client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, true);
             await pet.destroy();
             user.reputation -= 15;
+            await verifyUserTitle(interaction.client.db, user, interaction.client.itemCache);
             await user.save();
             await response.update({ content: `You release your pet into the wild.\n${pet.name} looks back not with anger, but with profound disappointment. You've broken a landshark's heart. (-15 reputation)`, components: [] });
         } else {

@@ -1,55 +1,66 @@
 import { SlashCommandBuilder, bold, MessageFlags, escapeMarkdown } from 'discord.js';
-import { renderUsername } from '../../helpers/utils.js';
+import { renderUsername, verifyUserTitle } from '../../helpers/utils.js';
+import { Op } from 'sequelize';
 const statLabels = {
     num_nommed: 'Nom Count',
     energy: 'Energy',
     reputation: 'Reputation',
 };
 
-async function getTopFive(tbl, guild, stat_type) {
-    const entries = await tbl.findAll({
-        attributes: ['userid', 'username', 'title', 'settings', stat_type],
-        order: [[stat_type, 'DESC']],
-        raw: true, // map database to JSON
-    });
-    //entries.sort((a, b) => b[stat_type] - a[stat_type]); // sort JSON by stat_type, high to low
+async function getTopFive(db, guild, stat_type, itemCache) {
     let topFive = [];
-    let leaderboard = `Top ${guild === 0 ? 'Global' : 'Server'} Users — ${statLabels[stat_type] || 'unnamed_stat_type -- please report this error --'}:\n`;
-    if (guild === 0) { // global scope
-        topFive = entries.slice(0, 5);
-    }
-    else { // server scope
-        guild.members.cache.forEach(member => {
-            console.log(member.displayName, member.id);
+
+    if (guild === 0) {
+        topFive = await db.jeff.findAll({
+            order: [[stat_type, 'DESC']],
+            limit: 5
+            // Removed raw: true so verifyUserTitle can still use user.save()
         });
-        for (const entry of entries) {
+    } else {
+        const topGlobal = await db.jeff.findAll({
+            order: [[stat_type, 'DESC']],
+            limit: 200
+        });
+
+        for (const user of topGlobal) {
             if (topFive.length === 5) break;
-            let member;
-            member = guild.members.cache.get(entry.userid); // check if each member in entries is in guild, checking cache first for speed
-            if (member) {
-                topFive.push(entry);
-                continue;
-            }
+
             try {
-                member = await guild.members.fetch(entry.userid); // check if each member in entries is in guild
+                const member = await guild.members.fetch(user.userid);
                 if (member) {
-                    topFive.push(entry);
+                    topFive.push(user);
                 }
+            } catch (err) {
+                // pass
             }
-            catch { } // pass
         }
     }
+
+    let leaderboard = `Top ${guild === 0 ? 'Global' : 'Server'} Users — ${statLabels[stat_type] || 'unnamed_stat_type -- please report this error --'}:\n`;
     let rank = 1;
+
     for (const user of topFive) {
+        // Pass the full 'db' object so verifyUserTitle can check inventories
+        await verifyUserTitle(db, user, itemCache);
+
         const user_name = renderUsername(user, user.username);
+
         if (stat_type === 'num_nommed') {
             leaderboard += `\n#${bold(rank)} ${user_name}: ${user[stat_type]} time${user[stat_type] === 1 ? '' : 's'} nommed!`;
-        }
-        else {
+        } else {
             leaderboard += `\n#${bold(rank)} ${user_name}: ${user[stat_type]} ${stat_type}!`;
         }
         rank++;
     }
+
+    if (topFive.length === 0) {
+        leaderboard += "\nNo users found!";
+    }
+
+    if (topFive.length < 5 && guild !== 0) {
+        leaderboard += "\n\nIf some entries are missing, this is a known issue and should be fixed in the next update.";
+    }
+
     return leaderboard;
 }
 
@@ -76,14 +87,14 @@ export async function execute(interaction) {
     if (!interaction.guild && scope === 'server') {
         return interaction.reply({ content: 'This command can\'t be used in DMs.', flags: MessageFlags.Ephemeral });
     }
-    const tbl = interaction.client.db.jeff;
+    const db = interaction.client.db;
     await interaction.reply('Fetching...');
     let reply;
     if (scope === 'global') {
-        reply = await getTopFive(tbl, 0, stat);
+        reply = await getTopFive(db, 0, stat, interaction.client.itemCache);
     }
     else {
-        reply = await getTopFive(tbl, interaction.guild, stat);
+        reply = await getTopFive(db, interaction.guild, stat, interaction.client.itemCache);
     }
     await interaction.editReply(reply);
 }

@@ -10,15 +10,14 @@ const Status = Object.freeze({
 });
 
 const now = Math.floor(Date.now() / 1000);
-const timea = "<t:1780728300:f>";
+const timea = "<t:1789800300:f>"; //09/18/2026
 const statusEmbed = new EmbedBuilder()
     .setTitle('Jeff Discord Bot Status')
     .setThumbnail('https://i.imgur.com/ntg31Zx.jpeg')
     .addFields(
-        { name: `Status: ${Status.ONLINEISSUE}`, value: `\nPlanned to go offline for 12 hours starting at ${timea}` },
-        { name: `Known issues:`, value: `Unfortunately I had to change some things to make my bot more in line with Discord Developer Policies. I cannot test everything, so some things may be broken until you guys discover the bugs LOL. \n\nMany new commands were recently added! Please /donatesuggestions to report any issues or give feedback.` },
-        { name: 'Latest update: v0.90', value: 'We are so back GUYS! Welcome to v0.9, the biggest update yet. We have fishing, pets, and more! Also blackjack is finally here yayy!!' },
-        { name: 'New commands:', value: '/fish, /inventory, /item, /nap, /rank, /trader, /play blackjack, /pet view, /pet feed, /pet pet, /pet play, /pet disown, /use, /help' },
+        { name: `Status: ${Status.ONLINE}`, value: `\nPlanned to go offline for 12 hours starting at ${timea}` },
+        { name: `Known issues:`, value: `The Marvel Rivals API I use is currently unavailable/outdated. /skillcheck may not work as expected.\n\nMany new commands were recently added! Please /donatesuggestions to report any issues or give feedback.` },
+        { name: 'Latest update: v0.91', value: 'The bot was recently updated to v0.91! See notes below.\n\n- /profile is here! This is a new consolidated view replacing /stats and /rank, and lets you equip unlockable titles.\n- /daily now rewards you with dynamic energy multipliers for keeping up your streak.\n- /speak got a brain upgrade, Jeffy should be a little smarter now.\n- Added helpful tooltips, leaderboard improvements, and *maybe* a little secret...' },
         { name: 'Comments:', value: '\nJeff bot is now verified! Thank you for all the support. Again, any and all feedback is appreciated through /donatesuggestions.' },
         { name: '\u200B', value: `Updated at <t:${now}:f>` },
     );
