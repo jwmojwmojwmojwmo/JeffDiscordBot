@@ -162,12 +162,6 @@ export async function updatePetStats(pet, currentLevel) {
     // this way if player checks at the 15 minute mark, we subtract 1 point / 12 minutes
     // if pet.last_fed = Date.now() then we lose all 15 minutes so we lost 3 minutes
     // this way we add 12 to pet.last_fed and the 3 minutes still there
-    console.log(`--- PET STATS DEBUG ---`);
-    console.log(`Mins Since Fed: ${minutesSinceFed.toFixed(2)}`);
-    console.log(`Mins Since Played: ${minutesSincePlayed.toFixed(2)}`);
-    console.log(`Mins Per Point: ${minsPerPoint.toFixed(2)}`);
-    console.log(`Hunger to subtract: ${hungerDecay}`);
-    console.log(`Affection to subtract: ${affectionDecay}`);
     if (hungerDecay > 0) {
         pet.hunger = Math.max(0, pet.hunger - hungerDecay);
         // new date based on adding time

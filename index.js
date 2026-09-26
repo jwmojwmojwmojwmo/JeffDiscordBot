@@ -153,7 +153,7 @@ client.on(Events.InteractionCreate, async interaction => {
             // handle napping
             if (wakeUpCommands.includes(interaction.commandName) && client.napping.has(interaction.user.id)) {
                 const now = Date.now();
-                const user = await getUserAndUpdate(client.db.jeff, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
+                const user = await getUserAndUpdate(client.db, interaction.user.id, interaction.member?.displayName || interaction.user.displayName, false);
                 const time = now - interaction.client.napping.get(interaction.user.id);
                 const napEnergy = getNapEnergy(interaction.client.napping.get(interaction.user.id));
                 user.napping = null;
@@ -268,7 +268,7 @@ AutoPoster(topggAPIKey, client).on("posted", (stats) => {
     await sequelize.sync();
     const nappingUsers = await client.db.jeff.findAll({ where: { napping: { [Op.ne]: null } } });
     nappingUsers.forEach(u => client.napping.set(u.userid, u.napping.getTime()));
-    console.log(`Synced ${nappingUsers.length} napping users to cache.`);
+    console.log(`Synced ${nappingUsers.length} napping users to cache. `);
     await client.login(token);
 })();
 
